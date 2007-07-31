@@ -1,6 +1,139 @@
-Please do not use this directory for any active working FTB software download currently.
+# list of changes 
+# 07/15: Added information about the XML parswer
 
-The demo is available at : https://svn.mcs.anl.gov/repos/radix/projects/cifts/ftb/devel/ftb_demo/
 
-This directory will be used for actual FTB post-demo development, going forward
+Quick ReadMe file for initial version of FTB
 
+Note: this is a very simple version only for demonstrating the basic mechanism 
+of FTB. It can be used as a stub for develop/test event generation/handling
+system. But it is not expected to be very stable/scalable, and it is neither
+well packaged nor bug-free. A more mature version is under development. 
+
+Features:
+    Client/Server mode FTB for throwing and catching events
+    Automatic tools to generate event related code (.h/.c)
+    Examples to show how to work/play with it.
+    Additional Python binding for python client
+	
+Quick walk through
+    1. Check-out the code: 
+       svn co https://svn.mcs.anl.gov/repos/radix/projects/cifts
+       go into directory ftb/devel/ftb_demo/ftb_src
+    2. make 
+        By default, it will try to make everything (server, event files, 
+        client libs, examples). It will generate a conf file (ftb_conf) to 
+        use the building machine as server and building directoy as home 
+        directoy. The default server port is 10808.
+    3. Start ftb server
+        ./bin/ftb_server
+        By default, it will run foreground
+    4. Set LD_LIBRARY_PATH to include the client library 
+        export LD_LIBRARY_PATH=`pwd`/lib:$LD_LIBRARY_PATH
+    5. Try out the examples in the examples directory, such as 
+        ftb_logger: log every event to $FTB_LOG_FILE or /tmp/ftb_log
+        ftb_watchdog: throw an watchdog event every 30 seconds and catch the
+            same event
+        ftb_event_thrower: command line tool for throwing a single event
+        ftb_event_lister: list the events registered to be thrown by all
+            components
+        ftb_event_multi_callback_monitor: example to show how to use event 
+            mask.           
+    6. To try it with MPICH2, go to: ftb/devel/ftb_demo/mpich2, patch 
+        mpich2-1.0.5p4, and launch a job with MPD. If the job is abort before 
+        finish, an event will be thrown to ftb server.
+    7. To build your component with ftb, read the ftb.h and libftb.h file in 
+        the include subdirectory
+        
+What are the source namespace and source id?
+    Source namespace and source id are used to identify from where the event is 
+    thrown. The namespace is 32-bit which allows 32 namespaces to be defined.
+    Predefined four namespaces are as follows:
+        #define FTB_NAMESPACE_GENERAL       0x01
+        #define FTB_NAMESPACE_BACKPLANE     0x02
+        #define FTB_NAMESPACE_SYSTEM        0x04
+        #define FTB_NAMESPACE_JOB           0x08
+    Source id is to identify each instance of the FTB client. It is 64-bit and 
+    can be further divided into pieces to encode more info. E.g. 
+    in ftb.h:
+        #define FTB_SRC_ID_PREFIX_BACKPLANE_LOGGER  0x0000000200000000
+    in ftb_logger.c:
+        #define FTB_DEFAULT_LOGGER_ID     0x00000001
+        uint32_t logger_id = FTB_DEFAULT_LOGGER_ID;
+        properties.id = FTB_SRC_ID_PREFIX_BACKPLANE_LOGGER | logger_id;
+    Source namespace and source id can be used to build event mask
+    Note: In current code, it is just a sample definition. More mature
+    definition will be provided in later versions.  
+
+How do you use the XML parser    
+
+    1. The XML parser is located at :
+    https://svn.mcs.anl.gov/repos/radix/projects/cifts/ftb/devel/ftb_demo/ftb_src/xmlparser
+
+    2. Usage of the xml parser: 
+    ./xmlparser soure_file destination file [1 for built-in]/[0 for
+    component-specific]
+
+How to add events as ftb 'built-in' events?
+
+    1. User can use the XML parser to create the built-in event file.
+
+    An example of the ftb XML built-in event file can be found in the
+    cifts/ftb/devel/ftb_demo/ftb_src/xmlparser/ftb_inbuilt_events.xml
+    
+    An example of the generated ftb built-in events can be found in the
+    cifts/ftb/devel/ftb_demo/ftb_src/event_schema/ftb_event_file
+
+    2. The above built-in event file was generated as follows by passing
+    3 arguments (XML source file name, XML destination file name, and
+    '1' as a third argument to indicate that an in-built event file is
+    being generated.
+
+    cd cifts/ftb/devel/ftb_demo/ftb_src/xmlparser
+    
+    ./xmlparser ftb_inbuilt_events.xml
+    /cifts/ftb/devel/ftb_demo/ftb_src/event_schema/ftb_event_file 1
+    
+    3. A ftb event code generation tool (in
+    tools/ftb_tool_event_generator) will generate
+    ftb_built_in_event_list.h and ftb_built_in_event_list.c files, from
+    the XML parser generated event file, so that the client developers
+    only need to refer the event by name when coding.  The event name
+    will be defined as a macro in the .h file and event info can be
+    looked up by a function called FTB_get_event_by_id (see ftb.h).
+    
+How to add events as additional component specific events?  
+
+    Users can add component specific events sperate from ftb built-in
+    events.
+
+    1. User can use the XML parser to create the component-specific
+    event file.  
+    
+    An example of the ftb XML component-specific event file can be found
+    in the
+    cifts/ftb/devel/ftb_demo/ftb_src/xmlparser/ftb_com1_event_file.xml
+    
+    An example of the generated component-specific event file can be
+    found in the
+    cifts/ftb/devel/ftb_demo/ftb_src/example_com1/ftb_com1_event_file 
+    
+    2.  The above component-specific event file was generated as follows
+    by passing 2 arguments (XML source file name, XML destination file
+    name. The third argument, which is the default, is a '0' to indicate
+    that a component-specific event file is being generated.  
+	
+    cd cifts/ftb/devel/ftb_demo/ftb_src/xmlparser 
+	
+    ./xmlparser ftb_com1_events.xml
+    cifts/ftb/devel/ftb_demo/ftb_src/example_com1/ftb_com1_event_file
+
+    3. To compile the com1, run 'make com1'.  Note that the file
+    generated will be ftb_<component name>_event_list.c/h and the event
+    lookup function will be FTB_get_<component name>_event_by_id. 
+
+How to throw and catch events?
+    See libftb.h for details
+    
+How to use event masks?
+    Definition can be found in ftb.h and example is in 
+    examples/ftb_event_multi_callback_monitor.c
