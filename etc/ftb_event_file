@@ -1,0 +1,27 @@
+# Event list file, listing events supported by FTB
+# This file will be used to generate FTB_events.h file
+# Notes:
+#    event_id is an automatically-assigned 32-bit unsigned integer
+# Format:
+#    EVENT_NAME EVENT_SEVERITY
+#    EVENT_NAME: encourage following name_space convention
+#        BACKPLANE:   for backplane events
+#        JOB:         for events regarding a job, like MPI job
+#        SYSTEM:      for events regarding a system, like a node
+#        GENERAL:     for all other events
+#    EVENT_SEVERITY: on of the following
+#        INFO
+#        PERFORMANCE
+#        WARNING
+#        ERROR
+#        FATAL
+
+VERSION 0.01
+
+BACKPLANE_WATCHDOG_HEARTBEAT INFO
+
+JOB_MPI_ABORT FATAL
+
+JOB_APP_ABORT FATAL
+
+SYSTEM_RES_MEM_ALLOC_FAIL ERROR
