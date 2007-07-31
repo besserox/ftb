@@ -1,9 +1,9 @@
 export FTB_HOME=$(PWD)
 export SRC_DIR=$(FTB_HOME)/src
 export INC_DIR=$(FTB_HOME)/include
-export TOOL_DIR=$(FTB_HOME)/tools
-export EVENT_DIR=$(FTB_HOME)/event_schema
-export EXAMPLE_DIR=$(FTB_HOME)/examples
+export UTILS_DIR=$(FTB_HOME)/utils
+export EVENT_DIR=$(FTB_HOME)/etc
+export EXAMPLE_DIR=$(FTB_HOME)/builtin-tools
 export BIN_DIR=$(FTB_HOME)/bin
 export LIB_DIR=$(FTB_HOME)/lib
 
@@ -26,16 +26,16 @@ examples: $(EXAMPLE_DIR)/ftb_watchdog $(EXAMPLE_DIR)/ftb_logger $(EXAMPLE_DIR)/f
 
 ftb_basic: ftb_event ftb_conf
 
-ftb_event: $(EVENT_FILE) $(TOOL_DIR)/ftb_tool_event_generator
-	$(TOOL_DIR)/ftb_tool_event_generator $(EVENT_FILE); \
+ftb_event: $(EVENT_FILE) $(UTILS_DIR)/ftb_tool_event_generator
+	$(UTILS_DIR)/ftb_tool_event_generator $(EVENT_FILE); \
 	mv $(BUILT_IN_EVENT_CODE_FILE_PREFIX).c $(SRC_DIR); \
 	mv $(BUILT_IN_EVENT_CODE_FILE_PREFIX).h $(INC_DIR)
 
-$(TOOL_DIR)/ftb_tool_event_generator: $(TOOL_DIR)/ftb_tool_event_list_generator.c
+$(UTILS_DIR)/ftb_tool_event_generator: $(UTILS_DIR)/ftb_tool_event_list_generator.c
 	gcc $(CFLAGS) -o $@ $<
 
 ftb_conf:
-	sh $(TOOL_DIR)/ftb_setup_conf.sh;\
+	sh $(UTILS_DIR)/ftb_setup_conf.sh;\
 	mv ftb_conf.h $(INC_DIR)
 	
 $(BIN_DIR)/ftb_server: ftb_basic $(SRC_DIR)/ftb_server.cpp $(SRC_DIR)/ftb_util.c
@@ -71,20 +71,20 @@ clean_ftb:
 	rm -f ftb_conf $(INC_DIR)/ftb_conf.h;\
 	rm -f $(SRC_DIR)/$(BUILT_IN_EVENT_CODE_FILE_PREFIX).c $(INC_DIR)/$(BUILT_IN_EVENT_CODE_FILE_PREFIX).h;\
 	rm -f $(BIN_DIR)/ftb_server;\
-	rm -f $(TOOL_DIR)/ftb_tool_event_generator;\
+	rm -f $(UTILS_DIR)/ftb_tool_event_generator;\
 	rm -f $(EXAMPLE_DIR)/ftb_watchdog $(EXAMPLE_DIR)/ftb_logger $(EXAMPLE_DIR)/ftb_multi_callback_monitor\
 	      $(EXAMPLE_DIR)/ftb_event_thrower $(EXAMPLE_DIR)/ftb_event_lister
 
 
 #==========================
 
-export COM1_DIR=$(FTB_HOME)/example_com1
+export COM1_DIR=$(FTB_HOME)/components/example_com1
 export COM1_EVENT_FILE=$(COM1_DIR)/ftb_com1_event_file
 export COM1_EVENT_CODE_FILE_PREFIX=ftb_com1_event_list
 export COM1_INC=-I$(COM1_DIR)
 
 com1: ftb_basic server client
-	$(TOOL_DIR)/ftb_tool_event_generator $(COM1_EVENT_FILE) com1 65536; \
+	$(UTILS_DIR)/ftb_tool_event_generator $(COM1_EVENT_FILE) com1 65536; \
 	mv $(COM1_EVENT_CODE_FILE_PREFIX).c $(COM1_DIR); \
 	mv $(COM1_EVENT_CODE_FILE_PREFIX).h $(COM1_DIR); \
 	gcc $(CFLAGS) $(COM1_INC) $(FTBLDFLAGS) -o $(COM1_DIR)/com1_thrower $(COM1_DIR)/com1_thrower.c $(COM1_DIR)/$(COM1_EVENT_CODE_FILE_PREFIX).c -lftb_polling ;\
