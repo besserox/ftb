@@ -1,9 +1,11 @@
-#ifndef FTB_LIBFTB_H
-#define FTB_LIBFTB_H
+#ifndef LIBFTB_H
+#define LIBFTB_H
 
 #include "ftb.h"
-#include "ftb_util.h"
-#include "ftb_built_in_event_list.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif 
 
 #define FTB_DEFAULT_EVENT_QUEUE_SIZE  128
 
@@ -11,7 +13,7 @@
     Initialize ftb_client and connect to ftb server.
     Note if properties->polling_only != 0, no new thread will be created, otherwise a thread will be created for callback
 */
-int FTB_Init(FTB_component_properties_t *properties);
+int FTB_Init(const FTB_component_properties_t *properties);
 
 /* FTB_Reg_throw_id & FTB_Reg_throw
     Claim this component will throw a specific event in right condition. It is optional but it allows other components to cooperate better.
@@ -21,7 +23,7 @@ int FTB_Init(FTB_component_properties_t *properties);
 */
 int FTB_Reg_throw_id(uint32_t event_id);
 
-int FTB_Reg_throw(FTB_event_t *event);
+int FTB_Reg_throw(const FTB_event_t *event);
 
 #ifndef FTB_CLIENT_POLLING_ONLY
 /* FTB_Reg_catch_notify & FTB_Reg_catch_notify_single & FTB_Reg_catch_notify_all
@@ -33,7 +35,7 @@ int FTB_Reg_throw(FTB_event_t *event);
 */
 int FTB_Reg_catch_notify_single(uint32_t event_id, int (*callback)(FTB_event_inst_t *, void*), void *arg);
 
-int FTB_Reg_catch_notify(FTB_event_mask_t *event_mask, int (*callback)(FTB_event_inst_t *, void*), void *arg);
+int FTB_Reg_catch_notify(const FTB_event_mask_t *event_mask, int (*callback)(FTB_event_inst_t *, void*), const void *arg);
 
 int FTB_Reg_catch_notify_all(int (*callback)(FTB_event_inst_t *, void*), void *arg);
 #endif
@@ -46,7 +48,7 @@ int FTB_Reg_catch_notify_all(int (*callback)(FTB_event_inst_t *, void*), void *a
 */
 int FTB_Reg_catch_polling_single(uint32_t event_id);
 
-int FTB_Reg_catch_polling(FTB_event_mask_t *event_mask);
+int FTB_Reg_catch_polling(const FTB_event_mask_t *event_mask);
 
 int FTB_Reg_catch_polling_all();
 
@@ -56,9 +58,9 @@ int FTB_Reg_catch_polling_all();
     Two veriations are specifying event_id (event_name macro, only for built-in events) or an event structure (for additional events).
     For additional events, developer can use FTB_get_<component name>_event_by_id to get the event structure.
 */
-int FTB_Throw_id(uint32_t event_id, char *data, uint32_t data_len);
+int FTB_Throw_id(uint32_t event_id, const char *data, uint32_t data_len);
 
-int FTB_Throw(FTB_event_t *event, char *data, uint32_t data_len);
+int FTB_Throw(const FTB_event_t *event, const char *data, uint32_t data_len);
 
 /* FTB_Catch
     Poll for an event instance from server.
@@ -80,5 +82,9 @@ int FTB_List_events(FTB_event_t *events, int *len);
     Finalize ftb client
 */
 int FTB_Finalize();
+
+#ifdef __cplusplus
+} /*extern "C"*/
+#endif 
 
 #endif
