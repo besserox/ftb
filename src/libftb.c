@@ -12,7 +12,7 @@ typedef struct FTB_client_event_mask_list {
 
 typedef struct FTB_client_runtime {
     int fd; /*0 means not funcitonal*/
-    FTB_component_properties_t properites;
+    FTB_component_properties_t properties;
     FTB_config_t *config;
 #ifndef FTB_CLIENT_POLLING_ONLY
     pthread_t catch_thread;
@@ -89,7 +89,7 @@ int connect_server(FTB_client_runtime_t *runtime)
     	FTB_ERR_ABORT("connect %s:%d failed\n",runtime->config->host_name, runtime->config->port);
     UTIL_WRITE_SHORT(runtime->fd, &(runtime->config->FTB_id), sizeof(runtime->config->FTB_id));
     UTIL_WRITE_SHORT(runtime->fd, FTB_EVENT_VERSION, strlen(FTB_EVENT_VERSION));
-    UTIL_WRITE_SHORT(runtime->fd, &(runtime->properites), sizeof(FTB_component_properties_t));
+    UTIL_WRITE_SHORT(runtime->fd, &(runtime->properties), sizeof(FTB_component_properties_t));
     FTB_INFO("server connected");
     return 0;
 }
@@ -152,17 +152,21 @@ int FTB_Init(FTB_component_properties_t *properties)
         FTB_WARNING("namespace or id cannot be 0");
         return 1;
     }
+#ifdef FTB_CLIENT_POLLING_ONLY
+    properties->polling_only = 1;
+#endif
     FTB_client_runtime = (FTB_client_runtime_t*)malloc(sizeof(FTB_client_runtime_t));
-    memcpy(&(FTB_client_runtime->properites),properties,sizeof(FTB_component_properties_t));
+    memcpy(&(FTB_client_runtime->properties),properties,sizeof(FTB_component_properties_t));
     FTB_client_runtime->config = (FTB_config_t*)malloc(sizeof(FTB_config_t));
     FTB_Util_setup_configuration(FTB_client_runtime->config);
     connect_server(FTB_client_runtime);
 #ifndef FTB_CLIENT_POLLING_ONLY
-    properties->polling_only = 1;
-    pthread_create(&(FTB_client_runtime->catch_thread), NULL, catch_thread, NULL);
-    pthread_mutex_init(&(FTB_client_runtime->lock),NULL);
-    FTB_client_runtime->event_notify_list = (FTB_list_node_t*)malloc(sizeof(FTB_list_node_t));
-    FTB_list_init(FTB_client_runtime->event_notify_list);
+    if (!properties->polling_only) {
+        pthread_create(&(FTB_client_runtime->catch_thread), NULL, catch_thread, NULL);
+        pthread_mutex_init(&(FTB_client_runtime->lock),NULL);
+        FTB_client_runtime->event_notify_list = (FTB_list_node_t*)malloc(sizeof(FTB_list_node_t));
+        FTB_list_init(FTB_client_runtime->event_notify_list);
+    }
 #endif
     FTB_client_runtime->event_polling_list = (FTB_list_node_t*)malloc(sizeof(FTB_list_node_t));
     FTB_list_init(FTB_client_runtime->event_polling_list);
@@ -176,18 +180,20 @@ int FTB_Finalize()
     UTIL_WRITE_SHORT(FTB_client_runtime->fd, &msg_type, sizeof(msg_type));
     close(FTB_client_runtime->fd);
 #ifndef FTB_CLIENT_POLLING_ONLY
-    pthread_mutex_destroy(&(FTB_client_runtime->lock));
-    pthread_cancel(FTB_client_runtime->catch_thread);
-    pthread_join(FTB_client_runtime->catch_thread, NULL);
-    {
-        FTB_list_node_t *temp;
-        FTB_list_node_t *node;
-        FTB_list_for_each(node, FTB_client_runtime->event_notify_list, temp)
+    if (!FTB_client_runtime->properties.polling_only) {
+        pthread_mutex_destroy(&(FTB_client_runtime->lock));
+        pthread_cancel(FTB_client_runtime->catch_thread);
+        pthread_join(FTB_client_runtime->catch_thread, NULL);
         {
-            FTB_client_event_mask_list_t *entry = (FTB_client_event_mask_list_t *)node;
-            free(entry);
+            FTB_list_node_t *temp;
+            FTB_list_node_t *node;
+            FTB_list_for_each(node, FTB_client_runtime->event_notify_list, temp)
+            {
+                FTB_client_event_mask_list_t *entry = (FTB_client_event_mask_list_t *)node;
+                free(entry);
+            }
+            free(FTB_client_runtime->event_notify_list);
         }
-        free(FTB_client_runtime->event_notify_list);
     }
 #endif
     {
@@ -327,8 +333,8 @@ int FTB_Throw(FTB_event_t *event, char *data, uint32_t data_len)
     event_inst.event_id = event->event_id;
     strncpy(event_inst.name,event->name,FTB_MAX_EVENT_NAME);
     event_inst.severity = event->severity;
-    event_inst.src_namespace = FTB_client_runtime->properites.com_namespace;
-    event_inst.src_id = FTB_client_runtime->properites.id;
+    event_inst.src_namespace = FTB_client_runtime->properties.com_namespace;
+    event_inst.src_id = FTB_client_runtime->properties.id;
     if (data != NULL) {
         if (data_len > FTB_MAX_EVENT_IMMEDIATE_DATA)
             data_len = FTB_MAX_EVENT_IMMEDIATE_DATA;
