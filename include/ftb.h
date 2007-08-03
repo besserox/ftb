@@ -8,31 +8,18 @@ extern "C" {
 #endif 
 
 #define FTB_MAX_EVENT_VERSION_NAME     16
-
-#ifdef FTB_BGL
-
-/*Not support notification*/
-#define FTB_CLIENT_POLLING_ONLY
-
-#endif /*FTB_BGL*/
-
 #define FTB_MAX_EVENT_NAME             64
 #define FTB_MAX_HOST_NAME              64
 #define FTB_MAX_COM_NAME               64
 #define FTB_MAX_EVENT_IMMEDIATE_DATA   128
 
 typedef uint32_t FTB_event_id_t;
-
 typedef uint32_t FTB_namespace_t
 typedef uint32_t FTB_component_id_t;
-/*0 is reserved for invalid component ID*/
 
+/*0 is reserved for invalid component ID*/
 #define FTB_INVALID_COMPONENT_ID            0
 #define FTB_INVALID_NAMESPACE               0
-
-typedef struct FTB_config{
-    uint32_t FTB_system_id;
-}FTB_config_t;
 
 typedef uint32_t FTB_err_handling_t
 /*
