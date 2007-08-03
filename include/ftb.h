@@ -23,22 +23,70 @@ extern "C" {
 
 typedef uint32_t FTB_event_id_t;
 
+typedef uint32_t FTB_namespace_t
 typedef uint32_t FTB_component_id_t;
 /*0 is reserved for invalid component ID*/
 
-#define FTB_INVALID_COMPONENT_ID         0
+#define FTB_INVALID_COMPONENT_ID            0
 #define FTB_INVALID_NAMESPACE               0
 
 typedef struct FTB_config{
     uint32_t FTB_system_id;
 }FTB_config_t;
 
+typedef uint32_t FTB_err_handling_t
+/*
+The behavior in case therer is an internal FTB error,
+defined as FTB_ERR_HANDLE_NONE, or | of the others
+*/
+#define FTB_ERR_HANDLE_NONE                      0x0
+/*
+In case of some error, that FTB client just stop functioning,
+all subsequent FTB calls will take no effect and return 
+FTB_ERR_GENERAL immediately 
+*/
+#define FTB_ERR_HANLDE_NOTIFICATION              0x1
+/*
+If some error happened, FTB will generate an event and next 
+time when FTB_Catch is called, that event will be caught by 
+client.
+*/
+#define FTB_ERR_HANDLE_RECOVER                   0x2
+/*
+If some error happened, FTB will try to recover, but this option
+will cause more resource usage and an additional thread in client
+process.
+*/
+
+typedef uint32_t FTB_event_catching_t;
+/*
+The mechanism to catch events required by component, 
+defined as FTB_EVENT_CATCHING_NONE, or | of the others.
+*/
+#define FTB_EVENT_CATCHING_NONE                  0x0
+/*
+This component will not catch any events.
+*/
+#define FTB_EVENT_CATCHING_POLLING               0x1
+/*
+This component will catch events by polling, if specified 
+a polling queue is constructed, length can be specified by 
+env FTB_EVENT_POLLING_Q_LEN
+*/
+#define FTB_EVENT_CATCHING_NOTIFICATION          0x2
+/*
+This component will catch event by notification callback functions.
+If specified, an additional thread is generated.
+*/
+
+#define FTB_DEFAULT_EVENT_POLLING_Q_LEN          64
+
 typedef struct FTB_component_properties {
-    uint32_t com_namespace;
+    FTB_namespace_t com_namespace;
     FTB_component_id_t id;
     char name[FTB_MAX_COM_NAME];
-    int polling_only;
-    int polling_queue_len;
+    FTB_event_catching_t catching_type; 
+    FTB_err_handling_t err_handling;
 }FTB_component_properties_t;
 
 #define FTB_NAMESPACE_GENERAL                   0x01
@@ -59,21 +107,21 @@ typedef struct FTB_component_properties {
 
 #define FTB_SUCCESS                             0
 #define FTB_ERR_GENERAL                         (-1)
-#define FTB_ERR_NULL_POINTER                    (-2 )
+#define FTB_ERR_NULL_POINTER                    (-2)
 #define FTB_ERR_NOT_SUPPORTED                   (-3)
 #define FTB_ERR_INVALID_PARAMETER               (-4)
 #define FTB_ERR_NETWORK_GENERAL                 (-5)
 #define FTB_ERR_NETWORK_NO_ROUTE                (-6)
 #define FTB_ERR_EVENT_NOT_FOUND                 (-16)
 
-#define FTB_CAUGHT_NO_EVENT                 0
-#define FTB_CAUGHT_EVENT                       1
+#define FTB_CAUGHT_NO_EVENT                     0
+#define FTB_CAUGHT_EVENT                        1
 
 #define FTB_MAX_BUILD_IN_EVENT_ID               0xffff
 
 /*event and event instance*/
 typedef struct FTB_event{
-    uint32_t event_id;
+    FTB_event_id_t event_id;
     char name[FTB_MAX_EVENT_NAME];
     uint32_t severity;
 }FTB_event_t;
@@ -84,8 +132,8 @@ typedef struct FTB_event_inst {
     FTB_event_id_t event_id;
     char name[FTB_MAX_EVENT_NAME];
     uint32_t severity;
-    uint32_t src_namespace;
-    uint32_t src_id;
+    FTB_namespace_t src_namespace;
+    FTB_component_id_t src_id;
     char immediate_data[FTB_MAX_EVENT_IMMEDIATE_DATA];
 }FTB_event_inst_t;
 
@@ -94,10 +142,15 @@ typedef struct FTB_event_inst {
 typedef struct FTB_event_mask {
     FTB_event_id_t event_id;
     uint32_t severity;    
-    uint32_t src_namespace;
-    uint32_t src_id;
+    FTB_namespace_t src_namespace;
+    FTB_component_id_t src_id;
 }FTB_event_mask_t;
 
+
+/*
+Note that all following functions assume 32-bit FTB_event_id_t, 
+FTB_namespace_t, and FTB_component_id_t
+*/
 #define FTB_EVENT_CLR_ALL(evt_mask) {\
     evt_mask.event_id = 0x0; \
     evt_mask.src_namespace = 0x0; \
