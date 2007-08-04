@@ -58,7 +58,7 @@ typedef struct FTB_config{
 
 typedef struct FTB_component_properties {
     uint32_t com_namespace;
-    uint64_t id;
+    uint32_t id;
     char name[FTB_MAX_COM_NAME];
     int polling_only;
     int polling_queue_len;
@@ -78,9 +78,9 @@ typedef struct FTB_component_properties {
 #define FTB_NAMESPACE_SYSTEM            0x04
 #define FTB_NAMESPACE_JOB                   0x08
 
-#define FTB_SRC_ID_PREFIX_BACKPLANE_TEST                  0x0000000100000000
-#define FTB_SRC_ID_PREFIX_BACKPLANE_LOGGER              0x0000000200000000
-#define FTB_SRC_ID_PREFIX_BACKPLANE_WATCHDOG        0x0000000400000000
+#define FTB_SRC_ID_PREFIX_BACKPLANE_TEST                  0x01000000
+#define FTB_SRC_ID_PREFIX_BACKPLANE_LOGGER                0x02000000
+#define FTB_SRC_ID_PREFIX_BACKPLANE_WATCHDOG              0x04000000
 
 #define FTB_EVENT_SEVERITY_INFO              0x01
 #define FTB_EVENT_SEVERITY_PERFORMANCE       0x02
@@ -106,7 +106,7 @@ typedef struct FTB_event_inst {
     char name[FTB_MAX_EVENT_NAME];
     uint32_t severity;
     uint32_t src_namespace;
-    uint64_t src_id;
+    uint32_t src_id;
     char immediate_data[FTB_MAX_EVENT_IMMEDIATE_DATA];
 }FTB_event_inst_t;
 
@@ -116,7 +116,7 @@ typedef struct FTB_event_mask {
     uint32_t event_id;
     uint32_t severity;    
     uint32_t src_namespace;
-    uint64_t src_id;
+    uint32_t src_id;
 }FTB_event_mask_t;
 
 #define FTB_EVENT_CLR_ALL(evt_mask) {\
@@ -148,7 +148,7 @@ typedef struct FTB_event_mask {
     evt_mask.src_namespace = 0xFFFFFFFF; \
 }
 #define FTB_EVENT_MARK_ALL_SRC_ID(evt_mask) {\
-    evt_mask.src_id = 0xFFFFFFFFFFFFFFFF; \
+    evt_mask.src_id = 0xFFFFFFFF; \
 }
 
 #define FTB_EVENT_SET_EVENT_ID(evt_mask, val) {\
