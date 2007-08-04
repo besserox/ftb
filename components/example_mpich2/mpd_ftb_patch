@@ -1,0 +1,67 @@
+--- src/pm/mpd/mpdman.py	2007-02-16 12:31:01.000000000 -0600
++++ src/pm/mpd/mpdman_ftb.py	2007-06-29 12:12:41.000000000 -0500
+@@ -28,6 +28,9 @@
+                      mpd_dbg_level,                              \
+                      MPDSock, MPDListenSock, MPDStreamHandler, MPDRing
+ 
++import ftb
++from ctypes import *
++
+ try:
+     import  syslog  
+     syslog_module_available = 1
+@@ -141,6 +144,13 @@
+         self.streamHandler.set_handler(self.listenNonRingSock,
+                                        self.handle_nonring_connection)
+ 
++        # FTB
++        properties = ftb.component_properties(0x08, 0x100000000 | self.myRank, \
++                                              'mpdman', 1, 0)
++        ftb.libftb.FTB_Init(byref(properties))
++        ftb.libftb.FTB_Reg_throw_id(0x2) #JOB_MPI_ABORT
++        # FTB-end
++
+         # set up pmi stuff early in case I was spawned
+         self.universeSize = -1
+         self.appnum = -1
+@@ -486,6 +496,9 @@
+         msg = self.ring.lhsSock.recv_dict_msg()
+         if not msg:
+             mpd_print(0000, 'lhs died' )
++            #FTB
++            ftb.libftb.FTB_Throw_id(0x2,'lhs died',len('lhs died')+1)
++            #FTB-end
+             self.streamHandler.del_handler(self.ring.lhsSock)
+             self.ring.lhsSock.close()
+         elif msg['cmd'] == 'jobgo_loop_1':
+@@ -730,6 +743,9 @@
+     def handle_rhs_input(self,sock):
+         msg = self.ring.rhsSock.recv_dict_msg()  #### NOT USING msg; should I ?
+         mpd_print(0000, 'rhs died' )
++        #FTB
++        ftb.libftb.FTB_Throw_id(0x2,'rhs died', len('rhs died')+1)
++        #FTB-end
+         self.streamHandler.del_handler(self.ring.rhsSock)
+         self.ring.rhsSock.close()
+         self.ring.rhsSock = 0
+@@ -919,6 +935,9 @@
+             return
+         line = self.pmiSock.recv_char_msg()
+         if not line:
++            #FTB
++            ftb.libftb.FTB_Throw_id(0x2,'client died', len('client died')+1)
++            #FTB-end
+             self.streamHandler.del_handler(self.pmiSock)
+             self.pmiSock.close()
+             self.pmiSock = 0
+--- src/pm/mpd/Makefile.in	2006-11-06 08:24:18.000000000 -0600
++++ src/pm/mpd/Makefile_ftb.in	2007-06-29 12:12:57.000000000 -0500
+@@ -35,7 +35,7 @@
+ MPDBOOT  = mpdboot
+ CMDS     = mpiexec mpdtrace mpdringtest mpdlistjobs mpdkilljob mpdsigjob \
+            mpdexit mpdallexit mpdcleanup mpdhelp mpdcheck
+-HELPERS  = mpdgdbdrv mpdman mpdlib mpdchkpyver Zeroconf
++HELPERS  = mpdgdbdrv mpdman mpdlib mpdchkpyver Zeroconf ftb
+ 
+ PYTHON_SOURCE =  ${MPD} ${MPDBOOT} ${CMDS} ${HELPERS}
+ 

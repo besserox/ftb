@@ -1,0 +1,30 @@
+Please note that this directory contains a gentle patch for modifying
+mpich2, at a very high level, to show how a component may work with FTB.  
+
+Please refer to the MPICH2 directory, that will be created by the MPICH2
+developers under the component hierarchy, for the actual FTB-enabled
+MPICH2 code. 
+
+This directory just contains a minor patch and does not reflect a true
+FTB-enabled MPICH2
+
+------------------------------------------------------------------------
+
+This patch is for mpich2-1.0.5p4, providing a sample code for how a MPI
+component report job failure.  Currently it's plugged into MPD, so it
+requires python binding.
+
+It requires:
+	python >= 2.4 for ctypes
+	mpich2-1.0.5p4
+
+To try:
+	download mpich2-1.0.5p4
+	
+	copy the ftb.py from examples/python_binding to src/pm/mpd of
+	mpich2
+	
+	apply the mpd_ftb_patch set LD_LIBRARY_PATH with the path to
+	
+	libftb_polling.so start ftb server first before running MPI jobs
+	using MPICH2

@@ -1,0 +1,51 @@
+<?xml version="1.0"?>
+<Component_and_Events 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:noNamespaceSchemaLocation="TBD">
+
+<!-- =======================================================================  -->
+<!-- This file contains the event description for INBUILT events for FTB demo -->
+<!-- =======================================================================  -->
+
+<!-- Specify the component category. These can be obtained from -->
+<!-- the XSD file						-->
+<component_category>All</component_category>
+
+<!-- Specify the component implementation. These can be obtained -->
+<!-- from the XSD file						 -->
+<component_implementation>NA</component_implementation>
+
+<!-- Specify the event category and the events under this category -->
+<!-- The event category need to created on your own for now	   -->
+<event_category>
+	<event_category_name>NA</event_category_name>
+	<event_details>
+		<event_name>BACKPLANE_WATCHDOG_HEARTBEAT</event_name>
+		<event_desc>Heartbeat from watchdog</event_desc>
+		<event_scope>TBD</event_scope>
+		<event_severity>Info</event_severity>
+		<event_impact>TBD</event_impact>
+	</event_details>
+        <event_details>
+                <event_name>JOB_MPI_ABORT</event_name>
+                <event_desc>MPI Job aborted</event_desc>
+                <event_scope>TBD</event_scope>
+                <event_severity>Fatal</event_severity>
+                <event_impact>TBD</event_impact>
+        </event_details>
+        <event_details>
+                <event_name>JOB_APP_ABORT</event_name>
+                <event_desc>Application Job aborted</event_desc>
+                <event_scope>TBD</event_scope>
+                <event_severity>Fatal</event_severity>
+                <event_impact>TBD</event_impact>
+        </event_details>
+        <event_details>
+		<event_name>SYSTEM_RES_MEM_ALLOC_FAIL</event_name>
+                <event_desc>Memory Allocation failed</event_desc>
+                <event_scope>TBD</event_scope>
+                <event_severity>Error</event_severity>
+                <event_impact>TBD</event_impact>
+        </event_details>
+</event_category>
+</Component_and_Events>

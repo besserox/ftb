@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<Component_and_Events 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:noNamespaceSchemaLocation="TBD; path to schema definition">
+
+<!-- ================================================================  -->
+<!-- This file contains the event description for example COM1 events. -->
+<!-- ================================================================  -->
+
+<!-- Specify the component category. These can be obtained from -->
+<!-- the XSD file						-->
+<component_category>COM-FOO</component_category>
+
+<!-- Specify the component implementation. These can be obtained -->
+<!-- from the XSD file						 -->
+<component_implementation>COM1</component_implementation>
+
+<!-- Specify the event category and the events under this category -->
+<!-- The event category need to created on your own for now	   -->
+<event_category>
+	<event_category_name>TBD</event_category_name>
+	<event_details>
+		<event_name>COM1_INFORMATION</event_name>
+		<event_desc>Some Information about COM1</event_desc>
+		<event_scope>FOO</event_scope>
+		<event_severity>Info</event_severity>
+		<event_impact>FOO</event_impact>
+	</event_details>
+</event_category>
+</Component_and_Events>
