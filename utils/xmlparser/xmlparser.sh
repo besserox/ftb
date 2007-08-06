@@ -22,6 +22,7 @@
 # 			3. If you need to change the format/event attributed in your tab-file, the script will need to be modified
 #
 #     LIST OF CHANGES:  08/04/07 : Added some comments in generated file
+#			08/06/07 : Removed \n and \t. Added logic to exit if output file exists
 # ===================================================================================================================================
 
 declare -a required_tags	# Contains the XML tags to be put in the tag-delimited file 
