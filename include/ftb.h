@@ -14,14 +14,14 @@ extern "C" {
 #define FTB_MAX_EVENT_IMMEDIATE_DATA   128
 
 typedef uint32_t FTB_event_id_t;
-typedef uint32_t FTB_namespace_t
+typedef uint32_t FTB_namespace_t;
 typedef uint32_t FTB_component_id_t;
 
 /*0 is reserved for invalid component ID*/
 #define FTB_INVALID_COMPONENT_ID            0
 #define FTB_INVALID_NAMESPACE               0
 
-typedef uint32_t FTB_err_handling_t
+typedef uint32_t FTB_err_handling_t;
 /*
 The behavior in case therer is an internal FTB error,
 defined as FTB_ERR_HANDLE_NONE, or | of the others
@@ -44,7 +44,6 @@ If some error happened, FTB will try to recover, but this option
 will cause more resource usage and an additional thread in client
 process.
 */
-
 typedef uint32_t FTB_event_catching_t;
 /*
 The mechanism to catch events required by component, 
