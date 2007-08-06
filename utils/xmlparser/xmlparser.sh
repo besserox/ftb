@@ -72,9 +72,11 @@ if [ ! -e $xml_filename ]; then
 	echo "$xml_filename XML input file does not exist. Please re-enter file path and name"
 	exit -1;
 fi
-for tag in `cat $xml_filename | sed -e 's/\t//g' | sed -e 's/  */ /g' |  sed -e 's/^ *//g' | 
-	sed -e 's/</\n</g' | sed -e 's/<!--/\n<!--/g' | sed -e 's/> */>/g'| sed -r 's/>/> /g' |
-	sed -e '/^ *$/d' | sed '/^<\//d' | 
+for tag in `cat $xml_filename | sed -e 's/	//g' | sed -e 's/  */ /g' |  sed -e 's/^ *//g' | 
+	sed -e 's/</\
+</g' | sed -e 's/<!--/\
+<!--/g' | sed -e 's/> */>/g'| sed -r 's/>/> /g' |
+	sed -e '/^ *$/d' | sed '/^<\//d' |
 	awk '{ if ($0 ~ /<!--/) del = 1; if (!del) print $0; else if ($0 ~ /-->/) del = 0; }' |
 	awk '{ if (($0 ~ /<\?/) || ($0 ~ "^<Component_and_Events") || ($0 ~ "^</Component_and_Events>")) del = 1;  
 	if (!del) print $0;  else if ($0 ~ />/) del =0; }' |		
@@ -97,9 +99,11 @@ for tag in `cat $xml_filename | sed -e 's/\t//g' | sed -e 's/  */ /g' |  sed -e 
 # DESCRIPTION: Pass 2 obtains the relevant information from the XML file and adds it to the tab file
 #------------------------------------------------------------------------------------------------
 if [ -e $output_filename ]; then
-	new_output_file=$output_filename.$RANDOM
-	mv $output_filename  $new_output_file
-	echo "The output file ($output_filename) already exists and will be backed up to $new_output_file"
+	#new_output_file=$output_filename.$RANDOM
+	#mv $output_filename  $new_output_file
+	#echo "The output file ($output_filename) already exists and will be backed up to $new_output_file"
+	echo "Output file ($output_filename) exists. Please enter new filename"
+	exit -1;
 fi
 
 #------------------------------------------------------------------------------------------------
@@ -125,14 +129,16 @@ echo "#        ERROR" >> $output_filename
 echo "#        FATAL" >> $output_filename
 echo "#        " >> $output_filename
 if [ $event_filetype -eq 1 ]; then {
-	echo -e "VERSION 0.01\n" >> $output_filename
+	echo -e "VERSION 0.01 \n" >> $output_filename
 } fi
 
 cat $xml_filename | 
-	sed -e 's/\t//g' |						# Remove tabs
+	sed -e 's/	//g' |						# Remo:1,$ve tabs
 	sed -e 's/  */ /g' |  sed -e 's/^ *//g'|			# Remove redundant white spaces
-	sed -e 's/</\n</g' |						# Move all text starting with "<" to new line
-	sed -e 's/<!--/\n<!--/g' | 
+	sed -e 's/</\
+</g' |						# Move all text starting with "<" to new line
+	sed -e 's/<!--/\
+<!--/g' | 
 	awk '{ if ($0 ~ /<!--/) del = 1; 
 		if (!del) print $0; else if ($0 ~ /-->/) del = 0; }' |	# Delete all comments
 	sed -e '/^ *$/d' |						# Delete blank lines
