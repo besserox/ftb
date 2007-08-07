@@ -1,0 +1,37 @@
+<?xml version="1.0"?>
+<Component_and_Events 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:noNamespaceSchemaLocation="TBD; path to schema definition">
+
+<!-- ================================================================  -->
+<!-- This file contains the event description for example COM1 events. -->
+<!-- ================================================================  -->
+
+<!-- Specify the component category. These can be obtained from -->
+<!-- the XSD file						-->
+<component_category>NETWORK</component_category>
+
+<!-- Specify the component implementation. These can be obtained -->
+<!-- from the XSD file						 -->
+<component_implementation>IBA</component_implementation>
+
+<!-- Specify the event category and the events under this category -->
+<!-- The event category need to created on your own for now	   -->
+<event_category>
+	<event_category_name>PORT_STATUS</event_category_name>
+	<event_details>
+		<event_name>IBA_PORT_ACTIVE</event_name>
+		<event_desc>Current Port in Active State</event_desc>
+		<event_scope>IBA</event_scope>
+		<event_severity>Normal</event_severity>
+		<event_impact>Normal</event_impact>
+	</event_details>
+	<event_details>
+		<event_name>IBA_PORT_DOWN</event_name>
+		<event_desc>Current Port in Active State</event_desc>
+		<event_scope>IBA</event_scope>
+		<event_severity>Normal</event_severity>
+		<event_impact>Normal</event_impact>
+	</event_details>
+</event_category>
+</Component_and_Events>
