@@ -9,7 +9,7 @@ export LIB_DIR=$(FTB_HOME)/lib
 
 export EVENT_FILE=$(EVENT_DIR)/ftb_event_file
 export BUILT_IN_EVENT_CODE_FILE_PREFIX=ftb_built_in_event_list
-export CFLAGS=-I$(INC_DIR)
+export CFLAGS=-I$(INC_DIR) -g
 export FTBLDFLAGS=-L$(LIB_DIR)
 
 all: server client examples

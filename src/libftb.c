@@ -30,7 +30,7 @@ static FTB_client_runtime_t *FTB_client_runtime = NULL;
 #define UTIL_READ_SHORT(fd_read,buf,len)  do { \
     if (fd_read != 0) {\
         if (read(fd_read, buf, len) != len) {  \
-            FTB_WARNING("read error %d\n",errno); \
+            FTB_WARNING("read error %s (%d)\n", strerror(errno), errno); \
             close(fd_read);\
             FTB_client_runtime->fd = 0; \
         } \
@@ -40,7 +40,7 @@ static FTB_client_runtime_t *FTB_client_runtime = NULL;
 #define UTIL_WRITE_SHORT(fd_write,buf,len)  do { \
     if (fd_write != 0) {\
         if (write(fd_write, buf, len) != len) {  \
-            FTB_WARNING("write error %d\n",errno); \
+            FTB_WARNING("write error %s (%d)\n", strerror(errno), errno);        \
             close(fd_write);\
             FTB_client_runtime->fd = 0; \
         } \
@@ -88,7 +88,7 @@ int connect_server(FTB_client_runtime_t *runtime)
     if (connect( runtime->fd, (struct sockaddr *)&sa, sizeof(sa) ) < 0)
     	FTB_ERR_ABORT("connect %s:%d failed\n",runtime->config->host_name, runtime->config->port);
     UTIL_WRITE_SHORT(runtime->fd, &(runtime->config->FTB_id), sizeof(runtime->config->FTB_id));
-    UTIL_WRITE_SHORT(runtime->fd, FTB_EVENT_VERSION, strlen(FTB_EVENT_VERSION));
+    UTIL_WRITE_SHORT(runtime->fd, FTB_EVENT_VERSION, strlen(FTB_EVENT_VERSION)+1);
     UTIL_WRITE_SHORT(runtime->fd, &(runtime->properties), sizeof(FTB_component_properties_t));
     FTB_INFO("server connected");
     return 0;

@@ -151,9 +151,9 @@ void *listen_thread(void* arg)
             continue;
         }
 
-        UTIL_READ_SHORT(temp_fd, version_buf, strlen(FTB_EVENT_VERSION));
+        UTIL_READ_SHORT(temp_fd, version_buf, FTB_MAX_EVENT_VERSION_NAME);
         if (!version_match(version_buf,FTB_EVENT_VERSION)) {
-            FTB_WARNING("FTB id doesn't match");
+            FTB_WARNING("FTB event version doesn't match");
             close(temp_fd);
             continue;
         }
