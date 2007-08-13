@@ -72,6 +72,7 @@ int connect_server(FTB_client_runtime_t *runtime)
     int optval = 1;
     struct hostent *hp;
     struct sockaddr_in sa;
+    char buf[FTB_MAX_EVENT_VERSION_NAME];
 
     runtime->fd = socket(AF_INET, SOCK_STREAM, 0 );
     if (runtime->fd < 0) {
@@ -88,7 +89,8 @@ int connect_server(FTB_client_runtime_t *runtime)
     if (connect( runtime->fd, (struct sockaddr *)&sa, sizeof(sa) ) < 0)
     	FTB_ERR_ABORT("connect %s:%d failed\n",runtime->config->host_name, runtime->config->port);
     UTIL_WRITE_SHORT(runtime->fd, &(runtime->config->FTB_id), sizeof(runtime->config->FTB_id));
-    UTIL_WRITE_SHORT(runtime->fd, FTB_EVENT_VERSION, strlen(FTB_EVENT_VERSION)+1);
+    strncpy(buf,FTB_EVENT_VERSION,FTB_MAX_EVENT_VERSION_NAME);
+    UTIL_WRITE_SHORT(runtime->fd, buf, FTB_MAX_EVENT_VERSION_NAME);
     UTIL_WRITE_SHORT(runtime->fd, &(runtime->properties), sizeof(FTB_component_properties_t));
     FTB_INFO("server connected");
     return 0;
