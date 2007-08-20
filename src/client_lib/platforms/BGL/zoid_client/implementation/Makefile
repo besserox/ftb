@@ -1,5 +1,4 @@
 PREFIX = ftb_zoid_client
-CC = gcc
 CFLAGS = $(CFLAGS_CLIENT) -I.. -I$(ZOID_HOME)/include
 CFLAGS_SHARED = -fPIC -mpowerpc -pthread
 LDFLAGS = -shared

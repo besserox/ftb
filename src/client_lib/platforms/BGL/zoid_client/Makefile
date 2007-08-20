@@ -24,12 +24,6 @@
 
 PREFIX = ftb_zoid_client
 SCANNER = $(ZOID_HOME)/scanner.pl
-CC = gcc
-AR = ar
-RANLIB = ranlib
-CC_BLRTS = /bgl/BlueLight/ppcfloor/blrts-gnu/powerpc-bgl-blrts-gnu/bin/gcc
-AR_BLRTS = /bgl/BlueLight/ppcfloor/blrts-gnu/powerpc-bgl-blrts-gnu/bin/ar
-RANLIB_BLRTS = /bgl/BlueLight/ppcfloor/blrts-gnu/powerpc-bgl-blrts-gnu/bin/ranlib
 CFLAGS = -Wall -g -O2  
 CFLAGS_SHARED = -fPIC -mpowerpc -pthread
 LDFLAGS_SHARED = -shared

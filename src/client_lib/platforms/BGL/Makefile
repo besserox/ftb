@@ -16,6 +16,10 @@ ftb_zoid_client:
 		echo "ZOID_HOME is not set!  Aborting!"; \
 		exit 1; \
 	fi
+	@if [ -z "$(BLRTS_PATH)" ]; then \
+		echo "BLRTS_PATH is not set!  Aborting!"; \
+		exit 1; \
+	fi
 	(cd zoid_client && $(MAKE))
 	
 
