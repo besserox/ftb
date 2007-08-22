@@ -32,6 +32,7 @@ typedef FTBU_map_node_t FTBM_map_event_mask_2_comp_info_map_t; /*event_mask as k
 typedef struct FTBM_node_info{
     FTB_location_id_t parent; /*NULL if root*/
     FTB_id_t self;
+    FTB_err_handling_t err_handling;
     int leaf;
     volatile int waiting;
     FTBM_map_ftb_id_2_comp_info_t *peers; /*the map of peers includes parent*/
@@ -45,40 +46,31 @@ static volatile int FTBM_initialized = 0;
 
 static inline void lock_manager()
 {
-//    FTB_INFO("manager lock req");
     pthread_mutex_lock(&FTBM_lock);
-//    FTB_INFO("manager lock acq");
 }
 
 static inline void unlock_manager()
 {
-//    FTB_INFO("manager lock rel");
     pthread_mutex_unlock(&FTBM_lock);
 }
 
 static inline void lock_network()
 {
-//    FTB_INFO("network lock req");
     pthread_mutex_lock(&FTBN_lock);
-//    FTB_INFO("network lock acq");
 }
 
 static inline void unlock_network()
 {
-//    FTB_INFO("network lock rel");
     pthread_mutex_unlock(&FTBN_lock);
 }
 
 static inline void lock_comp(FTBM_comp_info_t *comp_info)
 {
-//    FTB_INFO("comp lock req %p", comp_info);
     pthread_mutex_lock(&comp_info->lock);
-//    FTB_INFO("comp lock acq %p", comp_info);
 }
 
 static inline void unlock_comp(FTBM_comp_info_t *comp_info)
 {
-//    FTB_INFO("comp lock rel %p", comp_info);
     pthread_mutex_unlock(&comp_info->lock);
 }
 
@@ -272,6 +264,12 @@ int FTBM_Init(int leaf)
             (FTBM_map_ftb_id_2_comp_info_t*) FTBU_map_init(FTBM_util_is_equal_ftb_id);
         FTBM_info.catch_event_map = 
             (FTBM_map_event_mask_2_comp_info_map_t *)FTBU_map_init(FTBM_util_is_equal_event);
+        FTBM_info.err_handling = FTB_ERR_HANDLE_RECOVER;
+    }
+    else {
+        FTBM_info.peers = NULL;
+        FTBM_info.catch_event_map = NULL;
+        FTBM_info.err_handling = FTB_ERR_HANDLE_NONE; /*May change to recover mode if one client component requires so*/
     }
 
     config.leaf = leaf;
@@ -304,7 +302,6 @@ int FTBM_Init(int leaf)
 
         if (FTBU_map_insert(FTBM_info.peers, FTBU_MAP_PTR_KEY(&comp->id), (void*)comp) == FTBU_EXIST)
         {
-            unlock_manager();
             return FTB_ERR_GENERAL;
         }
     }
@@ -454,10 +451,59 @@ int FTBM_Component_reg(const FTB_id_t *id)
     FTB_INFO("FTBM_Component_reg Out");
     return FTB_SUCCESS;
 }
+
+static void util_reconnect()
+{
+    FTBM_msg_t msg;
+    int ret;
+    memcpy(&msg.src, &FTBM_info.self, sizeof(FTB_id_t));
+    msg.msg_type = FTBM_MSG_TYPE_COMP_REG;
+    FTBN_Connect(&msg, &FTBM_info.parent);
+    if (FTBM_info.leaf && FTBM_info.parent.pid == 0) {
+        FTB_WARNING("Can not connect to any ftb agent");
+        FTBM_initialized = 0;
+        return;
+    }
+    
+    if (!FTBM_info.leaf && FTBM_info.parent.pid != 0) {
+        FTBM_comp_info_t *comp;
+        FTBU_map_iterator_t iter;
+        FTB_INFO("Adding parent to peers");
+        comp = (FTBM_comp_info_t *)malloc(sizeof(FTBM_comp_info_t));
+        memcpy(&comp->id.location_id, &FTBM_info.parent, sizeof(FTB_location_id_t));
+        comp->id.client_id.comp_ctgy = FTB_COMP_CTGY_BACKPLANE;
+        comp->id.client_id.comp = FTB_COMP_MANAGER;
+        comp->id.client_id.ext = 0;
+        pthread_mutex_init(&comp->lock, NULL);
+        comp->catch_event_set = (FTBM_set_event_mask_t*)FTBU_map_init(FTBM_util_is_equal_event);
+
+        if (FTBU_map_insert(FTBM_info.peers, FTBU_MAP_PTR_KEY(&comp->id), (void*)comp) == FTBU_EXIST)
+        {
+            return;
+        }
+
+        FTB_INFO("Register all catches");
+        memcpy((void*)&msg.src, (void*)&FTBM_info.self,sizeof(FTB_id_t));
+        msg.msg_type = FTBM_MSG_TYPE_REG_CATCH;
+        memcpy(&msg.dst, &comp->id, sizeof(FTB_id_t));
+        for (iter = FTBU_map_begin(FTBM_info.catch_event_map);
+               iter != FTBU_map_end(FTBM_info.catch_event_map);
+               iter = FTBU_map_next_iterator(iter)) 
+        {
+            FTB_event_t *mask = (FTB_event_t*)FTBU_map_get_key(iter).key_ptr;
+            memcpy(&msg.event,mask,sizeof(FTB_event_t));
+            ret = FTBN_Send_msg(&msg);
+            if (ret != FTB_SUCCESS) {
+                FTB_WARNING("FTBN_Send_msg failed");
+            }
+        }
+    }
+}
    
 int FTBM_Component_dereg(const FTB_id_t *id)
 {
     FTBM_comp_info_t *comp;
+    int is_parent = 0;
     if (!FTBM_initialized)
         return FTB_ERR_GENERAL;
 
@@ -481,12 +527,24 @@ int FTBM_Component_dereg(const FTB_id_t *id)
      && comp->id.client_id.comp == FTB_COMP_MANAGER) {
         FTB_INFO("Disconnect component");
         FTBN_Disconnect_peer(&comp->id.location_id);
+        if (FTBU_is_equal_location_id(&FTBM_info.parent, &comp->id.location_id))
+            is_parent = 1;
     }
     FTBU_map_remove_key(FTBM_info.peers, FTBU_MAP_PTR_KEY(&comp->id));
     unlock_manager();
     unlock_comp(comp);
     free(comp);
 
+    if (is_parent) {
+        FTB_WARNING("Parent exiting");
+        if (FTBM_info.err_handling & FTB_ERR_HANDLE_RECOVER) {
+            FTB_WARNING("Reconnecting");
+            lock_manager();
+            util_reconnect();
+            unlock_manager();
+        }
+    }
+    
     FTB_INFO("FTBM_Component_dereg Out");
     return FTB_SUCCESS;
 }
@@ -638,6 +696,37 @@ int FTBM_Send(const FTBM_msg_t *msg)
         return FTB_ERR_GENERAL;
     FTB_INFO("FTBM_Send In");
     ret = FTBN_Send_msg(msg);
+    if (ret == FTB_ERR_NETWORK_GENERAL) {
+        if (!FTBM_info.leaf) {
+            FTBM_comp_info_t *comp;
+            comp = lookup_component(&msg->dst);
+            FTB_INFO("client %d:%d:%d from host %s pid %d, clean up", 
+                comp->id.client_id.comp, comp->id.client_id.comp_ctgy, comp->id.client_id.ext,
+                comp->id.location_id.hostname, comp->id.location_id.pid);
+            lock_comp(comp);
+            lock_manager();
+            util_clean_component(comp);
+            if (comp->id.client_id.comp_ctgy == FTB_COMP_CTGY_BACKPLANE 
+             && comp->id.client_id.comp == FTB_COMP_MANAGER) {
+                FTB_INFO("Disconnect component");
+                FTBN_Disconnect_peer(&comp->id.location_id);
+            }
+            FTBU_map_remove_key(FTBM_info.peers, FTBU_MAP_PTR_KEY(&comp->id));
+            unlock_manager();
+            unlock_comp(comp);
+            free(comp);
+        }
+        
+        if (FTBU_is_equal_location_id(&FTBM_info.parent, &msg->dst.location_id)) {
+            FTB_WARNING("Lost connection to parent");
+            if (FTBM_info.err_handling & FTB_ERR_HANDLE_RECOVER) {
+                FTB_WARNING("Reconnecting");
+                lock_manager();
+                util_reconnect();
+                unlock_manager();
+            }
+        }
+    }
     FTB_INFO("FTBM_Send Out");
     return ret;
 }
@@ -681,6 +770,6 @@ int FTBM_Wait(FTBM_msg_t *msg, FTB_location_id_t *incoming_src)
     FTBM_info.waiting = 0;
     unlock_network();
     FTB_INFO("FTBM_Wait Out");
-    return FTB_SUCCESS;
+    return ret;
 }
 

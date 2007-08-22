@@ -4,8 +4,6 @@
 #include <sys/types.h>
 #include <unistd.h>
 #include <pthread.h>
-#include <sys/time.h>
-#include <sys/types.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <assert.h>
@@ -14,6 +12,7 @@
 #include <netdb.h>
 #include <netinet/tcp.h>
 #include <errno.h>
+#include <time.h>
 
 #include "ftb_def.h"
 #include "ftb_manager_lib.h"
@@ -37,46 +36,39 @@ static pthread_mutex_t FTBN_conn_table_lock = PTHREAD_MUTEX_INITIALIZER;
 static pthread_mutex_t FTBN_recv_lock = PTHREAD_MUTEX_INITIALIZER;
 static int FTBN_listen_fd = -1;
 static FTBN_addr_sock_t FTBN_my_addr;
+static FTBN_addr_sock_t FTBN_parent_addr;
 static FTB_location_id_t FTBN_my_location_id;
 static FTBN_config_info_t FTBN_config_location;
 static FTBN_config_sock_t FTBN_config;
-
+static uint16_t FTBN_my_level = 0-1;
+    
 static inline void lock_conn_table()
 {
-//    FTB_INFO("table lock req");
     pthread_mutex_lock(&FTBN_conn_table_lock);
-//    FTB_INFO("table lock acq");
 }
 
 static inline void unlock_conn_table()
 {
-//    FTB_INFO("table lock rel");
     pthread_mutex_unlock(&FTBN_conn_table_lock);
 }
 
 static inline void lock_conn_entry(FTB_connection_entry_t *conn)
 {
-//    FTB_INFO("conn lock req %p",conn);
     pthread_mutex_lock(&conn->lock);
-//    FTB_INFO("conn lock acq %p",conn);
 }
 
 static inline void unlock_conn_entry(FTB_connection_entry_t *conn)
 {
-//    FTB_INFO("conn lock rel %p",conn);
     pthread_mutex_unlock(&conn->lock);
 }
 
 static inline void lock_recv()
 {
-//    FTB_INFO("recv lock req");
     pthread_mutex_lock(&FTBN_recv_lock);
-//    FTB_INFO("recv lock acq");
 }
 
 static inline void unlock_recv()
 {
-//    FTB_INFO("recv lock rel");
     pthread_mutex_unlock(&FTBN_recv_lock);
 }
 
@@ -140,6 +132,7 @@ static inline FTB_connection_entry_t* util_find_connection_to_location(const FTB
 static int util_listen()
 {
     struct sockaddr_in sa;
+    int optval = 1;
     FTBN_listen_fd = socket(AF_INET, SOCK_STREAM, 0);
     if (FTBN_listen_fd < 0) {
         return FTB_ERR_NETWORK_GENERAL;
@@ -147,6 +140,10 @@ static int util_listen()
     sa.sin_family = AF_INET;
     sa.sin_port = htons(FTBN_config.agent_port);
     sa.sin_addr.s_addr = INADDR_ANY;
+    if (setsockopt(FTBN_listen_fd, SOL_SOCKET, SO_REUSEADDR,  (char *)&optval, sizeof(optval))) {
+        FTB_WARNING("setsockopt failed");
+        return FTB_ERR_NETWORK_GENERAL;
+    }
     if (bind(FTBN_listen_fd, (struct sockaddr*) &sa, sizeof(struct sockaddr_in))< 0) {
         FTB_WARNING("bind failed");
         return FTB_ERR_NETWORK_GENERAL;
@@ -227,7 +224,12 @@ int FTBN_Connect(const FTBM_msg_t *reg_msg, FTB_location_id_t *parent_location_i
 {
     int ret;
     int retry = 0;
+    uint16_t parent_level;
     FTBN_addr_sock_t addr;
+    struct timespec delay;
+
+    delay.tv_sec = 0;
+    delay.tv_nsec = FTBN_CONNECT_BACKOFF_INIT_TIMEOUT*1E6;
     
     strcpy(addr.name,"localhost");
     addr.port = FTBN_config.agent_port;
@@ -247,19 +249,39 @@ int FTBN_Connect(const FTBM_msg_t *reg_msg, FTB_location_id_t *parent_location_i
             return ret;
         }
         /*Otherwise try to get address from data base server*/
+        FTBN_parent_addr.port = 0;
     }
 
     do {
-        ret = FTBN_Bootstrap_get_parent_addr(&addr);
-        if (ret == FTB_ERR_NETWORK_NO_ROUTE) {
-            continue;
+        if (retry > 0) {
+            nanosleep(&delay, NULL);
+            delay.tv_sec *= FTBN_CONNECT_BACKOFF_RATIO;
+            delay.tv_nsec *= FTBN_CONNECT_BACKOFF_RATIO;
+            if (delay.tv_nsec > 1E9) {
+                delay.tv_sec += delay.tv_nsec / 1E9;
+                delay.tv_nsec = delay.tv_nsec - delay.tv_sec * 1E9;
+            }
         }
-        if (addr.port == 0) {/*It is the root*/
+        /*Pass current parent_addr to this function in the case of reconnecting*/
+        ret = FTBN_Bootstrap_get_parent_addr(FTBN_my_level, &FTBN_parent_addr, &parent_level);
+        if (ret == FTB_ERR_NETWORK_NO_ROUTE) {
+            FTB_WARNING("failed to contact databsae server\n");
+            FTBN_parent_addr.port = 0;
+            if (retry++ < FTBN_CONNECT_RETRY_COUNT)
+                continue;
+            else
+                break;
+        }
+        if (FTBN_parent_addr.port == 0) {/*It is the root*/
             parent_location_id->pid = 0;
             break;
         }
-        ret = util_connect_to(&addr, reg_msg, parent_location_id);
-    } while (ret != FTB_SUCCESS && retry++ < 10);
+        ret = util_connect_to(&FTBN_parent_addr, reg_msg, parent_location_id);
+        if (ret == FTB_ERR_NETWORK_NO_ROUTE) {
+            FTBN_Bootstrap_report_conn_failure(&FTBN_parent_addr);
+            FTBN_parent_addr.port = 0;
+        }
+    } while (ret != FTB_SUCCESS && retry++ < FTBN_CONNECT_RETRY_COUNT);
     
     if (ret != FTB_SUCCESS){
         FTB_INFO("FTBN_Connect Out");
@@ -267,12 +289,15 @@ int FTBN_Connect(const FTBM_msg_t *reg_msg, FTB_location_id_t *parent_location_i
     }
 
     if (!FTBN_config_location.leaf) {
-        if (util_listen() != FTB_SUCCESS)
-            FTB_ERR_ABORT("cannot listen for new connection");
+        if (FTBN_listen_fd == -1) {
+            if (util_listen() != FTB_SUCCESS)
+                FTB_ERR_ABORT("cannot listen for new connection");
+        }
         /*Register to allow other agent connect in*/
-        FTBN_Bootstrap_register_addr();
+        FTBN_my_level = parent_level+1;
+        FTBN_Bootstrap_register_addr(FTBN_my_level);
     }
-    FTB_INFO("FTBN_Connect Out");
+     FTB_INFO("FTBN_Connect Out");
     
     return FTB_SUCCESS;
 }

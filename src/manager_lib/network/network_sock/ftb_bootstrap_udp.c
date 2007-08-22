@@ -40,6 +40,7 @@ static int util_send_bootstrap_msg(const FTBN_bootstrap_pkt_t *pkt_send)
     memcpy( (void *)&server.sin_addr, (void *)hp->h_addr, hp->h_length);
     server.sin_family = AF_INET;
     server.sin_port = htons(FTBN_bootstrap_config.server_port);
+    FTB_INFO("sending pkt type %d",pkt_send->bootstrap_msg_type);
     if (sendto(fd, pkt_send, sizeof(FTBN_bootstrap_pkt_t), 0, (struct sockaddr *)&server, sizeof(struct sockaddr_in))!=sizeof(FTBN_bootstrap_pkt_t)) {
         close(fd);
         FTB_ERR_ABORT("sendto failed");
@@ -132,26 +133,47 @@ int FTBN_Bootstrap_init(const FTBN_config_info_t *config_info, FTBN_config_sock_
     return FTB_SUCCESS;
 }
 
-int FTBN_Bootstrap_get_parent_addr(FTBN_addr_sock_t *parent_addr)
+int FTBN_Bootstrap_get_parent_addr(uint16_t my_level, FTBN_addr_sock_t *parent_addr, uint16_t *parent_level)
 {
+    /*
+    If it is for reconnection, keep my_level and provide the old parent_addr so that the db server will not give the same parent;
+    Otherwise, set the port to 0 to indicate an invalid parent addr, also my_level should be set to max value (0-1);
+    */
     FTBN_bootstrap_pkt_t pkt_send, pkt_recv;
     int ret;
 
     pkt_send.bootstrap_msg_type = FTBN_BOOTSTRAP_MSG_TYPE_ADDR_REQ;
+    pkt_send.level = my_level;
+    
+    memcpy(&pkt_send.addr, parent_addr, sizeof(FTBN_addr_sock_t));
     ret = util_exchange_bootstrap_msg(&pkt_send, &pkt_recv);
     if (ret != FTB_SUCCESS)
         return ret;
     
-    FTB_INFO("received msg type %d, parent hostname %s, port %d",pkt_recv.bootstrap_msg_type,pkt_recv.addr.name, pkt_recv.addr.port);
+    FTB_INFO("received msg type %d, parent hostname %s, port %d, level %u",
+        pkt_recv.bootstrap_msg_type,pkt_recv.addr.name, pkt_recv.addr.port, pkt_recv.level);
     if (pkt_recv.bootstrap_msg_type != FTBN_BOOTSTRAP_MSG_TYPE_ADDR_REP) {
         return FTB_ERR_GENERAL;
     }
     
     memcpy(parent_addr, (void*) &pkt_recv.addr, sizeof(FTBN_addr_sock_t));
+    *parent_level = pkt_recv.level;
     return FTB_SUCCESS;
 }
 
-int FTBN_Bootstrap_register_addr()
+int FTBN_Bootstrap_report_conn_failure(const FTBN_addr_sock_t *addr)
+{
+    FTBN_bootstrap_pkt_t pkt_send;
+    int ret;
+
+    pkt_send.bootstrap_msg_type = FTBN_BOOTSTRAP_MSG_TYPE_CONN_FAIL;
+    memcpy(&pkt_send.addr, addr, sizeof(FTBN_addr_sock_t));
+    util_send_bootstrap_msg(&pkt_send);
+
+    return FTB_SUCCESS;
+}
+
+int FTBN_Bootstrap_register_addr(uint16_t my_level)
 {
     FTBN_bootstrap_pkt_t pkt_recv, pkt_send;
     int ret;
@@ -160,9 +182,11 @@ int FTBN_Bootstrap_register_addr()
         return FTB_ERR_NOT_SUPPORTED;
 
     pkt_send.bootstrap_msg_type = FTBN_BOOTSTRAP_MSG_TYPE_REG_REQ;
+    pkt_send.level = my_level;
     memcpy(&pkt_send.addr, &FTBN_bootstrap_my_addr, sizeof(FTBN_addr_sock_t));
 
-    FTB_INFO("registering hostname %s, port %d",pkt_send.addr.name, pkt_send.addr.port);
+    FTB_INFO("registering hostname %s, port %d, level %d",
+        pkt_send.addr.name, pkt_send.addr.port, pkt_send.level);
     ret = util_exchange_bootstrap_msg(&pkt_send, &pkt_recv);
     if (ret != FTB_SUCCESS)
         return ret;
