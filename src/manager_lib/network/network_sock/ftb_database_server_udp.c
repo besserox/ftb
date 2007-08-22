@@ -70,6 +70,7 @@ int main(int argc, char* argv[])
     if (bind(fd, (struct sockaddr*) &server, sizeof(struct sockaddr_in))==-1) {
         FTB_ERR_ABORT("bind failed");
     }
+    slen = sizeof(struct sockaddr_in);
 
     signal(SIGINT,handler);
     while (1)

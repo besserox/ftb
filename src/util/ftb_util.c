@@ -66,7 +66,7 @@ void FTBU_get_output_of_cmd(const char *cmd, char *output, size_t len)
     sprintf(filename,"/tmp/temp_file.%d",getpid());
     sprintf(temp,"%s > %s",cmd, filename);
     if (system(temp)) {
-        FTB_ERR_ABORT("system failed");
+        fprintf(stderr,"execute command failed\n");
     }
     fp = fopen(filename, "r");
     fscanf(fp,"%s",temp);

@@ -86,11 +86,17 @@ static inline void unlock_recv()
         int offset = 0;\
         while (offset < (len)) {\
             temp = read((conn)->fd, (char*)(buf)+offset, (len)-offset);   \
-            if (temp == -1) {\
-                if (errno != EINTR && errno != EAGAIN){\
+            if (temp == 0) { \
+                (conn)->err_flag = 1; \
+                close((conn)->fd);\
+                break; \
+            } \
+            else if (temp == -1) {\
+                if (errno == EINTR || errno == EAGAIN){\
                     continue;\
                 }\
                 (conn)->err_flag = 1; \
+                close((conn)->fd);\
                 break;\
             }\
             offset+=temp; \
@@ -105,10 +111,11 @@ static inline void unlock_recv()
         while (offset < (len)) {\
             temp = write((conn)->fd, (char*)(buf)+offset, (len)-offset);  \
             if (temp == -1) {\
-                if (errno != EINTR && errno != EAGAIN){\
+                if (errno == EINTR || errno == EAGAIN){\
                     continue;\
                 }\
                 (conn)->err_flag = 1; \
+                close((conn)->fd);\
                 break;\
             }\
             offset+=temp; \

@@ -4,8 +4,8 @@ export prefix       = $(PWD)
 export exec_prefix  = $(prefix)
 export network      = sock
 export FTB_NETWORK_CFLAG = -DFTB_NETWORK_SOCK
-#export clients      = Linux BGL
-export clients      = Linux
+export clients      = Linux BGL
+#export clients      = Linux
 export libdir       = $(exec_prefix)/lib
 export bindir       = $(exec_prefix)/bin
 

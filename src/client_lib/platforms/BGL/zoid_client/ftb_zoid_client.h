@@ -7,7 +7,7 @@
 
 #include "ftb_def.h"
 
-/* START-ZOID-SCANNER ID=9 INIT=ftb_zoid_client_init FINI=ftb_zoid_client_fini */
+/* START-ZOID-SCANNER ID=10 INIT=ftb_zoid_client_init FINI=ftb_zoid_client_fini */
 
 int ZOID_FTB_Init( FTB_comp_ctgy_t category /* in:obj */,
                    FTB_comp_t component /* in:obj */,

@@ -12,6 +12,7 @@ extern "C" {
     fprintf(FTBU_log_file_fp, "[FTB_ERROR][%s: line %d]", __FILE__, __LINE__); \
     fprintf(FTBU_log_file_fp, args); \
     fprintf(FTBU_log_file_fp, "\n"); \
+    fflush(FTBU_log_file_fp);\
     exit(-1);\
 }while(0)
 
@@ -19,6 +20,7 @@ extern "C" {
     fprintf(FTBU_log_file_fp, "[FTB_WARNING][%s: line %d]", __FILE__, __LINE__); \
     fprintf(FTBU_log_file_fp, args); \
     fprintf(FTBU_log_file_fp, "\n"); \
+    fflush(FTBU_log_file_fp);\
 }while(0)
 
 #define FTB_DEBUG
@@ -27,6 +29,7 @@ extern "C" {
     fprintf(FTBU_log_file_fp, "[FTB_INFO][%s: line %d]", __FILE__, __LINE__); \
     fprintf(FTBU_log_file_fp, args); \
     fprintf(FTBU_log_file_fp, "\n"); \
+    fflush(FTBU_log_file_fp);\
 }while(0)
 #else
 #define FTB_INFO(...)

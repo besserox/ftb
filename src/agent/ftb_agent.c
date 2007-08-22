@@ -103,16 +103,32 @@ void *progress_loop(void *arg)
 
 void handler(int sig)
 {
-    if (sig == SIGINT) {
+    if (sig == SIGINT || sig == SIGTERM) {
         done = 1;
     }
 }
+
+#define FTB_DEBUG
 
 int main(int argc, char *argv[]) 
 {
     int ret;
 
+#ifdef FTB_DEBUG
+    if (argc >= 2 && strcmp("ION_AGENT",argv[1])==0)
+    {
+        char filename[128], hostname[32], TIME[32];
+        FTBU_get_output_of_cmd("hostname",hostname,32);
+        FTBU_get_output_of_cmd("date +%m-%d-%H-%M-%S",TIME,32);
+        sprintf(filename,"%s.%s.%s","/bgl/home1/qgao/ftb_bgl/IO_agent_output",hostname,TIME);
+        FTBU_log_file_fp = fopen(filename, "w");
+        fprintf(FTBU_log_file_fp, "Begin log file\n");
+        fflush(FTBU_log_file_fp);
+    }
+    else
+#endif
     FTBU_log_file_fp = stderr;
+
     ret = FTBM_Init(0);
     if (ret != FTB_SUCCESS) {
         FTB_ERR_ABORT("FTBM_Init failed %d",ret);
@@ -120,6 +136,7 @@ int main(int argc, char *argv[])
     pthread_create(&progress_thread, NULL, progress_loop, NULL);
     
     signal(SIGINT, handler);
+    signal(SIGTERM, handler);
     while (!done) {
         sleep(1);
     }
@@ -128,6 +145,11 @@ int main(int argc, char *argv[])
     pthread_join(progress_thread, NULL);
 
     FTBM_Finalize();
+
+    if(FTBU_log_file_fp != stderr) {
+        fclose(FTBU_log_file_fp);
+    }
+
     return 0;
 }
 

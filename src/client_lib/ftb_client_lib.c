@@ -227,8 +227,8 @@ int FTBC_Init(FTB_comp_ctgy_t category, FTB_comp_t component, uint8_t extension,
     if (num_components == 0) {
         FTBC_comp_info_map = FTBU_map_init(NULL); /*Since the key: client_handle is uint32_t*/
         FTBM_Init(1);
-        num_components++;
     }
+    num_components++;
     unlock_client();
     comp_info->id = (FTB_id_t *)malloc(sizeof(FTB_id_t));
     comp_info->id->client_id.comp_ctgy = category;
