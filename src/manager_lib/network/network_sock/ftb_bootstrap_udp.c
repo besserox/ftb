@@ -164,7 +164,6 @@ int FTBN_Bootstrap_get_parent_addr(uint16_t my_level, FTBN_addr_sock_t *parent_a
 int FTBN_Bootstrap_report_conn_failure(const FTBN_addr_sock_t *addr)
 {
     FTBN_bootstrap_pkt_t pkt_send;
-    int ret;
 
     pkt_send.bootstrap_msg_type = FTBN_BOOTSTRAP_MSG_TYPE_CONN_FAIL;
     memcpy(&pkt_send.addr, addr, sizeof(FTBN_addr_sock_t));

@@ -31,7 +31,7 @@ void *progress_loop(void *arg)
         ret = FTBM_Wait(&msg, &incoming_src);
         if (ret != FTB_SUCCESS) {
             FTB_WARNING("FTBM_Wait failed %d",ret);
-            return NULL;
+            continue; 
         }
         pthread_mutex_lock(&lock);
         if (msg.msg_type == FTBM_MSG_TYPE_NOTIFY) {

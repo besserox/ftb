@@ -82,6 +82,7 @@ typedef struct FTB_client_id {
 #define FTB_COMP_SIMPLE                    (1<<1)
 #define FTB_COMP_WATCHDOG                  (1<<2)
 #define FTB_COMP_POLLING_LOGGER            (1<<3)
+#define FTB_COMP_NOTIFY_LOGGER             (1<<4)
 
 #define FTB_COMP_CTGY_BACKPLANE            (1<<0)
 

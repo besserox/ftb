@@ -41,6 +41,7 @@ typedef struct FTBC_comp_info{
     pthread_mutex_t lock;
     pthread_cond_t cond;
     pthread_t callback;
+    volatile int finalizing;
     FTBU_list_node_t* callback_event_queue; /* a event_inst_list*/
     FTBC_map_mask_2_callback_entry_t *callback_map;
 }FTBC_comp_info_t;
@@ -159,6 +160,9 @@ static void *callback_thread_client(void *arg)
     FTBM_msg_t msg;
     FTB_location_id_t incoming_src;
     int ret;
+
+    pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, NULL);
+    pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS, NULL);
     while (1) {
         ret = FTBM_Wait(&msg,&incoming_src);
         if (ret != FTB_SUCCESS) {
@@ -182,6 +186,11 @@ static void *callback_component(void *arg)
         while (comp_info->callback_event_queue->next == comp_info->callback_event_queue) {
             /*Callback event queue is empty*/
             pthread_cond_wait(&comp_info->cond, &comp_info->lock);
+            if (comp_info->finalizing) {
+                FTB_INFO("Finalizing");
+                unlock_component(comp_info);
+                return NULL;
+            }
         }
         entry = (FTBC_event_inst_list_t *)comp_info->callback_event_queue->next;
         /*Try to match it with callback_map*/
@@ -238,6 +247,7 @@ int FTBC_Init(FTB_comp_ctgy_t category, FTB_comp_t component, uint8_t extension,
     comp_info->client_handle = FTB_CLIENT_ID_TO_HANDLE(comp_info->id->client_id);
     *client_handle = comp_info->client_handle;
     
+    comp_info->finalizing = 0;
     comp_info->event_queue_size = 0;
     if (comp_info->properties.catching_type & FTB_EVENT_CATCHING_POLLING) {
         comp_info->event_queue = (FTBU_list_node_t*)malloc(sizeof(FTBU_list_node_t));
@@ -316,10 +326,13 @@ static void util_finalize_component(FTBC_comp_info_t * comp_info)
 
     if (comp_info->properties.catching_type & FTB_EVENT_CATCHING_NOTIFICATION) {
         FTBU_map_iterator_t iter;
-        pthread_cancel(comp_info->callback);
+        comp_info->finalizing = 1;
+        FTB_INFO("signal the callback"); 
+        pthread_cond_signal(&comp_info->cond);
+        unlock_component(comp_info);
         pthread_join(comp_info->callback, NULL);
-
         pthread_cond_destroy(&comp_info->cond);
+        lock_component(comp_info);
         iter = FTBU_map_begin(comp_info->callback_map);
         while (iter!=FTBU_map_end(comp_info->callback_map)) {
             FTBC_callback_entry_t *entry = (FTBC_callback_entry_t*)FTBU_map_get_data(iter);
@@ -348,6 +361,7 @@ int FTBC_Finalize(FTB_client_handle_t handle)
     }
     lock_component(comp_info);
     util_finalize_component(comp_info);
+    comp_info->finalizing = 1;
     unlock_component(comp_info);
 
     lock_client();

@@ -1,6 +1,6 @@
 all: $(clients)
 
-Linux: ftb_watchdog ftb_polling_logger ftb_simple
+Linux: ftb_watchdog ftb_polling_logger ftb_simple ftb_notify_logger
 
 BGL: ftb_simple_bgl
 
@@ -41,4 +41,7 @@ ftb_watchdog: ftb_watchdog.c
 	$(CC) $(CFLAGS_LINUX) $(LDFLAGS_LINUX) -o $@ $< $(LIBS_LINUX)
 
 ftb_polling_logger: ftb_polling_logger.c
+	$(CC) $(CFLAGS_LINUX) $(LDFLAGS_LINUX) -o $@ $< $(LIBS_LINUX)
+
+ftb_notify_logger: ftb_notify_logger.c
 	$(CC) $(CFLAGS_LINUX) $(LDFLAGS_LINUX) -o $@ $< $(LIBS_LINUX)
