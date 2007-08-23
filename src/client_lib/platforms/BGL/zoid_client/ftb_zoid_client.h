@@ -27,7 +27,8 @@ int ZOID_FTB_Throw ( FTB_client_handle_t handle /* in:obj */,
                      FTB_event_name_t event /* in:obj */);
 
 int ZOID_FTB_Catch ( FTB_client_handle_t handle /* in:obj */,
-                     FTB_event_t *event /* out:ptr */);
+                     FTB_event_t *event /* out:ptr */,
+                     FTB_id_t *src /* out:ptr:nullok */);
 
 int ZOID_FTB_Finalize (FTB_client_handle_t handle /* in:obj */);
 

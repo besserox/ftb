@@ -28,8 +28,9 @@ int main (int argc, char *argv[])
     signal(SIGINT, Int_handler);
     while(1) {
         FTB_event_t event;
+        FTB_id_t src;
         int ret = 0;
-        ret = FTB_Catch(handle, &event);
+        ret = FTB_Catch(handle, &event, &src);
         if (ret == FTB_CAUGHT_NO_EVENT) {
             printf("No event\n");
             sleep(5);
@@ -37,6 +38,9 @@ int main (int argc, char *argv[])
         else {
             printf("Caught event: comp_ctgy: %d, comp %d, severity: %d, event_ctgy %d, event_name %d\n",
                    event.comp_ctgy, event.comp, event.severity, event.event_ctgy, event.event_name);
+            printf("From host %s, pid %d, comp_ctgy: %d, comp %d, extension %d\n",
+                   src.location_id.hostname, src.location_id.pid, src.client_id.comp_ctgy,
+                   src.client_id.comp, src.client_id.ext);
         }
         if (done)
             break;

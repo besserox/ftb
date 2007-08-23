@@ -13,7 +13,7 @@ LDFLAGS_CN    = -L$(FTB_LIB_PATH_STATIC) -L$(ZOID_LIBC_PATH) -L$(BGLSYS_LIB_PATH
 LIBS_CN       = -lftb_blrts -lc -lmsglayer.rts -ldevices.rts -lrts.rts -ldevices.rts -lrts.rts
 
 clean:
-	rm -f ftb_watchdog ftb_polling_logger ftb_simple ftb_simple_bgl
+	rm -f ftb_watchdog ftb_polling_logger ftb_simple ftb_simple_bgl ftb_notify_logger
 
 ftb_simple_bgl: ftb_simple.c
 	@if [ -z "$(ZOID_HOME)" ]; then \

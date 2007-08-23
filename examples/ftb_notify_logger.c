@@ -12,10 +12,13 @@ void Int_handler(int sig){
         done = 1;
 }
 
-int event_logger(FTB_event_t *evt, void *arg)
+int event_logger(FTB_event_t *evt, FTB_id_t *src, void *arg)
 {
     printf("Caught event: comp_ctgy: %d, comp %d, severity: %d, event_ctgy %d, event_name %d\n",
         evt->comp_ctgy, evt->comp, evt->severity, evt->event_ctgy, evt->event_name);
+    printf("From host %s, pid %d, comp_ctgy: %d, comp %d, extension %d\n",
+        src->location_id.hostname, src->location_id.pid, src->client_id.comp_ctgy, 
+        src->client_id.comp, src->client_id.ext);
     return 0;
 }
 

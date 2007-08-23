@@ -29,7 +29,7 @@ int main (int argc, char *argv[])
         int ret = 0;
         FTB_Throw(handle, WATCH_DOG_EVENT);
         sleep(1);
-        ret = FTB_Catch(handle, &evt);
+        ret = FTB_Catch(handle, &evt, NULL);
         if (ret == FTB_CAUGHT_NO_EVENT) {
             fprintf(stderr,"Watchdog: event lost!\n");
             break;

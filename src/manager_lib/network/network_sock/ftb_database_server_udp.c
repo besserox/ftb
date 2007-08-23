@@ -122,11 +122,11 @@ int main(int argc, char* argv[])
     if (bind(fd, (struct sockaddr*) &server, sizeof(struct sockaddr_in))==-1) {
         FTB_ERR_ABORT("bind failed");
     }
-    slen = sizeof(struct sockaddr_in);
 
     signal(SIGINT,handler);
     while (1)
     {
+        int ret;
         fd_set fds;
         FD_ZERO(&fds);
         FD_SET(fd, &fds);
@@ -140,11 +140,14 @@ int main(int argc, char* argv[])
 
         if (!FD_ISSET(fd,&fds))
             continue;
-        
-        if (recvfrom(fd, &pkt, sizeof(FTBN_bootstrap_pkt_t), 0, (struct sockaddr *)&client, (socklen_t *)&slen)!=sizeof(FTBN_bootstrap_pkt_t))
+
+        slen = sizeof(struct sockaddr_in);
+        ret = recvfrom(fd, &pkt, sizeof(FTBN_bootstrap_pkt_t), 0, (struct sockaddr *)&client, (socklen_t *)&slen);
+        if (ret!=sizeof(FTBN_bootstrap_pkt_t))
         {
-            close(fd);
-            FTB_ERR_ABORT("recvfrom failed");
+            perror("recvfrom");
+            FTB_WARNING("recvfrom returns %d when expecting a packet of size %d", ret, sizeof(FTBN_bootstrap_pkt_t));
+            continue;
         }
         FTB_INFO("received packet type %d client addr %s:%d",pkt.bootstrap_msg_type, inet_ntoa(client.sin_addr), ntohs(client.sin_port));
         if (pkt.bootstrap_msg_type == FTBN_BOOTSTRAP_MSG_TYPE_ADDR_REQ) {

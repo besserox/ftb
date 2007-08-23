@@ -67,6 +67,7 @@ int FTB_Reg_throw(FTB_client_handle_t handle, FTB_event_name_t event);
     Register for catching certain events using polling or callback function. 
     Note that callback funciton scheme only works when catching_type has FTB_EVENT_CATCHING_NOTIFICATION.
     User can choose to use an event name or an event mask. 
+    In polling case, if the src is not NULL, it will be filled with the source id where message is from
     Same event is only reported once: 
         If an event matches both polling and notification, the event will be notified and can't be polled later
         If an event matches more than one masks in notification, only the callback of the first matched mask will be called.
@@ -75,9 +76,9 @@ int FTB_Reg_catch_polling_event(FTB_client_handle_t handle, FTB_event_name_t eve
 
 int FTB_Reg_catch_polling_mask(FTB_client_handle_t handle, const FTB_event_t *event);
 
-int FTB_Reg_catch_notify_event(FTB_client_handle_t handle, FTB_event_name_t event, int (*callback)(FTB_event_t *, void*), void *arg);
+int FTB_Reg_catch_notify_event(FTB_client_handle_t handle, FTB_event_name_t event, int (*callback)(FTB_event_t *, FTB_id_t *, void*), void *arg);
 
-int FTB_Reg_catch_notify_mask(FTB_client_handle_t handle, const FTB_event_t *event, int (*callback)(FTB_event_t *, void*), void *arg);
+int FTB_Reg_catch_notify_mask(FTB_client_handle_t handle, const FTB_event_t *event, int (*callback)(FTB_event_t *, FTB_id_t *, void*), void *arg);
 
 /* 
     FTB_Throw
@@ -90,7 +91,7 @@ int FTB_Throw(FTB_client_handle_t handle, FTB_event_name_t event);
     Poll for an event instance from server.
     Return value: FTB_CAUGHT_NO_EVENT or FTB_CAUGHT_EVENT
 */
-int FTB_Catch(FTB_client_handle_t handle, FTB_event_t *event);
+int FTB_Catch(FTB_client_handle_t handle, FTB_event_t *event, FTB_id_t *src);
 
 /* 
     FTB_Finalize

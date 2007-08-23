@@ -21,12 +21,13 @@ extern FILE* FTBU_log_file_fp;
 typedef struct FTBC_event_inst_list {
     struct FTBU_list_node *next;
     struct FTBU_list_node *prev;
-    FTB_event_t *event_inst;
+    FTB_event_t event_inst;
+    FTB_id_t src;
 }FTBC_event_inst_list_t;
 
 typedef struct FTBC_callback_entry{
     FTB_event_t *mask;
-    int (*callback)(FTB_event_t *, void*);
+    int (*callback)(FTB_event_t *, FTB_id_t *, void*);
     void *arg;
 }FTBC_callback_entry_t;
 
@@ -36,13 +37,13 @@ typedef struct FTBC_comp_info{
     FTB_client_handle_t client_handle;
     FTB_id_t *id;
     FTB_component_properties_t properties;
-    FTBU_list_node_t* event_queue; /* a event_inst_list*/
+    FTBU_list_node_t* event_queue; /* entry type: event_inst_list*/
     int event_queue_size;
     pthread_mutex_t lock;
     pthread_cond_t cond;
     pthread_t callback;
     volatile int finalizing;
-    FTBU_list_node_t* callback_event_queue; /* a event_inst_list*/
+    FTBU_list_node_t* callback_event_queue; /* entry type: event_inst_list*/
     FTBC_map_mask_2_callback_entry_t *callback_map;
 }FTBC_comp_info_t;
 
@@ -106,15 +107,13 @@ static void util_push_to_comp_polling_list(FTBC_comp_info_t *comp_info, FTBC_eve
             /*Polling event queue full*/
             temp = (FTBC_event_inst_list_t *)comp_info->event_queue->next;
             FTBU_list_remove_entry((FTBU_list_node_t *)temp);
-            free(temp->event_inst);
             free(temp);
-            comp_info->event_queue_size --;
+            comp_info->event_queue_size--;
         }
         FTBU_list_add_back(comp_info->event_queue, (FTBU_list_node_t *)entry);
-        comp_info->event_queue_size ++;
+        comp_info->event_queue_size++;
     }
     else {
-        free(entry->event_inst);
         free(entry);
     }
 }
@@ -141,8 +140,8 @@ static void util_handle_FTBM_msg(FTBM_msg_t* msg)
     comp_info = (FTBC_comp_info_t *)FTBU_map_get_data(iter); 
     unlock_client();
     entry = (FTBC_event_inst_list_t *)malloc(sizeof(FTBC_event_inst_list_t));
-    entry->event_inst = (FTB_event_t *)malloc(sizeof(FTB_event_t));
-    memcpy(entry->event_inst, &msg->event, sizeof(FTB_event_t));
+    memcpy(&entry->event_inst, &msg->event, sizeof(FTB_event_t));
+    memcpy(&entry->src, &msg->src, sizeof(FTB_id_t));
     lock_component(comp_info);
     if (comp_info->properties.catching_type & FTB_EVENT_CATCHING_NOTIFICATION) {
         /*has notification thread*/
@@ -198,10 +197,9 @@ static void *callback_component(void *arg)
         iter = FTBU_map_begin(comp_info->callback_map);
         while (iter != FTBU_map_end(comp_info->callback_map)) {
             callback_entry = (FTBC_callback_entry_t *)FTBU_map_get_data(iter);
-            if (FTBU_match_mask(entry->event_inst, callback_entry->mask))  {
+            if (FTBU_match_mask(&entry->event_inst, callback_entry->mask))  {
                 /*Make callback*/
-                (*callback_entry->callback)(entry->event_inst, callback_entry->arg);
-                free(entry->event_inst);
+                (*callback_entry->callback)(&entry->event_inst, &entry->src, callback_entry->arg);
                 FTBU_list_remove_entry((FTBU_list_node_t *)entry);
                 free(entry);
                 callback_done = 1;
@@ -318,7 +316,6 @@ static void util_finalize_component(FTBC_comp_info_t * comp_info)
         FTBU_list_node_t *pos;
         FTBU_list_for_each(pos, comp_info->event_queue, temp){
             FTBC_event_inst_list_t *entry=(FTBC_event_inst_list_t*)pos;
-            free(entry->event_inst);
             free(entry);
         }
         free(comp_info->event_queue);
@@ -489,7 +486,7 @@ int FTBC_Reg_catch_polling_mask(FTB_client_handle_t handle, const FTB_event_t *e
     return ret;
 }
 
-static void util_add_to_callback_map(FTBC_comp_info_t *comp_info, const FTB_event_t *event, int (*callback)(FTB_event_t *, void*), void *arg)
+static void util_add_to_callback_map(FTBC_comp_info_t *comp_info, const FTB_event_t *event, int (*callback)(FTB_event_t *, FTB_id_t *, void*), void *arg)
 {
     FTBC_callback_entry_t *entry = (FTBC_callback_entry_t *)malloc(sizeof(FTBC_callback_entry_t));
     entry->mask = (FTB_event_t *)malloc(sizeof(FTB_event_t));
@@ -501,7 +498,7 @@ static void util_add_to_callback_map(FTBC_comp_info_t *comp_info, const FTB_even
     unlock_component(comp_info);
 }
 
-int FTBC_Reg_catch_notify_event(FTB_client_handle_t handle, FTB_event_name_t event_name, int (*callback)(FTB_event_t *, void*), void *arg)
+int FTBC_Reg_catch_notify_event(FTB_client_handle_t handle, FTB_event_name_t event_name, int (*callback)(FTB_event_t *, FTB_id_t *, void*), void *arg)
 {
     FTBM_msg_t msg;
     FTBC_comp_info_t *comp_info;
@@ -527,7 +524,7 @@ int FTBC_Reg_catch_notify_event(FTB_client_handle_t handle, FTB_event_name_t eve
     return ret;
 }
 
-int FTBC_Reg_catch_notify_mask(FTB_client_handle_t handle, const FTB_event_t *event, int (*callback)(FTB_event_t *, void*), void *arg)
+int FTBC_Reg_catch_notify_mask(FTB_client_handle_t handle, const FTB_event_t *event, int (*callback)(FTB_event_t *, FTB_id_t *, void*), void *arg)
 {
     FTBM_msg_t msg;
     FTBC_comp_info_t *comp_info;
@@ -571,7 +568,7 @@ int FTBC_Throw(FTB_client_handle_t handle, FTB_event_name_t event_name)
     return ret;
 }
 
-int FTBC_Catch(FTB_client_handle_t handle, FTB_event_t *event)
+int FTBC_Catch(FTB_client_handle_t handle, FTB_event_t *event, FTB_id_t *src)
 {
     FTBM_msg_t msg;
     FTB_location_id_t incoming_src;
@@ -587,9 +584,9 @@ int FTBC_Catch(FTB_client_handle_t handle, FTB_event_t *event)
     
     lock_component(comp_info);
     if (comp_info->event_queue_size > 0) {
-        entry = (FTBC_event_inst_list_t *)comp_info->callback_event_queue->next;
-        memcpy(event, entry->event_inst, sizeof(FTB_event_t));
-        free(entry->event_inst);
+        entry = (FTBC_event_inst_list_t *)comp_info->event_queue->next;
+        memcpy(event, &entry->event_inst, sizeof(FTB_event_t));
+        memcpy(src, &entry->src, sizeof(FTB_id_t));
         FTBU_list_remove_entry((FTBU_list_node_t *)entry);
         free(entry);
         comp_info->event_queue_size--;
@@ -615,9 +612,10 @@ int FTBC_Catch(FTB_client_handle_t handle, FTB_event_t *event)
                     FTBC_callback_entry_t *callback_entry = (FTBC_callback_entry_t *)FTBU_map_get_data(iter);
                     if (FTBU_match_mask(&msg.event, callback_entry->mask))  {
                         entry = (FTBC_event_inst_list_t *)malloc(sizeof(FTBC_event_inst_list_t));
-                        entry->event_inst = (FTB_event_t *)malloc(sizeof(FTB_event_t));
-                        memcpy(entry->event_inst, &msg.event, sizeof(FTB_event_t));
+                        memcpy(&entry->event_inst, &msg.event, sizeof(FTB_event_t));
+                        memcpy(&entry->src, &msg.src, sizeof(FTB_id_t));
                         FTBU_list_add_back(comp_info->callback_event_queue, (FTBU_list_node_t *)entry);
+                        pthread_cond_signal(&comp_info->cond);
                         is_for_callback = 1;
                         break;
                     }
@@ -626,6 +624,9 @@ int FTBC_Catch(FTB_client_handle_t handle, FTB_event_t *event)
             }
             if (!is_for_callback) {
                 memcpy(event, &msg.event,sizeof(FTB_event_t));
+                if (src != NULL) {
+                    memcpy(src, &msg.src, sizeof(FTB_id_t));
+                }
                 unlock_component(comp_info);
                 FTB_INFO("FTBC_Catch Out");
                 return FTB_CAUGHT_EVENT;

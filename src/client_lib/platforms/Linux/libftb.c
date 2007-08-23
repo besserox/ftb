@@ -26,12 +26,12 @@ int FTB_Reg_catch_polling_mask(FTB_client_handle_t handle, const FTB_event_t *ev
     return FTBC_Reg_catch_polling_mask(handle, event);
 }
 
-int FTB_Reg_catch_notify_event(FTB_client_handle_t handle, FTB_event_name_t event, int (*callback)(FTB_event_t *, void*), void *arg)
+int FTB_Reg_catch_notify_event(FTB_client_handle_t handle, FTB_event_name_t event, int (*callback)(FTB_event_t *, FTB_id_t *, void*), void *arg)
 {
     return FTBC_Reg_catch_notify_event(handle, event, callback, arg);
 }
 
-int FTB_Reg_catch_notify_mask(FTB_client_handle_t handle, const FTB_event_t *event, int (*callback)(FTB_event_t *, void*), void *arg)
+int FTB_Reg_catch_notify_mask(FTB_client_handle_t handle, const FTB_event_t *event, int (*callback)(FTB_event_t *, FTB_id_t *, void*), void *arg)
 {
     return FTBC_Reg_catch_notify_mask(handle, event, callback, arg);
 }
@@ -41,9 +41,9 @@ int FTB_Throw(FTB_client_handle_t handle, FTB_event_name_t event)
     return FTBC_Throw(handle, event);
 }
 
-int FTB_Catch(FTB_client_handle_t handle, FTB_event_t *event)
+int FTB_Catch(FTB_client_handle_t handle, FTB_event_t *event, FTB_id_t *src)
 {
-    return FTBC_Catch(handle, event);
+    return FTBC_Catch(handle, event, src);
 }
 
 int FTB_Finalize(FTB_client_handle_t handle)
