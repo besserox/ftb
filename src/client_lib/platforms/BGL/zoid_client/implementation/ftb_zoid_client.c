@@ -104,4 +104,21 @@ int ZOID_FTB_Abort (FTB_client_handle_t handle /* in:obj */)
     return FTBC_Abort(handle);
 }
 
+int ZOID_FTB_Add_dynamic_tag(FTB_client_handle_t handle /* in:obj */,
+                                FTB_tag_t tag /* in:obj */, 
+                                const char *tag_data /* in:ptr */,
+                                FTB_dynamic_len_t data_len /* in:obj */)
+{
+    fprintf(FTBU_log_file_fp,"ZOID_FTB_Add_dynamic_tag\n");
+    fflush(FTBU_log_file_fp);
+    return FTBC_Add_dynamic_tag(handle, tag, tag_data, data_len);
+}
+
+int ZOID_FTB_Remove_dynamic_tag (FTB_client_handle_t handle /* in:obj */,
+                                FTB_tag_t tag /* in:obj */)
+{
+    fprintf(FTBU_log_file_fp,"ZOID_FTB_Remove_dynamic_tag\n");
+    fflush(FTBU_log_file_fp);
+    return ZOID_FTB_Remove_dynamic_tag(handle, tag);
+}
 

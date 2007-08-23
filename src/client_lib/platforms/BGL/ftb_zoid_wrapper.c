@@ -59,3 +59,47 @@ int FTB_Abort(FTB_client_handle_t handle)
     return ZOID_FTB_Abort(handle);
 }
 
+int FTB_Add_dynamic_tag(FTB_client_handle_t handle, FTB_tag_t tag, const char *tag_data, FTB_dynamic_len_t data_len)
+{
+    if (tag_data == NULL) {
+        return FTB_ERR_NULL_POINTER;
+    }
+    return ZOID_FTB_Add_dynamic_tag(handle, tag, tag_data, data_len);
+}
+
+int FTB_Remove_dynamic_tag(FTB_client_handle_t handle, FTB_tag_t tag)
+{
+    return ZOID_FTB_Remove_dynamic_tag(handle, tag);
+}
+
+int FTB_Read_dynamic_tag(const FTB_event_t *event, FTB_tag_t tag, char *tag_data, FTB_dynamic_len_t *data_len)
+{
+    uint8_t tag_count;
+    uint8_t i;
+    int offset;
+    
+    /*No need to forward it to zoid*/
+    memcpy(&tag_count, event->dynamic_data, sizeof(tag_count));
+    offset = 1;
+    for (i=0;i<tag_count;i++) {
+        FTB_tag_t temp_tag;
+        FTB_dynamic_len_t temp_len;
+        memcpy(&temp_tag, event->dynamic_data + offset, sizeof(FTB_tag_t));
+        offset+=sizeof(FTB_tag_t);
+        memcpy(&temp_len, event->dynamic_data + offset, sizeof(FTB_dynamic_len_t));
+        offset+=sizeof(FTB_dynamic_len_t);
+        if (tag == temp_tag) {
+            if (*data_len < temp_len) {
+                return FTB_ERR_TAG_NO_SPACE;
+            }
+            else {
+                *data_len = temp_len;
+                memcpy(tag_data, event->dynamic_data + offset, temp_len);
+                return FTB_SUCCESS;
+            }
+        }
+    }
+
+    return FTB_ERR_TAG_NOT_FOUND;
+}
+

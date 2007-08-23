@@ -56,3 +56,18 @@ int FTB_Abort(FTB_client_handle_t handle)
     return FTBC_Abort(handle);
 }
 
+int FTB_Add_dynamic_tag(FTB_client_handle_t handle, FTB_tag_t tag, const char *tag_data, FTB_dynamic_len_t data_len)
+{
+    return FTBC_Add_dynamic_tag(handle, tag, tag_data, data_len);
+}
+
+int FTB_Remove_dynamic_tag(FTB_client_handle_t handle, FTB_tag_t tag)
+{
+    return FTBC_Remove_dynamic_tag(handle, tag);
+}
+
+int FTB_Read_dynamic_tag(const FTB_event_t *event, FTB_tag_t tag, char *tag_data, FTB_dynamic_len_t *data_len)
+{
+    return FTBC_Read_dynamic_tag(event, tag, tag_data, data_len);
+}
+

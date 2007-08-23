@@ -110,10 +110,16 @@ typedef struct FTB_component_properties {
 #define FTB_ERR_INVALID_PARAMETER               (-4)
 #define FTB_ERR_NETWORK_GENERAL                 (-5)
 #define FTB_ERR_NETWORK_NO_ROUTE                (-6)
+#define FTB_ERR_TAG_NO_SPACE                 (-7)
+#define FTB_ERR_TAG_CONFLICT                  (-8)
+#define FTB_ERR_TAG_NOT_FOUND              (-9)
+#define FTB_ERR_NOT_INITIALIZED                  (-2)
 #define FTB_ERR_EVENT_NOT_FOUND                 (-16)
 
 #define FTB_CAUGHT_NO_EVENT                     0
 #define FTB_CAUGHT_EVENT                        1
+
+typedef uint8_t FTB_tag_t;
 
 /*event and event_mask using same structure*/
 typedef struct FTB_event{

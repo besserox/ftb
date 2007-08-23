@@ -31,6 +31,13 @@ typedef struct FTBC_callback_entry{
     void *arg;
 }FTBC_callback_entry_t;
 
+typedef struct FTBC_tag_entry {
+    FTB_tag_t tag;
+    FTB_client_handle_t owner;
+    char data[FTB_MAX_DYNAMIC_DATA_SIZE];
+    FTB_dynamic_len_t data_len;
+}FTBC_tag_entry_t;
+
 typedef FTBU_map_node_t FTBC_map_mask_2_callback_entry_t;
 
 typedef struct FTBC_comp_info{
@@ -51,9 +58,14 @@ static pthread_mutex_t FTBC_lock = PTHREAD_MUTEX_INITIALIZER;
 static pthread_t callback_thread;
 typedef FTBU_map_node_t FTBC_map_client_handle_2_comp_info_t;
 static FTBC_map_client_handle_2_comp_info_t* FTBC_comp_info_map = NULL;
+typedef FTBU_map_node_t FTBC_map_tag_2_tag_entry_t;
+static FTBC_map_tag_2_tag_entry_t *FTBC_tag_map;
+static char tag_string[FTB_MAX_DYNAMIC_DATA_SIZE];
+static int tag_size = 1;
+static uint8_t tag_count = 0;
 static int enable_callback = 0;
 static int num_components = 0;
-
+    
 static inline void lock_client()
 {
     pthread_mutex_lock(&FTBC_lock);
@@ -79,6 +91,13 @@ int FTBC_util_is_equal_event(const void *lhs_void, const void* rhs_void)
     FTB_event_t *lhs = (FTB_event_t*)lhs_void;
     FTB_event_t *rhs = (FTB_event_t*)rhs_void;
     return FTBU_is_equal_event(lhs, rhs);
+}
+
+int FTBC_util_is_equal_tag(const void *lhs_void, const void* rhs_void)
+{
+    FTB_tag_t *lhs = (FTB_tag_t *)lhs_void;
+    FTB_tag_t *rhs = (FTB_tag_t *)rhs_void;
+    return (*lhs == *rhs);
 }
 
 #define LOOKUP_COMP_INFO(handle, comp_info)  do {\
@@ -233,6 +252,8 @@ int FTBC_Init(FTB_comp_ctgy_t category, FTB_comp_t component, uint8_t extension,
     lock_client();
     if (num_components == 0) {
         FTBC_comp_info_map = FTBU_map_init(NULL); /*Since the key: client_handle is uint32_t*/
+        FTBC_tag_map = FTBU_map_init(FTBC_util_is_equal_tag);
+        memset(tag_string,0,FTB_MAX_DYNAMIC_DATA_SIZE);
         FTBM_Init(1);
     }
     num_components++;
@@ -377,6 +398,7 @@ int FTBC_Finalize(FTB_client_handle_t handle)
     if (num_components == 0) {
         FTBM_Finalize();
         FTBU_map_finalize(FTBC_comp_info_map);
+        FTBU_map_finalize(FTBC_tag_map);
         FTBC_comp_info_map = NULL;
     }
     unlock_client();
@@ -558,11 +580,13 @@ int FTBC_Throw(FTB_client_handle_t handle, FTB_event_name_t event_name)
 
     FTB_INFO("FTBC_Throw In");
     FTBM_get_event_by_name(event_name, &msg.event);
+    lock_client();
+    memcpy(&msg.event.dynamic_data, tag_string, FTB_MAX_DYNAMIC_DATA_SIZE);
+    unlock_client();
 
     memcpy(&msg.src,comp_info->id,sizeof(FTB_id_t));
     msg.msg_type = FTBM_MSG_TYPE_NOTIFY;
     FTBM_Get_parent_location_id(&msg.dst.location_id);
-
     ret = FTBM_Send(&msg);
     FTB_INFO("FTBC_Throw In");
     return ret;
@@ -643,5 +667,130 @@ int FTBC_Catch(FTB_client_handle_t handle, FTB_event_t *event, FTB_id_t *src)
 
     FTB_INFO("FTBC_Catch Out");
     return FTB_CAUGHT_NO_EVENT;
+}
+
+static void util_update_tag_string()
+{
+    int offset = 0;
+    FTBU_map_iterator_t iter;
+    /*Format: 1 byte tag count (M) + M*{tag, len(N), N byte data}  */
+    memcpy(tag_string, &tag_count, sizeof(tag_count));
+    offset+=sizeof(tag_count);
+    iter = FTBU_map_begin(FTBC_tag_map);
+    while (iter != FTBU_map_end(FTBC_tag_map)) {
+        FTBC_tag_entry_t *entry = (FTBC_tag_entry_t *)FTBU_map_get_data(iter);
+        memcpy(tag_string+offset, &entry->tag, sizeof(FTB_tag_t));
+        offset+=sizeof(FTB_tag_t);
+        memcpy(tag_string+offset, &entry->data_len, sizeof(FTB_dynamic_len_t));
+        offset+=sizeof(FTB_dynamic_len_t);
+        memcpy(tag_string+offset, &entry->data, entry->data_len);
+        offset+=entry->data_len;
+        iter = FTBU_map_next_iterator(iter);
+    }
+    tag_size = offset;
+}
+
+int FTBC_Add_dynamic_tag(FTB_client_handle_t handle, FTB_tag_t tag, const char *tag_data, FTB_dynamic_len_t data_len)
+{
+    FTBU_map_iterator_t iter;
+
+    FTB_INFO("FTBC_Add_dynamic_tag In");
+
+    lock_client();
+    if (FTB_MAX_DYNAMIC_DATA_SIZE - tag_size < data_len + sizeof(FTB_dynamic_len_t) + sizeof(FTB_tag_t)) {
+        FTB_INFO("FTBC_Add_dynamic_tag Out");
+        return FTB_ERR_TAG_NO_SPACE;
+    }
+    
+    iter = FTBU_map_find(FTBC_tag_map, FTBU_MAP_PTR_KEY(&tag));
+    if (iter == FTBU_map_end(FTBC_tag_map)) {
+        FTBC_tag_entry_t *entry = (FTBC_tag_entry_t *)malloc(sizeof(FTBC_tag_entry_t));
+        FTB_INFO("create a new tag");
+        entry->tag = tag;
+        entry->owner = handle;
+        entry->data_len = data_len;
+        memcpy(entry->data, tag_data, data_len);
+        FTBU_map_insert(FTBC_tag_map, FTBU_MAP_PTR_KEY(&entry->tag), (void*)entry);
+        tag_count++;
+    }
+    else {
+        FTBC_tag_entry_t *entry = (FTBC_tag_entry_t *)FTBU_map_get_data(iter);
+        if (entry->owner == handle) {
+            FTB_INFO("update tag");
+            entry->data_len = data_len;
+            memcpy(entry->data, tag_data, data_len);
+        }
+        else {
+            FTB_INFO("FTBC_Add_dynamic_tag Out");
+            return FTB_ERR_TAG_CONFLICT;
+        }
+    }
+
+    util_update_tag_string();
+    unlock_client();
+    FTB_INFO("FTBC_Add_dynamic_tag Out");
+    return FTB_SUCCESS;
+}
+
+int FTBC_Remove_dynamic_tag(FTB_client_handle_t handle, FTB_tag_t tag)
+{
+    FTBU_map_iterator_t iter;
+    FTBC_tag_entry_t *entry;
+
+    FTB_INFO("FTBC_Remove_dynamic_tag In");
+    lock_client();
+    iter = FTBU_map_find(FTBC_tag_map, FTBU_MAP_PTR_KEY(&tag));
+    if (iter == FTBU_map_end(FTBC_tag_map)) {
+        FTB_INFO("FTBC_Remove_dynamic_tag Out");
+        return FTB_ERR_TAG_NOT_FOUND;
+    }
+
+    entry = (FTBC_tag_entry_t *)FTBU_map_get_data(iter);
+    if (entry->owner != handle) {
+        FTB_INFO("FTBC_Remove_dynamic_tag Out");
+        return FTB_ERR_TAG_CONFLICT;
+    }
+
+    FTBU_map_remove_iter(iter);
+    tag_count--;
+    free(entry);
+    util_update_tag_string();
+    unlock_client();
+    FTB_INFO("FTBC_Remove_dynamic_tag Out");
+    return FTB_SUCCESS;
+}
+
+int FTBC_Read_dynamic_tag(const FTB_event_t *event, FTB_tag_t tag, char *tag_data, FTB_dynamic_len_t *data_len)
+{
+    uint8_t tag_count;
+    uint8_t i;
+    int offset;
+
+    FTB_INFO("FTBC_Read_dynamic_tag In");
+    memcpy(&tag_count, event->dynamic_data, sizeof(tag_count));
+    offset = 1;
+    for (i=0;i<tag_count;i++) {
+        FTB_tag_t temp_tag;
+        FTB_dynamic_len_t temp_len;
+        memcpy(&temp_tag, event->dynamic_data + offset, sizeof(FTB_tag_t));
+        offset+=sizeof(FTB_tag_t);
+        memcpy(&temp_len, event->dynamic_data + offset, sizeof(FTB_dynamic_len_t));
+        offset+=sizeof(FTB_dynamic_len_t);
+        if (tag == temp_tag) {
+            if (*data_len < temp_len) {
+                FTB_INFO("FTBC_Read_dynamic_tag Out");
+                return FTB_ERR_TAG_NO_SPACE;
+            }
+            else {
+                *data_len = temp_len;
+                memcpy(tag_data, event->dynamic_data + offset, temp_len);
+                FTB_INFO("FTBC_Read_dynamic_tag Out");
+                return FTB_SUCCESS;
+            }
+        }
+    }
+
+    FTB_INFO("FTBC_Read_dynamic_tag Out");
+    return FTB_ERR_TAG_NOT_FOUND;
 }
 
