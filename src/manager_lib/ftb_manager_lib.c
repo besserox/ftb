@@ -178,6 +178,7 @@ int FTBM_Get_catcher_comp_list(const FTB_event_t *event, FTB_id_t **list, int *l
     int temp_len=0;
     
     /*Contruct a deliver set to keep track which components have already gotten the event and which are not, to avoid duplication*/
+    FTB_INFO("FTBM_Get_catcher_comp_list In");
     catcher_set = (FTBM_map_ftb_id_2_comp_info_t*)FTBU_map_init(FTBM_util_is_equal_ftb_id);
 
     lock_manager();
@@ -187,14 +188,15 @@ int FTBM_Get_catcher_comp_list(const FTB_event_t *event, FTB_id_t **list, int *l
     {
         FTB_event_t *mask = (FTB_event_t *)FTBU_map_get_key(iter_mask).key_ptr;
         if (FTBU_match_mask(event, mask)) {
-            /*Get the map of components*/
+            FTB_INFO("Get the map of components");
             FTBU_map_node_t *map = (FTBU_map_node_t *)FTBU_map_get_data(iter_mask);
             for (iter_comp=FTBU_map_begin(map);
                    iter_comp!=FTBU_map_end(map);
                    iter_comp=FTBU_map_next_iterator(iter_comp)){
                 FTBM_comp_info_t *comp = (FTBM_comp_info_t *)FTBU_map_get_data(iter_comp);
+                FTB_INFO("Test whether component is already in catcher set");
                 if (FTBU_map_find(catcher_set, FTBU_MAP_PTR_KEY(&comp->id))!=FTBU_map_end(catcher_set)) {
-                    /*Already delivered*/
+                    FTB_INFO("already counted in");
                     continue;
                 }
                 temp_len++;
@@ -214,13 +216,17 @@ int FTBM_Get_catcher_comp_list(const FTB_event_t *event, FTB_id_t **list, int *l
         memcpy(&((*list)[temp_len]),id,sizeof(FTB_id_t));
     }
     FTBU_map_finalize(catcher_set);
+
+    FTB_INFO("FTBM_Get_catcher_comp_list Out");
     
     return FTB_SUCCESS;
 }
 
 int FTBM_Release_comp_list(FTB_id_t *list)
 {
+    FTB_INFO("FTBM_Release_comp_list In");
     free(list);
+    FTB_INFO("FTBM_Release_comp_list Out");
     return FTB_SUCCESS;
 }
 
@@ -590,7 +596,6 @@ int FTBM_Reg_catch(const FTB_id_t *id, FTB_event_t *event)
         return FTB_ERR_INVALID_PARAMETER;
     }
 
-    FTB_INFO("util_reg_catch");
     /*Add to component structure*/
     new_mask_comp = (FTB_event_t*)malloc(sizeof(FTB_event_t));
     memcpy(new_mask_comp, event, sizeof(FTB_event_t));
@@ -604,23 +609,26 @@ int FTBM_Reg_catch(const FTB_id_t *id, FTB_event_t *event)
     }
 
     /*Add to node structure if needed*/
+    lock_manager();
     iter = FTBU_map_find(FTBM_info.catch_event_map, FTBU_MAP_PTR_KEY(new_mask_comp));
     if (iter == FTBU_map_end(FTBM_info.catch_event_map)) {
+        FTBM_map_ftb_id_2_comp_info_t *new_map;
+        FTB_INFO("New event to catch for the manager");
         new_mask_manager = (FTB_event_t*)malloc(sizeof(FTB_event_t));
         memcpy(new_mask_manager,new_mask_comp,sizeof(FTB_event_t));
-        FTBM_map_ftb_id_2_comp_info_t *new_map =
-            (FTBM_map_ftb_id_2_comp_info_t *)FTBU_map_init(FTBM_util_is_equal_event);
-        lock_manager();
+        new_map = (FTBM_map_ftb_id_2_comp_info_t *)FTBU_map_init(FTBM_util_is_equal_ftb_id);
         FTBU_map_insert(FTBM_info.catch_event_map, FTBU_MAP_PTR_KEY(new_mask_manager), (void*)new_map);
-        unlock_manager();
         FTBU_map_insert(new_map, FTBU_MAP_PTR_KEY(&comp->id), (void*)comp);
         /*notify other FTB nodes about catch*/
         util_reg_propagation(FTBM_MSG_TYPE_REG_CATCH, event, &id->location_id);
     }
     else {
-        FTBM_map_ftb_id_2_comp_info_t *map = (FTBM_map_ftb_id_2_comp_info_t *)FTBU_map_get_data(iter);
+        FTBM_map_ftb_id_2_comp_info_t *map;
+        FTB_INFO("The manager is already catching the event, adding the component");
+        map = (FTBM_map_ftb_id_2_comp_info_t *)FTBU_map_get_data(iter);
         FTBU_map_insert(map, FTBU_MAP_PTR_KEY(&comp->id), (void*)comp);
     }
+    unlock_manager();
     unlock_comp(comp);
 
     FTB_INFO("FTBM_Reg_catch Out");
@@ -696,7 +704,7 @@ int FTBM_Send(const FTBM_msg_t *msg)
         return FTB_ERR_GENERAL;
     FTB_INFO("FTBM_Send In");
     ret = FTBN_Send_msg(msg);
-    if (ret == FTB_ERR_NETWORK_GENERAL) {
+    if (ret != FTB_SUCCESS) {
         if (!FTBM_info.leaf) {
             FTBM_comp_info_t *comp;
             comp = lookup_component(&msg->dst);

@@ -9,6 +9,7 @@ int main (int argc, char *argv[])
 {
     FTB_component_properties_t properties;
     FTB_client_handle_t handle;
+    int i;
 
     printf("Begin\n");
     properties.catching_type = FTB_EVENT_CATCHING_NONE;
@@ -18,10 +19,12 @@ int main (int argc, char *argv[])
     FTB_Init(FTB_COMP_CTGY_BACKPLANE, FTB_COMP_SIMPLE, &properties, &handle);
     printf("FTB_Reg_throw\n");
     FTB_Reg_throw(handle, SIMPLE_EVENT);
-    printf("FTB_Throw\n");
-    FTB_Throw(handle, SIMPLE_EVENT);
-    printf("sleep(10)\n");
-    sleep(10);
+    for (i=0;i<12;i++) {
+        printf("FTB_Throw\n");
+        FTB_Throw(handle, SIMPLE_EVENT);
+        printf("sleep(10)\n");
+        sleep(10);
+    }
     printf("FTB_Finalize\n");
     FTB_Finalize(handle);
 
