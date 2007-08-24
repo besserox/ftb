@@ -123,7 +123,7 @@ static void util_push_to_comp_polling_list(FTBC_comp_info_t *comp_info, FTBC_eve
     FTBC_event_inst_list_t *temp;
     if (comp_info->properties.catching_type & FTB_EVENT_CATCHING_POLLING)  {
         if (comp_info->event_queue_size == comp_info->properties.max_event_queue_size) {
-            /*Polling event queue full*/
+            FTB_WARNING("Event queue is full");
             temp = (FTBC_event_inst_list_t *)comp_info->event_queue->next;
             FTBU_list_remove_entry((FTBU_list_node_t *)temp);
             free(temp);
@@ -622,14 +622,14 @@ int FTBC_Catch(FTB_client_handle_t handle, FTB_event_t *event, FTB_id_t *src)
     /*Then poll FTBM once*/
     while (FTBM_Poll(&msg,&incoming_src) == FTB_SUCCESS) {
         if (FTB_CLIENT_ID_TO_HANDLE(msg.dst.client_id)==handle) {
-            /*message to myself*/
+            FTB_INFO("Polled event for myself");
             int is_for_callback = 0;
             if (msg.msg_type != FTBM_MSG_TYPE_NOTIFY) {
                 FTB_WARNING("unexpected message type %d",msg.msg_type);
                 continue;
             }
             if (comp_info->properties.catching_type & FTB_EVENT_CATCHING_NOTIFICATION) {
-                /*Test whether belonging to any callback mask*/
+                FTB_INFO("Test whether belonging to any callback mask");
                 FTBU_map_iterator_t iter;
                 iter = FTBU_map_begin(comp_info->callback_map);
                 while (iter != FTBU_map_end(comp_info->callback_map)) {
@@ -640,6 +640,7 @@ int FTBC_Catch(FTB_client_handle_t handle, FTB_event_t *event, FTB_id_t *src)
                         memcpy(&entry->src, &msg.src, sizeof(FTB_id_t));
                         FTBU_list_add_back(comp_info->callback_event_queue, (FTBU_list_node_t *)entry);
                         pthread_cond_signal(&comp_info->cond);
+                        FTB_INFO("The event belongs to my callback");
                         is_for_callback = 1;
                         break;
                     }
@@ -647,6 +648,7 @@ int FTBC_Catch(FTB_client_handle_t handle, FTB_event_t *event, FTB_id_t *src)
                 }
             }
             if (!is_for_callback) {
+                FTB_INFO("Not for callback");
                 memcpy(event, &msg.event,sizeof(FTB_event_t));
                 if (src != NULL) {
                     memcpy(src, &msg.src, sizeof(FTB_id_t));
@@ -657,10 +659,23 @@ int FTBC_Catch(FTB_client_handle_t handle, FTB_event_t *event, FTB_id_t *src)
             }
         }
         else {
-            /*message to others*/
             unlock_component(comp_info);
+            FTB_INFO("Polled event for someone else");
             util_handle_FTBM_msg(&msg);
             lock_component(comp_info);
+            FTB_INFO("Testing whether someone else got my events");
+            if (comp_info->event_queue_size > 0) {
+                entry = (FTBC_event_inst_list_t *)comp_info->event_queue->next;
+                memcpy(event, &entry->event_inst, sizeof(FTB_event_t));
+                memcpy(src, &entry->src, sizeof(FTB_id_t));
+                FTBU_list_remove_entry((FTBU_list_node_t *)entry);
+                free(entry);
+                comp_info->event_queue_size--;
+                unlock_component(comp_info);
+                FTB_INFO("FTBC_Catch Out");
+                return FTB_CAUGHT_EVENT;
+            }
+            FTB_INFO("No events put in my queue, keep polling");
         }
     }
     unlock_component(comp_info);

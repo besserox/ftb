@@ -14,6 +14,7 @@ int main (int argc, char *argv[])
     printf("Begin\n");
     properties.catching_type = FTB_EVENT_CATCHING_POLLING;
     properties.err_handling = FTB_ERR_HANDLE_NONE;
+    properties.max_event_queue_size = FTB_DEFAULT_EVENT_POLLING_Q_LEN;
 
     printf("FTB_Init\n");
     FTB_Init(FTB_COMP_CTGY_BACKPLANE, FTB_COMP_SIMPLE, &properties, &handle);
