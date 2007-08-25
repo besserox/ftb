@@ -9,8 +9,8 @@ export LIB_DIR=$(FTB_HOME)/lib
 
 export EVENT_FILE=$(EVENT_DIR)/ftb_event_file
 export BUILT_IN_EVENT_CODE_FILE_PREFIX=ftb_built_in_event_list
-export CFLAGS=-I$(INC_DIR)
-export FTBLDFLAGS=-L$(LIB_DIR)
+export CFLAGS=-I$(INC_DIR) -I/usr/local/ofed/include
+export FTBLDFLAGS=-L$(LIB_DIR) -L//usr/local/ofed/lib -libverbs
 
 all: server client examples
 
@@ -23,7 +23,7 @@ client: $(LIB_DIR)/libftb.so $(LIB_DIR)/libftb_polling.so
 $(EXAMPLE_DIR)/ftb_event_thrower: ftb_basic $(EXAMPLE_DIR)/ftb_event_thrower.c $(LIB_DIR)/libftb_polling.so
 	gcc $(CFLAGS) $(FTBLDFLAGS) -o $@ $(EXAMPLE_DIR)/ftb_event_thrower.c -lftb_polling
 
-examples: $(EXAMPLE_DIR)/ftb_watchdog $(EXAMPLE_DIR)/ftb_logger $(EXAMPLE_DIR)/ftb_event_thrower $(EXAMPLE_DIR)/ftb_event_lister $(EXAMPLE_DIR)/ftb_multi_callback_monitor $(EXAMPLE_DIR)/ftb_port_status_thrower
+examples: $(EXAMPLE_DIR)/ftb_port_status_thrower 
 
 #===================================
 
