@@ -20,7 +20,10 @@ server: $(BIN_DIR)/ftb_server
 
 client: $(LIB_DIR)/libftb.so $(LIB_DIR)/libftb_polling.so
 
-examples: $(EXAMPLE_DIR)/ftb_watchdog $(EXAMPLE_DIR)/ftb_logger $(EXAMPLE_DIR)/ftb_event_thrower $(EXAMPLE_DIR)/ftb_event_lister $(EXAMPLE_DIR)/ftb_multi_callback_monitor
+$(EXAMPLE_DIR)/ftb_event_thrower: ftb_basic $(EXAMPLE_DIR)/ftb_event_thrower.c $(LIB_DIR)/libftb_polling.so
+	gcc $(CFLAGS) $(FTBLDFLAGS) -o $@ $(EXAMPLE_DIR)/ftb_event_thrower.c -lftb_polling
+
+examples: $(EXAMPLE_DIR)/ftb_watchdog $(EXAMPLE_DIR)/ftb_logger $(EXAMPLE_DIR)/ftb_event_thrower $(EXAMPLE_DIR)/ftb_event_lister $(EXAMPLE_DIR)/ftb_multi_callback_monitor $(EXAMPLE_DIR)/ftb_port_status_thrower
 
 #===================================
 
@@ -55,6 +58,9 @@ $(EXAMPLE_DIR)/ftb_logger: ftb_basic $(EXAMPLE_DIR)/ftb_logger.c $(LIB_DIR)/libf
 
 $(EXAMPLE_DIR)/ftb_event_thrower: ftb_basic $(EXAMPLE_DIR)/ftb_event_thrower.c $(LIB_DIR)/libftb_polling.so
 	gcc $(CFLAGS) $(FTBLDFLAGS) -o $@ $(EXAMPLE_DIR)/ftb_event_thrower.c -lftb_polling
+
+$(EXAMPLE_DIR)/ftb_port_status_thrower: ftb_basic $(EXAMPLE_DIR)/ftb_port_status_thrower.c $(LIB_DIR)/libftb_polling.so
+	gcc $(CFLAGS) $(FTBLDFLAGS) -o $@ $(EXAMPLE_DIR)/ftb_port_status_thrower.c -lftb_polling
 
 $(EXAMPLE_DIR)/ftb_event_lister: ftb_basic $(EXAMPLE_DIR)/ftb_event_lister.c $(LIB_DIR)/libftb_polling.so
 	gcc $(CFLAGS) $(FTBLDFLAGS) -o $@ $(EXAMPLE_DIR)/ftb_event_lister.c -lftb_polling

@@ -32,20 +32,27 @@ static void open_hca(void)
     struct ibv_device **dev_list;
     int i = 0, num_adapters;
 
+    /* Get the list of the adapters */
     dev_list = ibv_get_device_list(&num_adapters);
 
+    /* Select the first Adapter for now, more changes can be
+     * added later */
     ibv_dev.nic = dev_list[0];
 
+    /* Get the context from the selected Adapter */
     ibv_dev.context = ibv_open_device(dev_list[0]);
 
+    /* If the context is not found, report an error and exit */
     if (!ibv_dev.context) {
-        printf("Error getting HCA context\n");
+        fprintf(stderr, "Error Getting HCA Context, Aborting ..\n");
+        exit(1);
     }
 
+    /* Allocate the protection domain */
     ibv_dev.ptag = ibv_alloc_pd(ibv_dev.context);
 
     if (!ibv_dev.ptag) {
-                printf("Error getting protection domain\n");
+        fprintf(stderr, "Error Getting Protection Domain for HCA, Aborting ..\n");
     }
 }
 
@@ -59,7 +66,7 @@ int main (int argc, char *argv[])
        
  
     if (argc < 3) {
-    	fprintf(stderr, "Usage: %s <event_id> <data> [event_name=<default name>] [event_severity=INFO] \n",argv[0]);
+    	fprintf(stderr, "Usage: %s <event_id> <data> [event_name=<default name>] [event_severity=INFO] \n", argv[0]);
     	fprintf(stderr,"If event_id is a built-in event, the event_name and severity will be automatically filled\n");
     	fprintf(stderr,"If event_id is not a built-in event, the event_name and severity will be taken from command line\n");
     	exit(1);
@@ -71,13 +78,15 @@ int main (int argc, char *argv[])
     properties.polling_only = 1;
     properties.polling_queue_len = 0;
 
+    /* Initialize the properties of FTB */
     FTB_Init(&properties);
 
+    /* Initialize the data structures for InfiniBand */
     open_hca();
 
     event_id = atoi(argv[1]);
 
-    if (FTB_get_event_by_id(event_id, &event)==FTB_ERR_EVENT_NOT_FOUND) {
+    if (FTB_get_event_by_id(event_id, &event) == FTB_ERR_EVENT_NOT_FOUND) {
         int len = FTB_MAX_EVENT_NAME;
         if (argc >=4) {
             if (strlen(argv[3])+1 < len)
@@ -109,25 +118,32 @@ int main (int argc, char *argv[])
 
     while(1) {
 
+        /* Query the port for its status */
         if (ibv_query_port(ibv_dev.context, 2,
                     &port_attr)) {
             fprintf(stderr, "Error Querying the Port Status\n");
             exit(1);        
         }
 
-        if (port_attr.state == IBV_PORT_ACTIVE) {
+        /* If the status of the port is active, throw an FTB event
+         * referring to port status as ACTIVE */
+       
+        if (IBV_PORT_ACTIVE == port_attr.state) {
 
             event.severity = FTB_EVENT_SEVERITY_PERFORMANCE; 
             FTB_Throw_id(FTB_EVENT_IB_PORT_ACTIVE, argv[2], strlen(argv[2])+1);
 
             sleep(5);
-        } else if (port_attr.state == IBV_PORT_DOWN) {
+
+            /* If the status of the port is down, throw an FTB event
+             * referring to port status as DOWN */
+        
+        } else if (IBV_PORT_DOWN == port_attr.state) {
 
             event.severity = FTB_EVENT_SEVERITY_FATAL; 
             FTB_Throw(&event, argv[2], strlen(argv[2])+1);
             sleep(30);
         }
-
 
     }
     
