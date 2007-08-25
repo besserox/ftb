@@ -59,7 +59,7 @@ int main (int argc, char *argv[])
        
  
     if (argc < 3) {
-    	fprintf(stderr,"Usage: %s <event_id> <data> [event_name=<default name>] [event_severity=INFO] \n",argv[0]);
+    	fprintf(stderr, "Usage: %s <event_id> <data> [event_name=<default name>] [event_severity=INFO] \n",argv[0]);
     	fprintf(stderr,"If event_id is a built-in event, the event_name and severity will be automatically filled\n");
     	fprintf(stderr,"If event_id is not a built-in event, the event_name and severity will be taken from command line\n");
     	exit(1);
@@ -76,37 +76,31 @@ int main (int argc, char *argv[])
     open_hca();
 
     event_id = atoi(argv[1]);
-    if (FTB_get_event_by_id(event_id, &event)==FTB_ERR_EVENT_NOT_FOUND)
-    {
+
+    if (FTB_get_event_by_id(event_id, &event)==FTB_ERR_EVENT_NOT_FOUND) {
         int len = FTB_MAX_EVENT_NAME;
         if (argc >=4) {
             if (strlen(argv[3])+1 < len)
                 len = strlen(argv[3])+1;
             strncpy(event.name,argv[3], len);
-        }
-        else {
+        } else {
             strncpy(event.name, 
                     DEFAULT_THROW_EVENT_NAME, strlen(DEFAULT_THROW_EVENT_NAME)+1);
         }
         
-        if (argc >=5) {
+        if (argc >= 5) {
             if (strcasecmp(argv[4], "fatal") == 0) {
                 event.severity = FTB_EVENT_SEVERITY_FATAL;
-            }
-            else if (strcasecmp(argv[4], "error") == 0) {
+            } else if (strcasecmp(argv[4], "error") == 0) {
                 event.severity = FTB_EVENT_SEVERITY_ERROR;
-            }
-            else if (strcasecmp(argv[4], "warning") == 0) {
+            } else if (strcasecmp(argv[4], "warning") == 0) {
                 event.severity = FTB_EVENT_SEVERITY_WARNING;
-            }
-            else if (strcasecmp(argv[4], "performance") == 0) {
+            } else if (strcasecmp(argv[4], "performance") == 0) {
                 event.severity = FTB_EVENT_SEVERITY_PERFORMANCE;
-            }
-            else {
+            } else {
                 event.severity = FTB_EVENT_SEVERITY_INFO;
             }
-        }
-        else {
+        } else {
             event.severity = FTB_EVENT_SEVERITY_INFO;
         }
     }
@@ -117,6 +111,8 @@ int main (int argc, char *argv[])
 
         if (ibv_query_port(ibv_dev.context, 2,
                     &port_attr)) {
+            fprintf(stderr, "Error Querying the Port Status\n");
+            exit(1);        
         }
 
         if (port_attr.state == IBV_PORT_ACTIVE) {
