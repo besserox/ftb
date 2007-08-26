@@ -176,6 +176,8 @@ int FTBM_Get_catcher_comp_list(const FTB_event_t *event, FTB_id_t **list, int *l
     FTBU_map_iterator_t iter_mask;
     FTBM_map_ftb_id_2_comp_info_t* catcher_set;
     int temp_len=0;
+    if (!FTBM_initialized)
+        return FTB_ERR_GENERAL;
     
     /*Contruct a deliver set to keep track which components have already gotten the event and which are not, to avoid duplication*/
     FTB_INFO("FTBM_Get_catcher_comp_list In");
@@ -291,7 +293,6 @@ int FTBM_Init(int leaf)
     if (leaf && FTBM_info.parent.pid == 0) {
         FTB_WARNING("Can not connect to any ftb agent");
         FTB_INFO("FTBM_Init Out");
-        /*TODO: add the check to let FTBM do nothing if not initialized*/
         return FTB_ERR_GENERAL;
     }
     
@@ -380,13 +381,12 @@ int FTBM_Abort()
         FTB_INFO("FTBM_Abort Out");
         return FTB_SUCCESS;
     }
+    FTBM_initialized = 0;
 
     if (!FTBM_info.leaf) {
-        /*This part needs connections to other peers*/
         FTBU_map_iterator_t iter = FTBU_map_begin(FTBM_info.peers);
         for (;iter!=FTBU_map_end(FTBM_info.peers);iter=FTBU_map_next_iterator(iter)) {
             FTBM_comp_info_t* comp = (FTBM_comp_info_t*)FTBU_map_get_data(iter);
-            util_clean_component(comp);
             free(comp);
         }
 
@@ -403,7 +403,7 @@ int FTBM_Component_reg(const FTB_id_t *id)
 {
     FTBM_comp_info_t *comp;
     int ret;
-    if (!FTBM_initialized)
+    if (!FTBM_initialized) 
         return FTB_ERR_GENERAL;
     
     FTB_INFO("FTBM_Component_reg In");
@@ -450,7 +450,7 @@ int FTBM_Component_reg(const FTB_id_t *id)
             }
         }
     }
-    FTB_INFO("new client %d:%d:%d registered, from host %s, pid %d",
+    FTB_INFO("new client comp:%d comp_ctgy:%d ext:%d registered, from host %s, pid %d",
         comp->id.client_id.comp, comp->id.client_id.comp_ctgy, comp->id.client_id.ext, 
         comp->id.location_id.hostname, comp->id.location_id.pid);
 
@@ -523,7 +523,7 @@ int FTBM_Component_dereg(const FTB_id_t *id)
         FTB_INFO("FTBM_Component_dereg Out");
         return FTB_ERR_INVALID_PARAMETER;
     }
-    FTB_INFO("client %d:%d:%d from host %s pid %d, deregistering", 
+    FTB_INFO("client comp:%d comp_ctgy:%d ext:%d from host %s pid %d, deregistering", 
         comp->id.client_id.comp, comp->id.client_id.comp_ctgy, comp->id.client_id.ext,
         comp->id.location_id.hostname, comp->id.location_id.pid);
     lock_comp(comp);

@@ -1,6 +1,6 @@
 all: $(clients)
 
-Linux: ftb_watchdog ftb_polling_logger ftb_simple_thrower ftb_simple_catcher ftb_notify_logger
+Linux: ftb_watchdog ftb_polling_logger ftb_simple_thrower ftb_simple_catcher ftb_notify_logger ftb_multi_comp
 
 BGL: ftb_simple_thrower_bgl ftb_simple_catcher_bgl
 
@@ -13,7 +13,7 @@ LDFLAGS_CN    = -L$(FTB_LIB_PATH_STATIC) -L$(ZOID_LIBC_PATH) -L$(BGLSYS_LIB_PATH
 LIBS_CN       = -lftb_blrts -lc -lmsglayer.rts -ldevices.rts -lrts.rts
 
 clean:
-	rm -f ftb_watchdog ftb_polling_logger ftb_simple_thrower ftb_simple_catcher ftb_notify_logger
+	rm -f ftb_watchdog ftb_polling_logger ftb_simple_thrower ftb_simple_catcher ftb_notify_logger ftb_mutli_comp
 	rm -f ftb_simple_thrower_bgl ftb_simple_catcher_bgl .bgl_env_test
 
 .bgl_env_test:
@@ -55,3 +55,7 @@ ftb_polling_logger: ftb_polling_logger.c
 
 ftb_notify_logger: ftb_notify_logger.c
 	$(CC) $(CFLAGS_LINUX) $(LDFLAGS_LINUX) -o $@ $< $(LIBS_LINUX)
+
+ftb_multi_comp: ftb_multi_comp.c
+	$(CC) $(CFLAGS_LINUX) $(LDFLAGS_LINUX) -o $@ $< $(LIBS_LINUX)
+

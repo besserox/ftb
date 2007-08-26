@@ -108,8 +108,6 @@ void handler(int sig)
     }
 }
 
-#define FTB_DEBUG
-
 int main(int argc, char *argv[]) 
 {
     int ret;

@@ -36,6 +36,9 @@ static int util_send_bootstrap_msg(const FTBN_bootstrap_pkt_t *pkt_send)
         FTB_ERR_ABORT("socket failed");
     }
     hp = gethostbyname(FTBN_bootstrap_config.server_name);
+    if (hp == NULL) {
+        FTB_ERR_ABORT("cannot find database server %s",FTBN_bootstrap_config.server_name);
+    }
     memset( (void *)&server, 0, sizeof(server) );
     memcpy( (void *)&server.sin_addr, (void *)hp->h_addr, hp->h_length);
     server.sin_family = AF_INET;
@@ -62,6 +65,9 @@ static int util_exchange_bootstrap_msg(const FTBN_bootstrap_pkt_t *pkt_send, FTB
         FTB_ERR_ABORT("socket failed");
     }
     hp = gethostbyname(FTBN_bootstrap_config.server_name);
+    if (hp == NULL) {
+        FTB_ERR_ABORT("cannot find database server %s",FTBN_bootstrap_config.server_name);
+    }
     memset( (void *)&server, 0, sizeof(server) );
     memcpy( (void *)&server.sin_addr, (void *)hp->h_addr, hp->h_length);
     server.sin_family = AF_INET;

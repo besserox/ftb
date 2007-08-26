@@ -67,7 +67,6 @@ int FTB_Reg_throw(FTB_client_handle_t handle, FTB_event_name_t event);
     Register for catching certain events using polling or callback function. 
     Note that callback funciton scheme only works when catching_type has FTB_EVENT_CATCHING_NOTIFICATION.
     User can choose to use an event name or an event mask. 
-    In polling case, if the src is not NULL, it will be filled with the source id where message is from
     Same event is only reported once: 
         If an event matches both polling and notification, the event will be notified and can't be polled later
         If an event matches more than one masks in notification, only the callback of the first matched mask will be called.
@@ -89,6 +88,7 @@ int FTB_Throw(FTB_client_handle_t handle, FTB_event_name_t event);
 /* 
     FTB_Catch
     Poll for an event instance from server.
+    If the src is not NULL, it will be filled with the source id where message is from
     Return value: FTB_CAUGHT_NO_EVENT or FTB_CAUGHT_EVENT
 */
 int FTB_Catch(FTB_client_handle_t handle, FTB_event_t *event, FTB_id_t *src);
@@ -109,7 +109,7 @@ int FTB_Abort(FTB_client_handle_t handle);
     FTB_Add_dynamic_tag, FTB_Remove_dynamic_tag, & FTB_Read_dynamic_tag
     Provide a simple mechanism to stamp some dynamic info, such as job id, onto the event thrown from a same client.
     
-    FTB_Stmap_dynamic_tag tells the FTB client library to stamp a tag on any events it throws out later. It will affect events
+    FTB_Add_dynamic_tag tells the FTB client library to stamp a tag on any events it throws out later. It will affect events
     thrown by all components linked with that client library. 
     On success it returns FTB_SUCCESS
     If there is not enough space for the tag, FTB_ERR_TAG_NO_SPACE is returned.

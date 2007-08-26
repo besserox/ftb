@@ -172,6 +172,10 @@ static int util_connect_to(const FTBN_addr_sock_t *addr, const FTBM_msg_t *reg_m
     }
 
     hp = gethostbyname(addr->name);
+    if (hp == NULL) {
+        FTB_WARNING("cannot find host %s",addr->name);
+        return FTB_ERR_NETWORK_NO_ROUTE;
+    }
     memset( (void *)&sa, 0, sizeof(sa) );
     memcpy( (void *)&sa.sin_addr, (void *)hp->h_addr, hp->h_length);
     sa.sin_family = AF_INET;

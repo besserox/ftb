@@ -23,6 +23,8 @@
 #define WATCH_DOG_EVENT                      0x1
 #define MPICH2_ERROR_ABORT                   0x2
 #define SIMPLE_EVENT                         0x3
+#define FTB_TEST_EVENT_1                     0x4
+#define FTB_TEST_EVENT_2                     0x5 
 
 /*Definition of event name string*/
 #define MPICH2_ERROR_ABORT_STR               "MPICH2_ERROR_ABORT"
@@ -31,18 +33,34 @@ static inline int FTBM_get_event_by_name (FTB_event_name_t name, FTB_event_t *e)
 {
     int ret=FTB_SUCCESS;
     switch (name) {
+        case FTB_TEST_EVENT_1:
+            e->severity = FTB_EVENT_DEF_SEVERITY_INFO;
+            e->comp_ctgy = FTB_COMP_CTGY_BACKPLANE;
+            e->comp = FTB_TEST_COMP_1;
+            e->event_ctgy = FTB_EVENT_DEF_EVENT_CTGY_GENERAL;
+            e->event_name = name;
+            break;
+        case FTB_TEST_EVENT_2:
+            e->severity = FTB_EVENT_DEF_SEVERITY_FATAL;
+            e->comp_ctgy = FTB_COMP_CTGY_BACKPLANE;
+            e->comp = FTB_TEST_COMP_2;
+            e->event_ctgy = FTB_EVENT_DEF_EVENT_CTGY_GENERAL;
+            e->event_name = name;
+            break;
         case SIMPLE_EVENT:
             e->severity = FTB_EVENT_DEF_SEVERITY_INFO;
             e->comp_ctgy = FTB_COMP_CTGY_BACKPLANE;
             e->comp = FTB_COMP_SIMPLE;
             e->event_ctgy = FTB_EVENT_DEF_EVENT_CTGY_GENERAL;
             e->event_name = name;
+            break;
         case WATCH_DOG_EVENT:
             e->severity = FTB_EVENT_DEF_SEVERITY_INFO;
             e->comp_ctgy = FTB_COMP_CTGY_BACKPLANE;
             e->comp = FTB_COMP_WATCHDOG;
             e->event_ctgy = FTB_EVENT_DEF_EVENT_CTGY_GENERAL;
             e->event_name = name;
+            break;
         case MPICH2_ERROR_ABORT:
             e->severity = FTB_EVENT_DEF_SEVERITY_FATAL;
             e->comp_ctgy = FTB_EVENT_DEF_COMP_CTGY_MPI;

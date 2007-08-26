@@ -11,8 +11,8 @@ extern "C" {
 #define FTBM_MSG_TYPE_NOTIFY                     0x01
 
 /*Component registration/deregistration, only src field is valid*/
-#define FTBM_MSG_TYPE_COMP_REG                    0x11
-#define FTBM_MSG_TYPE_COMP_DEREG                    0x12
+#define FTBM_MSG_TYPE_COMP_REG                   0x11
+#define FTBM_MSG_TYPE_COMP_DEREG                 0x12
 
 /*Control messages, treat the event as eventmask*/
 #define FTBM_MSG_TYPE_REG_THROW                  0x21

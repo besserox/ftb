@@ -269,6 +269,10 @@ int FTBC_Init(FTB_comp_ctgy_t category, FTB_comp_t component, uint8_t extension,
     comp_info->finalizing = 0;
     comp_info->event_queue_size = 0;
     if (comp_info->properties.catching_type & FTB_EVENT_CATCHING_POLLING) {
+        if (comp_info->properties.max_event_queue_size == 0) {
+            FTB_WARNING("Polling queue size equal to 0, changing to default value");
+            comp_info->properties.max_event_queue_size = FTB_DEFAULT_EVENT_POLLING_Q_LEN;
+        }
         comp_info->event_queue = (FTBU_list_node_t*)malloc(sizeof(FTBU_list_node_t));
         FTBU_list_init(comp_info->event_queue);
     }
@@ -281,7 +285,6 @@ int FTBC_Init(FTB_comp_ctgy_t category, FTB_comp_t component, uint8_t extension,
         comp_info->callback_map = FTBU_map_init(FTBC_util_is_equal_event);
         comp_info->callback_event_queue = (FTBU_list_node_t*)malloc(sizeof(FTBU_list_node_t));
         FTBU_list_init(comp_info->callback_event_queue);
-        /*TODO enable callback in client*/
         lock_client();
         if (enable_callback == 0) {
              pthread_create(&callback_thread,NULL, callback_thread_client, NULL);
@@ -408,19 +411,20 @@ int FTBC_Finalize(FTB_client_handle_t handle)
 }
 
 int FTBC_Abort(FTB_client_handle_t handle)
-{  /*TODO: Abort function needs reconsideration*/
+{   
     FTBC_comp_info_t *comp_info;
-    LOOKUP_COMP_INFO(handle,comp_info);
-    FTB_INFO("FTBC_Abort In");
-    {
-        FTBM_msg_t msg;
-        memcpy(&msg.src,comp_info->id,sizeof(FTB_id_t));
-        msg.msg_type = FTBM_MSG_TYPE_COMP_DEREG;
-        FTBM_Get_parent_location_id(&msg.dst.location_id);
-        FTBM_Send(&msg);
+    FTBU_map_iterator_t iter;
+    if (FTBC_comp_info_map == NULL) {
+        FTB_WARNING("Not initialized");
+        return FTB_ERR_GENERAL;
     }
-
-    util_finalize_component(comp_info);
+    iter = FTBU_map_find(FTBC_comp_info_map, FTBU_MAP_UINT_KEY(handle));
+    if (iter == FTBU_map_end(FTBC_comp_info_map)) {
+        FTB_WARNING("Not registered");
+        return FTB_ERR_INVALID_PARAMETER;
+    }
+    comp_info = (FTBC_comp_info_t *)FTBU_map_get_data(iter); 
+    FTB_INFO("FTBC_Abort In");
 
     FTBU_map_remove_key(FTBC_comp_info_map, FTBU_MAP_UINT_KEY(handle));
     if (comp_info->properties.catching_type & FTB_EVENT_CATCHING_NOTIFICATION) {

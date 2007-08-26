@@ -11,8 +11,6 @@ FILE* FTBU_log_file_fp;
 
 static int nclients;
 
-#define FTB_DEBUG
-
 void ftb_zoid_client_init(int count) 
 {
     nclients = count;

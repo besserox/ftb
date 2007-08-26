@@ -23,7 +23,6 @@ extern "C" {
     fflush(FTBU_log_file_fp);\
 }while(0)
 
-#define FTB_DEBUG
 #ifdef FTB_DEBUG
 #define FTB_INFO(args...)  do {\
     fprintf(FTBU_log_file_fp, "[FTB_INFO][%s: line %d]", __FILE__, __LINE__); \

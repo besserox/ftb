@@ -18,9 +18,9 @@ typedef struct FTBN_config_sock {
     int server_port;
 }FTBN_config_sock_t;
 
-#define FTBN_CONNECT_RETRY_COUNT                        10
+#define FTBN_CONNECT_RETRY_COUNT                     10
 /*totally try ten times maximum*/
-#define FTBN_CONNECT_BACKOFF_INIT_TIMEOUT        1
+#define FTBN_CONNECT_BACKOFF_INIT_TIMEOUT             1
 /*in milliseconds*/
 #define FTBN_CONNECT_BACKOFF_RATIO                    4
 /*every time the timeout times four*/

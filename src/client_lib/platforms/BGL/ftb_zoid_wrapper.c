@@ -1,5 +1,5 @@
 /*Compute node libftb wrapper based on ZOID for BG/L*/
-
+#include <string.h>
 #include "libftb.h"
 #include "ftb_zoid_client.h"
 
