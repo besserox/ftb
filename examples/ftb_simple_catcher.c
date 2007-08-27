@@ -19,7 +19,7 @@ int main (int argc, char *argv[])
     printf("FTB_Init\n");
     FTB_Init(FTB_COMP_CTGY_BACKPLANE, FTB_COMP_SIMPLE, &properties, &handle);
     printf("FTB_Reg_catch_polling_event\n");
-    FTB_Reg_catch_polling_event(handle, SIMPLE_EVENT);
+    FTB_Reg_catch_polling_event(handle, "SIMPLE_EVENT");
     for(i=0;i<12;i++) {
         int ret;
         FTB_event_t event;

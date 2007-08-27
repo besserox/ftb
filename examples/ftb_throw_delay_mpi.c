@@ -29,7 +29,7 @@ int main (int argc, char *argv[])
     printf("FTB_Init\n");
     FTB_Init(FTB_COMP_CTGY_BACKPLANE, FTB_COMP_SIMPLE, &properties, &handle);
     printf("FTB_Reg_throw\n");
-    FTB_Reg_throw(handle, SIMPLE_EVENT);
+    FTB_Reg_throw(handle, "SIMPLE_EVENT");
 
     MPI_Init(&argc, &argv);
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
@@ -37,7 +37,7 @@ int main (int argc, char *argv[])
     MPI_Barrier(MPI_COMM_WORLD);
     begin = MPI_Wtime();
     for (i=0;i<count;i++) {
-        FTB_Throw(handle, SIMPLE_EVENT);
+        FTB_Throw(handle, "SIMPLE_EVENT");
     }
     end = MPI_Wtime();
     delay = end-begin;

@@ -254,6 +254,7 @@ int FTBC_Init(FTB_comp_ctgy_t category, FTB_comp_t component, uint8_t extension,
         FTBC_comp_info_map = FTBU_map_init(NULL); /*Since the key: client_handle is uint32_t*/
         FTBC_tag_map = FTBU_map_init(FTBC_util_is_equal_tag);
         memset(tag_string,0,FTB_MAX_DYNAMIC_DATA_SIZE);
+        FTBM_event_table_init();
         FTBM_Init(1);
     }
     num_components++;

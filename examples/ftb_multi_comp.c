@@ -69,7 +69,7 @@ int Comp2_Init()
     printf("Comp2: FTB_Init\n");
     FTB_Init(FTB_COMP_CTGY_BACKPLANE, FTB_TEST_COMP_2, &properties, &Comp2_ftb_handle);
     printf("Comp2: FTB_Reg_catch_polling_event\n");
-    FTB_Reg_catch_polling_event(Comp2_ftb_handle, FTB_TEST_EVENT_1);
+    FTB_Reg_catch_polling_event(Comp2_ftb_handle, "FTB_TEST_EVENT_1");
 
     Comp3_Init();
 
@@ -95,7 +95,7 @@ int Comp2_Func()
     }
 
     printf("Comp2: FTB_Throw\n");
-    FTB_Throw(Comp2_ftb_handle, FTB_TEST_EVENT_2);
+    FTB_Throw(Comp2_ftb_handle, "FTB_TEST_EVENT_2");
 
     return 0;
 }
@@ -154,7 +154,7 @@ int Comp1_Func()
     i++;
     if (i%5 == 0) {
         printf("Comp1: FTB_Throw\n");
-        FTB_Throw(Comp1_ftb_handle, FTB_TEST_EVENT_1);
+        FTB_Throw(Comp1_ftb_handle, "FTB_TEST_EVENT_1");
     }
 
     Comp2_Func();

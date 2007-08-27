@@ -24,14 +24,14 @@ int main (int argc, char *argv[])
     FTB_dynamic_len_t data_len = 30;
 
     FTB_Init(FTB_COMP_CTGY_BACKPLANE, FTB_COMP_WATCHDOG, &properties, &handle);
-    FTB_Reg_throw(handle, WATCH_DOG_EVENT);
-    FTB_Reg_catch_polling_event(handle, WATCH_DOG_EVENT);
+    FTB_Reg_throw(handle, "WATCH_DOG_EVENT");
+    FTB_Reg_catch_polling_event(handle, "WATCH_DOG_EVENT");
     FTB_Add_dynamic_tag(handle, 1, tag_data, strlen(tag_data)+1);
     signal(SIGINT, Int_handler);
     while(1) {
         FTB_event_t evt;
         int ret = 0;
-        FTB_Throw(handle, WATCH_DOG_EVENT);
+        FTB_Throw(handle, "WATCH_DOG_EVENT");
         sleep(1);
         ret = FTB_Catch(handle, &evt, NULL);
         if (ret == FTB_CAUGHT_NO_EVENT) {

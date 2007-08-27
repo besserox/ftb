@@ -21,7 +21,7 @@ int pingpong_server(FTB_event_t *evt, FTB_id_t *src, void *arg)
 {
     count++;
     FTB_client_handle_t *handle = (FTB_client_handle_t *)arg;
-    FTB_Throw(*handle, FTB_PINGPONG_EVENT_SRV);
+    FTB_Throw(*handle, "FTB_PINGPONG_EVENT_SRV");
     return 0;
 }
 
@@ -34,7 +34,7 @@ int pingpong_client(FTB_event_t *evt, FTB_id_t *src, void *arg)
         return 0;
     }
     FTB_client_handle_t *handle = (FTB_client_handle_t *)arg;
-    FTB_Throw(*handle, FTB_PINGPONG_EVENT_CLI);
+    FTB_Throw(*handle, "FTB_PINGPONG_EVENT_CLI");
     return 0;
 }
 
@@ -60,14 +60,14 @@ int main (int argc, char *argv[])
     FTB_Init(FTB_COMP_CTGY_BACKPLANE, FTB_COMP_SIMPLE, &properties, &handle);
 
     if (is_server) {
-        FTB_Reg_catch_notify_event(handle, FTB_PINGPONG_EVENT_CLI, pingpong_server, (void*)&handle);
+        FTB_Reg_catch_notify_event(handle, "FTB_PINGPONG_EVENT_CLI", pingpong_server, (void*)&handle);
         signal(SIGINT, Sig_handler);
         signal(SIGTERM, Sig_handler);
     }
     else {
-        FTB_Reg_catch_notify_event(handle, FTB_PINGPONG_EVENT_SRV, pingpong_client, (void*)&handle);
+        FTB_Reg_catch_notify_event(handle, "FTB_PINGPONG_EVENT_SRV", pingpong_client, (void*)&handle);
         gettimeofday(&begin,NULL);
-        FTB_Throw(handle, FTB_PINGPONG_EVENT_CLI);
+        FTB_Throw(handle, "FTB_PINGPONG_EVENT_CLI");
     }
 
     while(!done) {
