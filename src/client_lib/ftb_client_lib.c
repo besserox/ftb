@@ -533,9 +533,14 @@ int FTBC_Reg_all_predefined_catch(FTB_client_handle_t handle)
         return FTB_ERR_GENERAL;
     }
 
+    if (count == 0) {
+        FTB_INFO("FTBC_Reg_catch_polling_mask Out");
+        return FTB_SUCCESS;
+    }
+
     events = (FTB_event_t *)malloc(sizeof(FTB_event_t)*count);
-    if (FTBM_get_comp_catch_count(comp_info->id->client_id.comp_ctgy, comp_info->id->client_id.comp, events) != FTB_SUCCESS) {
-        FTB_WARNING("FTBM_get_comp_catch_count failed");
+    if (FTBM_get_comp_catch_masks(comp_info->id->client_id.comp_ctgy, comp_info->id->client_id.comp, events) != FTB_SUCCESS) {
+        FTB_WARNING("FTBM_get_comp_catch_masks failed");
         return FTB_ERR_GENERAL;
     }
 
@@ -543,7 +548,7 @@ int FTBC_Reg_all_predefined_catch(FTB_client_handle_t handle)
     msg.msg_type = FTBM_MSG_TYPE_REG_CATCH;
     FTBM_Get_parent_location_id(&msg.dst.location_id);
     for (i=0;i<count;i++) {
-        memcpy(&msg.event, event, sizeof(FTB_event_t));
+        memcpy(&msg.event, &(events[i]), sizeof(FTB_event_t));
         ret = FTBM_Send(&msg);
         if (ret != FTB_SUCCESS) {
             FTB_WARNING("FTBM_Send failed");

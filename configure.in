@@ -1,0 +1,184 @@
+dnl Process this file with autoconf to produce a configure script.
+
+AC_INIT()
+AC_PREREQ(2.59)
+AC_PREFIX_DEFAULT('/usr/local')
+saveCFLAGS=$CFLAGS
+AC_PROG_CC
+CFLAGS=$saveCFLAGS
+AC_PROG_INSTALL
+AC_PROG_RANLIB
+
+dnl Get bootstrap server name
+AC_ARG_WITH(bstrap-name, [  --with-bstrap-name=<hostname>		Hostname of Bootstrapping server],
+	                 BS_SERVER_NAME=$withval, BS_SERVER_NAME='')
+AC_MSG_CHECKING(checking bootstrap server name)
+AC_MSG_RESULT($BS_SERVER_NAME)
+if test "$BS_SERVER_NAME" == ""; then
+	echo "Bootstrap server host name needed. Use ./configure --help ";
+	echo "./configure aborting";
+	exit 1;
+fi
+
+
+dnl Get bootstrap server port number
+AC_ARG_WITH(bstrap-port, [  --with-bstrap-port=<port number>	Port number of Bootstrapping server.
+					Default port is 14455],
+	                 BS_SERVER_PORT=$withval, BS_SERVER_PORT=14455)
+AC_MSG_CHECKING(checking bootstrap server port number)
+AC_MSG_RESULT($BS_SERVER_PORT)
+
+
+dnl Get agent port number
+AC_ARG_WITH(agent-port, [  --with-agent-port=<port number>	Port number on which agent is running.
+					Default port is 10809],
+			AGENT_PORT=$withval, AGENT_PORT=10809)
+AC_MSG_CHECKING(checking agent port number)
+AC_MSG_RESULT($AGENT_PORT)
+
+
+dnl Expose option for platform type
+AC_ARG_WITH(platform, [  --with-platform=<platform type>	Possible values: bgl, linux],
+ 		      CLIENTS=$withval, CLIENTS=linux)
+AC_MSG_CHECKING(checking platform support)
+AC_MSG_RESULT($CLIENTS)
+
+dnl Expose option for BGL enviroment file
+AC_ARG_WITH(platform-envfile, [  --with-platform-envfile=<bgl envfile>
+					Default file will be bgl_setup_env for
+					bgl platforms. For all other platforms,
+					this file is ignored.],
+			ENVFILE=$withval, ENVFILE=)
+AC_MSG_CHECKING(user specified platform environment file)
+AC_MSG_RESULT($ENVFILE)
+
+FTB_LIB_LINUX_NAME=ftb
+if  test "$CLIENTS" == "linux"; then
+	clients="Linux";
+elif test "$CLIENTS" == "bgl"; then
+	clients="BGL Linux";
+	unset_var=0;
+	ZOID_CLIENT_DIR='${abs_top_srcdir}/src/client_lib/platforms/BGL/zoid_client';
+	FTB_LIB_BGL_CN_NAME=ftb_blrts
+	if test "$ENVFILE" == ""; then
+		ENVFILE="bgl_setup_env";
+	fi
+	if test ! -r "$ENVFILE" ; then
+		echo "error: BGL environment file '$ENVFILE' does not exist or is not readable";
+		echo "configure script aborting...correct errors first"
+		exit 1;
+	else
+		source $ENVFILE;
+	fi
+	if test -z "$ZOID_HOME"; then
+		unset_var=1;
+		echo "error: Required environment variable not set: ZOID_HOME. Please check BGL environment variables file." >&2;
+	fi
+	if test -z "$ZOID_LIBC_PATH"; then
+		unset_var=1;
+		echo "error: Required environment variable not set: ZOID_LIBC_PATH. Please check BGL environment variables file." >&2;
+	fi
+	if test -z "$BLRTS_PATH"; then
+		unset_var=1;
+		echo "error: Required environment variable not set: BLRTS_PATH. Please check BGL environment variables file." >&2;
+	fi
+	if test -z "$CC_BLRTS"; then
+		unset_var=1;
+		echo "error: Required enviroment variable not ste: CC_BLRTS. Please check BGL environment variables file.";
+	fi
+	if test -z "$AR_BLRTS"; then
+		unset_var=1;
+		echo "error: Required enviroment variable not ste: AR_BLRTS. Please check BGL environment variables file.";
+	fi
+	if test -z "$RANLIB_BLRTS"; then
+		unset_var=1;
+		echo "error: Required enviroment variable not ste: RANLIB_BLRTS. Please check BGL environment variables file.";
+	fi
+	if test -z "$BGLSYS_LIB_PATH"; then
+		unset_var=1;
+		echo "error: Required environment variable not set: BGLSYS_LIB_PATH. Please check BGL environment variables file." >&2;
+	fi
+	if test $unset_var == 1; then
+		echo "configure script aborting...correct errors first" >&2;
+		exit 1;
+	fi
+fi
+
+dnl Create throw_events.h file
+PARSER_PATH=`pwd`/utils/xmlparser;
+SCHEMA_FILES_PATH=`pwd`/components/schemas;
+echo "Converting throw event schema files"
+for i in `ls $SCHEMA_FILES_PATH`; do
+	perl $PARSER_PATH/parser.pl $SCHEMA_FILES_PATH/$i;
+done
+/bin/mv `pwd`/ftb_throw_events.h `pwd`/include/;
+
+dnl Create include/ftb_conf file
+FTB_CONF_FILE=`pwd`/include/ftb_conf.h
+echo "#ifndef FTB_CONF_H">$FTB_CONF_FILE;
+echo "#define FTB_CONF_H">>$FTB_CONF_FILE;
+echo "#define FTB_CONF_AGENT_PORT $AGENT_PORT" >>$FTB_CONF_FILE;
+echo "#define FTB_CONF_SERVER_PORT $BS_SERVER_PORT">>$FTB_CONF_FILE;
+echo "#define FTB_CONF_SERVER_NAME  \"$BS_SERVER_NAME\"">>$FTB_CONF_FILE;
+echo "#endif">>$FTB_CONF_FILE;
+
+dnl Setup some default variables that will be useful in lower Maekfiles
+network="sock";
+FTB_NETWORK_CFLAG="-DFTB_NETWORK_SOCK";
+TEMPSBIN='${abs_top_builddir}/temp-sbin';
+TEMPLIB='${abs_top_builddir}/temp-lib';
+FTB_LIB_PATH_SHARED='${TEMPLIB}/shared';
+FTB_LIB_PATH_STATIC='${TEMPLIB}/static';
+INC_DIR='${abs_top_srcdir}/include';
+AR='ar';
+LIBS_PTHREAD='-lpthread';
+MAKE='make'
+CFLAGS_FTB='-Wall -g -fPIC -I${INC_DIR}';
+CFLAGS_SRC='${CFLAGS_FTB} -I${abs_top_srcdir}/src/include -I${abs_top_srcdir}/src/manager_lib/include'
+UTIL_OBJ='${abs_top_srcdir}/src/util/ftb_util.o'
+MANAGER_LIB_PATH_SHARED='${abs_top_srcdir}/src/manager_lib/lib/shared'
+MANAGER_LIB_PATH_STATIC='${abs_top_srcdir}/src/manager_lib/lib/static'
+MANAGER_LIB_NAME=ftbm
+CFLAGS_CLIENT='${CFLAGS_SRC} -I${abs_top_srcdir}/src/client_lib/include'
+CLIENT_LIB_OBJ='${abs_top_srcdir}/src/client_lib/ftb_client_lib.o'
+CFLAGS_MANAGER='${CFLAGS_SRC} -I${abs_top_srcdir}/src/manager_lib/network/include -I${abs_top_srcdir}/src/manager_lib/network/network_${network}/include ${FTB_NETWORK_CFLAG}  -I${abs_top_srcdir}/src/manager_lib/include'
+
+AC_SUBST(clients)
+AC_SUBST(FTB_NETWORK_CFLAG)
+AC_SUBST(network)
+AC_SUBST(TEMPSBIN)
+AC_SUBST(TEMPLIB)
+AC_SUBST(ZOID_CLIENT_DIR)
+AC_SUBST(FTB_LIB_BGL_CN_NAME)
+AC_SUBST(FTB_LIB_LINUX_NAME)
+AC_SUBST(FTB_LIB_PATH_SHARED)
+AC_SUBST(FTB_LIB_PATH_STATIC)
+AC_SUBST(INC_DIR)
+AC_SUBST(AR)
+AC_SUBST(CFLAGS_FTB)
+AC_SUBST(CFLAGS_SRC)
+AC_SUBST(UTIL_OBJ)
+AC_SUBST(MANAGER_LIB_PATH_SHARED)
+AC_SUBST(MANAGER_LIB_PATH_STATIC)
+AC_SUBST(MANAGER_LIB_NAME)
+AC_SUBST(CFLAGS_CLIENT)
+AC_SUBST(CLIENT_LIB_OBJ)
+AC_SUBST(CFLAGS_MANAGER)
+AC_SUBST(LIBS_PTHREAD)
+AC_SUBST(MAKE)
+AC_OUTPUT(Makefile 								\
+	  src/Makefile 								\
+	  src/util/Makefile							\
+	  src/manager_lib/Makefile						\
+	  src/manager_lib/network/network_sock/Makefile				\
+	  src/client_lib/Makefile 						\
+	  src/client_lib/platforms/Makefile 					\
+	  src/client_lib/platforms/Linux/Makefile 				\
+	  src/client_lib/platforms/BGL/Makefile 				\
+	  src/client_lib/platforms/BGL/zoid_client/Makefile 			\
+	  src/client_lib/platforms/BGL/zoid_client/implementation/Makefile	\
+	  src/client_lib/platforms/BGL/zoid_client/client/Makefile		\
+	  src/client_lib/platforms/BGL/zoid_client/server/Makefile		\
+	  src/agent/Makefile							\
+	  examples/Makefile)
+

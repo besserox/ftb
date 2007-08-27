@@ -1,0 +1,60 @@
+sbindir=@sbindir@
+libdir=@libdir@
+abs_top_builddir=@abs_top_builddir@
+abs_top_srcdir=@abs_top_srcdir@
+exec_prefix=@exec_prefix@
+prefix=@prefix@
+clients=@clients@
+network=@network@
+TEMPSBIN=@TEMPSBIN@
+TEMPLIB=@TEMPLIB@
+FTB_NETWORK_CFLAG=@FTB_NETWORK_CFLAG@
+ZOID_CLIENT_DIR=@ZOID_CLIENT_DIR@
+FTB_LIB_BGL_CN_NAME=@FTB_LIB_BGL_CN_NAME@
+FTB_LIB_LINUX_NAME=@FTB_LIB_LINUX_NAME@
+FTB_LIB_PATH_SHARED=@FTB_LIB_PATH_SHARED@
+FTB_LIB_PATH_STATIC=@FTB_LIB_PATH_STATIC@
+INC_DIR=@INC_DIR@
+AR=@AR@
+CFLAGS_FTB=@CFLAGS_FTB@
+CFLAGS_SRC=@CFLAGS_SRC@
+UTIL_OBJ=@UTIL_OBJ@
+MANAGER_LIB_PATH_SHARED=@MANAGER_LIB_PATH_SHARED@
+MANAGER_LIB_PATH_STATIC=@MANAGER_LIB_PATH_STATIC@
+MANAGER_LIB_NAME=@MANAGER_LIB_NAME@
+CFLAGS_CLIENT=@CFLAGS_CLIENT@
+CLIENT_LIB_OBJ=@CLIENT_LIB_OBJ@
+CFLAGS_MANAGER=@CFLAGS_MANAGER@
+MAKE=@MAKE@
+CC=@CC@
+RANLIB=@RANLIB@
+LIBS_PTHREAD=@LIBS_PTHREAD@
+
+all: ftb_network ftb_event_table.o ftb_manager_lib.o libs 
+
+CFLAGS = $(CFLAGS_MANAGER) 
+
+libs: $(MANAGER_LIB_PATH_STATIC)/lib$(MANAGER_LIB_NAME).a $(MANAGER_LIB_PATH_SHARED)/lib$(MANAGER_LIB_NAME).so
+
+$(MANAGER_LIB_PATH_SHARED)/lib$(MANAGER_LIB_NAME).so: ftb_network ftb_event_table.o ftb_manager_lib.o
+	$(CC) -shared -o $@ $(UTIL_OBJ) ftb_event_table.o ftb_manager_lib.o ${abs_top_srcdir}/src/manager_lib/network/network_$(network)/*.o
+
+$(MANAGER_LIB_PATH_STATIC)/lib$(MANAGER_LIB_NAME).a: ftb_network ftb_event_table.o ftb_manager_lib.o
+	$(AR) -rc $@ $(UTIL_OBJ) ftb_event_table.o ftb_manager_lib.o ${abs_top_srcdir}/src/manager_lib/network/network_$(network)/*.o
+	$(RANLIB) $@
+
+clean:
+	rm -f $(MANAGER_LIB_PATH_STATIC)/lib$(MANAGER_LIB_NAME).a $(MANAGER_LIB_PATH_SHARED)/lib$(MANAGER_LIB_NAME).so 
+	rm -f ftb_manager_lib.o ftb_event_table.o
+#(cd network/network_$(network) && $(MAKE) clean)
+	$(MAKE) -C network/network_$(network) clean
+
+ftb_manager_lib.o: ftb_manager_lib.c
+	$(CC) $(CFLAGS) -c $<
+
+ftb_event_table.o: ftb_event_table.c
+	$(CC) $(CFLAGS) -c $<
+
+ftb_network:
+#(cd network/network_$(network) && $(MAKE))
+	$(MAKE) -C network/network_$(network) all

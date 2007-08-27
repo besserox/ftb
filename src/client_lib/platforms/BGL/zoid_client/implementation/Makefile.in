@@ -1,0 +1,54 @@
+sbindir=@sbindir@
+libdir=@libdir@
+abs_top_builddir=@abs_top_builddir@
+abs_top_srcdir=@abs_top_srcdir@
+exec_prefix=@exec_prefix@
+prefix=@prefix@
+clients=@clients@
+network=@network@
+TEMPSBIN=@TEMPSBIN@
+TEMPLIB=@TEMPLIB@
+FTB_NETWORK_CFLAG=@FTB_NETWORK_CFLAG@
+ZOID_CLIENT_DIR=@ZOID_CLIENT_DIR@
+FTB_LIB_BGL_CN_NAME=@FTB_LIB_BGL_CN_NAME@
+FTB_LIB_LINUX_NAME=@FTB_LIB_LINUX_NAME@
+FTB_LIB_PATH_SHARED=@FTB_LIB_PATH_SHARED@
+FTB_LIB_PATH_STATIC=@FTB_LIB_PATH_STATIC@
+INC_DIR=@INC_DIR@
+AR=@AR@
+CFLAGS_FTB=@CFLAGS_FTB@
+CFLAGS_SRC=@CFLAGS_SRC@
+UTIL_OBJ=@UTIL_OBJ@
+MANAGER_LIB_PATH_SHARED=@MANAGER_LIB_PATH_SHARED@
+MANAGER_LIB_PATH_STATIC=@MANAGER_LIB_PATH_STATIC@
+MANAGER_LIB_NAME=@MANAGER_LIB_NAME@
+CFLAGS_CLIENT=@CFLAGS_CLIENT@
+CLIENT_LIB_OBJ=@CLIENT_LIB_OBJ@
+CFLAGS_MANAGER=@CFLAGS_MANAGER@
+MAKE=@MAKE@
+CC=@CC@
+RANLIB=@RANLIB@
+LIBS_PTHREAD=@LIBS_PTHREAD@
+
+PREFIX = ftb_zoid_client
+CFLAGS = $(CFLAGS_CLIENT) -I.. -I$(ZOID_HOME)/include
+CFLAGS_SHARED = -fPIC -mpowerpc -pthread
+LDFLAGS = -shared
+
+all: $(PREFIX)_impl.so $(FTB_LIB_PATH_SHARED)/$(PREFIX)_impl.so
+
+$(FTB_LIB_PATH_SHARED)/$(PREFIX)_impl.so: $(PREFIX)_impl.so
+	cp -p $(PREFIX)_impl.so $@
+
+$(PREFIX)_impl.so: $(UTIL_OBJ) ftb_zoid_client.o
+	$(CC) $(CFLAGS_SHARED) $(LDFLAGS) -o $@ $(CLIENT_LIB_OBJ) $(UTIL_OBJ) ftb_zoid_client.o $(MANAGER_LIB_PATH_STATIC)/lib$(MANAGER_LIB_NAME).a
+
+ftb_zoid_client.o: ftb_zoid_client.c
+	$(CC) $(CFLAGS) -c $<
+
+clean:
+	rm -f $(FTB_LIB_PATH_SHARED)/$(PREFIX)_impl.so
+	rm -f $(PREFIX)_impl.so *.o *~
+
+distclean: clean
+

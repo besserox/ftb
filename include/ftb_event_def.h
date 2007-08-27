@@ -3,30 +3,14 @@
 
 #include "ftb_def.h"
 
-/*Definition of severity*/
-#define FTB_EVENT_DEF_SEVERITY_INFO          (1<<1)
-#define FTB_EVENT_DEF_SEVERITY_PERFORMANCE   (1<<2)
-#define FTB_EVENT_DEF_SEVERITY_WARNING       (1<<3)
-#define FTB_EVENT_DEF_SEVERITY_ERROR         (1<<4)
-#define FTB_EVENT_DEF_SEVERITY_FATAL         (1<<5)
-
-/*Definition of component category*/
-#define FTB_EVENT_DEF_COMP_CTGY_MPI          (1<<1)
-
-/*Definition of components*/
-#define FTB_EVENT_DEF_COMP_MPICH2            (1<<1)
-
-/*Definition of event category*/
-#define FTB_EVENT_DEF_EVENT_CTGY_GENERAL     (1<<0)
-
-/*Definition of event name identifier*/
-#define WATCH_DOG_EVENT                      0x1
-#define MPICH2_ERROR_ABORT                   0x2
-#define SIMPLE_EVENT                         0x3
-#define FTB_TEST_EVENT_1                     0x4
-#define FTB_TEST_EVENT_2                     0x5 
-#define FTB_PINGPONG_EVENT_CLI               0x6
-#define FTB_PINGPONG_EVENT_SRV               0x7
+typedef struct FTBM_throw_event_t{
+    char event_name_char[1024];
+    FTB_event_name_t event_name;
+    FTB_severity_t  severity;
+    FTB_event_ctgy_t event_ctgy;
+    FTB_comp_ctgy_t comp_ctgy;
+    FTB_comp_t comp;
+}FTBM_throw_event_t;
 
 int FTBM_event_table_init(void);
 

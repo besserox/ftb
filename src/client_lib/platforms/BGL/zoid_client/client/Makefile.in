@@ -1,0 +1,68 @@
+#***************************************************************************
+# ZEPTOOS:zepto-info
+#      This file is part of ZeptoOS: The Small Linux for Big Computers.
+#      See www.mcs.anl.gov/zeptoos for more information.
+# ZEPTOOS:zepto-info
+#
+# ZEPTOOS:zepto-fillin
+#      $Id: Makefile,v 1.7 2007/06/27 15:10:45 iskra Exp $
+#      ZeptoOS_Version: 1.2
+#      ZeptoOS_Heredity: FOSS_ORIG
+#      ZeptoOS_License: GPL
+# ZEPTOOS:zepto-fillin
+#
+# ZEPTOOS:zepto-gpl
+#       Copyright: Argonne National Laboratory, Department of Energy,
+#                  and UChicago Argonne, LLC.  2004, 2005, 2006, 2007
+#       ZeptoOS License: GPL
+#  
+#       This software is free.  See the file ZeptoOS/misc/license.GPL
+#       for complete details on your rights to copy, modify, and use this
+#       software.
+# ZEPTOOS:zepto-gpl
+#***************************************************************************
+
+sbindir=@sbindir@
+libdir=@libdir@
+abs_top_builddir=@abs_top_builddir@
+abs_top_srcdir=@abs_top_srcdir@
+exec_prefix=@exec_prefix@
+prefix=@prefix@
+clients=@clients@
+network=@network@
+TEMPSBIN=@TEMPSBIN@
+TEMPLIB=@TEMPLIB@
+FTB_NETWORK_CFLAG=@FTB_NETWORK_CFLAG@
+ZOID_CLIENT_DIR=@ZOID_CLIENT_DIR@
+FTB_LIB_BGL_CN_NAME=@FTB_LIB_BGL_CN_NAME@
+FTB_LIB_LINUX_NAME=@FTB_LIB_LINUX_NAME@
+FTB_LIB_PATH_SHARED=@FTB_LIB_PATH_SHARED@
+FTB_LIB_PATH_STATIC=@FTB_LIB_PATH_STATIC@
+INC_DIR=@INC_DIR@
+AR=@AR@
+CFLAGS_FTB=@CFLAGS_FTB@
+CFLAGS_SRC=@CFLAGS_SRC@
+UTIL_OBJ=@UTIL_OBJ@
+MANAGER_LIB_PATH_SHARED=@MANAGER_LIB_PATH_SHARED@
+MANAGER_LIB_PATH_STATIC=@MANAGER_LIB_PATH_STATIC@
+MANAGER_LIB_NAME=@MANAGER_LIB_NAME@
+CFLAGS_CLIENT=@CFLAGS_CLIENT@
+CLIENT_LIB_OBJ=@CLIENT_LIB_OBJ@
+CFLAGS_MANAGER=@CFLAGS_MANAGER@
+MAKE=@MAKE@
+CC=@CC@
+RANLIB=@RANLIB@
+LIBS_PTHREAD=@LIBS_PTHREAD@
+
+CFLAGS = -Wall -g -O2
+
+all: .object_files_built
+
+.object_files_built:
+	$(CC_BLRTS) -c $(CFLAGS) -I@ZOID_CLIENT_DIR@ -I$(ZOID_HOME)/include -I$(INC_DIR) *.c
+	touch .object_files_built
+
+clean:
+	rm -f *.o  *.c .object_files_built 
+
+distclean: clean
