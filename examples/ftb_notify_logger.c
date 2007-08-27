@@ -36,7 +36,7 @@ int main (int argc, char *argv[])
     FTB_client_handle_t handle;
     FTB_event_t mask;
 
-    if (argc > 2) {
+    if (argc >= 2) {
         log_fp = fopen(argv[1],"w");
     }
     else {

@@ -592,7 +592,7 @@ int FTBC_Throw(FTB_client_handle_t handle, FTB_event_name_t event_name)
     msg.msg_type = FTBM_MSG_TYPE_NOTIFY;
     FTBM_Get_parent_location_id(&msg.dst.location_id);
     ret = FTBM_Send(&msg);
-    FTB_INFO("FTBC_Throw In");
+    FTB_INFO("FTBC_Throw Out");
     return ret;
 }
 

@@ -18,7 +18,11 @@ export MAKE          = make
 export CC            = gcc
 export AR            = ar
 export RANLIB        = ranlib
+export MPICC         = mpicc
+
+
 export INC_DIR       = $(PWD)/include
+#export CFLAGS_FTB    = -Wall -g -fPIC -I$(INC_DIR) -DFTB_DEBUG
 export CFLAGS_FTB    = -Wall -g -fPIC -I$(INC_DIR)
 export LIBS_PTHREAD  = -lpthread
 

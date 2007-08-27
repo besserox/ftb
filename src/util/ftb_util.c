@@ -8,6 +8,10 @@ extern FILE* FTBU_log_file_fp;
 
 int FTBU_match_mask(const FTB_event_t *event, const FTB_event_t *mask)
 {
+    if (mask->event_name+1 != 0) {
+        /* event name is not masked to match all */
+        return (mask->event_name == event->event_name);
+    }
     if ( (event->severity & mask->severity) != 0
      && (event->severity & ~mask->severity) == 0
      && (event->comp_ctgy & mask->comp_ctgy) != 0
@@ -15,9 +19,7 @@ int FTBU_match_mask(const FTB_event_t *event, const FTB_event_t *mask)
      && (event->comp & mask->comp) != 0
      && (event->comp & ~mask->comp) == 0
      && (event->event_ctgy & mask->event_ctgy) != 0
-     && (event->event_ctgy & ~mask->event_ctgy) == 0
-     && (event->event_name & mask->event_name) != 0
-     && (event->event_name & ~mask->event_name) == 0)
+     && (event->event_ctgy & ~mask->event_ctgy) == 0)
         return 1;
     else 
         return 0;
