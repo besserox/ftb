@@ -37,11 +37,19 @@ all: ftb ftb_examples
 clean:
 	for i in ${SUBDIRS}; do ${MAKE} -C $$i $@; done
 	rm -f .event_def .config_def
+	rm -rf @TEMPSBIN@;
+	rm -rf @TEMPLIB@;
+	if [ -e @abs_top_srcdir@/include/ftb_throw_events.h ]; then \
+	rm @abs_top_srcdir@/include/ftb_throw_events.h; fi
 
 
 ftb: .event_def .config_def
-	if [ ! -e @TEMPSBIN@ ]; then mkdir @TEMPSBIN@; fi
-	if [ ! -e @TEMPLIB@ ]; then mkdir @TEMPLIB@; fi
+	for i in `ls @abs_top_srcdir@/components/schemas`; do 				\
+	perl @abs_top_srcdir@/utils/parser.pl @abs_top_srcdir@/components/schemas/$$i;	\
+	done										
+	/bin/mv @abs_top_builddir@/ftb_throw_events.h @abs_top_srcdir@/include/;	
+	if [ ! -e @TEMPSBIN@ ]; then mkdir @TEMPSBIN@; fi				
+	if [ ! -e @TEMPLIB@ ]; then mkdir @TEMPLIB@; fi					
 	${MAKE} -C src all
 
 ftb_examples:
@@ -62,5 +70,3 @@ install:
 	install -v -b @TEMPLIB@/shared/* @libdir@/shared/;
 	install -v -b @TEMPLIB@/static/* @libdir@/static/;
 	install -v -b @abs_top_srcdir@/include/* @includedir@;
-	rm -rf @TEMPSBIN@;
-	rm -rf @TEMPLIB@;
