@@ -45,7 +45,7 @@ clean:
 
 ftb: .event_def .config_def
 	for i in `ls @abs_top_srcdir@/components/schemas`; do 				\
-	perl @abs_top_srcdir@/utils/parser.pl @abs_top_srcdir@/components/schemas/$$i;	\
+	perl @abs_top_srcdir@/utils/ftb_throwevent_parser.pl @abs_top_srcdir@/components/schemas/$$i;	\
 	done										
 	/bin/mv @abs_top_builddir@/ftb_throw_events.h @abs_top_srcdir@/include/;	
 	if [ ! -e @TEMPSBIN@ ]; then mkdir @TEMPSBIN@; fi				
