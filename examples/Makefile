@@ -17,8 +17,8 @@ LDFLAGS_MPI_BGL   = -L$(FTB_LIB_PATH_STATIC) -L$(ZOID_LIBC_PATH)
 LIBS_MPI_BGL      = -lftb_blrts -lc
 
 clean:
-	rm -f ftb_watchdog ftb_polling_logger ftb_simple_thrower ftb_simple_catcher ftb_notify_logger ftb_mutli_comp ftb_pingpong
-	rm -f ftb_simple_thrower_bgl ftb_simple_catcher_bgl .bgl_env_test
+	rm -f ftb_watchdog ftb_polling_logger ftb_simple_thrower ftb_simple_catcher ftb_notify_logger ftb_multi_comp ftb_pingpong
+	rm -f ftb_simple_thrower_bgl ftb_simple_catcher_bgl ftb_throw_delay_mpi .bgl_env_test
 
 .bgl_env_test:
 	@if [ -z "$(ZOID_HOME)" ]; then \
