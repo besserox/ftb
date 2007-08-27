@@ -528,13 +528,13 @@ int FTBC_Reg_all_predefined_catch(FTB_client_handle_t handle)
         return FTB_ERR_NOT_SUPPORTED;
     }
 
-    if (FTBM_get_comp_catch_count(comp_info->id.client_id.comp_ctgy, comp_info->id.client_id.comp, &count) != FTB_SUCCESS) {
+    if (FTBM_get_comp_catch_count(comp_info->id->client_id.comp_ctgy, comp_info->id->client_id.comp, &count) != FTB_SUCCESS) {
         FTB_WARNING("FTBM_get_comp_catch_count failed");
         return FTB_ERR_GENERAL;
     }
 
     events = (FTB_event_t *)malloc(sizeof(FTB_event_t)*count);
-    if (FTBM_get_comp_catch_count(comp_info->id.client_id.comp_ctgy, comp_info->id.client_id.comp, events) != FTB_SUCCESS) {
+    if (FTBM_get_comp_catch_count(comp_info->id->client_id.comp_ctgy, comp_info->id->client_id.comp, events) != FTB_SUCCESS) {
         FTB_WARNING("FTBM_get_comp_catch_count failed");
         return FTB_ERR_GENERAL;
     }

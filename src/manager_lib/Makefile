@@ -1,6 +1,6 @@
 all: ftb_network ftb_manager_lib.o ftb_event_table.o libs 
 
-export CFLAGS_MANAGER     = $(CFLAGS_SRC) -I$(PWD)/network/include -I$(PWD)/network/network_$(network)/include $(FTB_NETWORK_CFLAG)
+export CFLAGS_MANAGER     = $(CFLAGS_SRC) -I$(PWD)/include -I$(PWD)/network/include -I$(PWD)/network/network_$(network)/include $(FTB_NETWORK_CFLAG)
 
 CFLAGS = $(CFLAGS_MANAGER)
 
