@@ -15,16 +15,18 @@ int ZOID_FTB_Init( FTB_comp_ctgy_t category /* in:obj */,
                    FTB_client_handle_t *client_handle /* out:ptr */ );
 
 int ZOID_FTB_Reg_throw( FTB_client_handle_t handle /* in:obj */,
-                        FTB_event_name_t event /* in:obj */);
+                        const char *event /* in:str */);
 
 int ZOID_FTB_Reg_catch_polling_event( FTB_client_handle_t handle /* in:obj */,
-                                      FTB_event_name_t event /* in:obj */);
+                                      const char *event /* in:str */);
 
 int ZOID_FTB_Reg_catch_polling_mask( FTB_client_handle_t handle /* in:obj */,
                                      const FTB_event_t *event /* in:ptr */);
 
+int ZOID_FTB_Reg_all_predefined_catch ( FTB_client_handle_t handle /* in:obj */);
+
 int ZOID_FTB_Throw ( FTB_client_handle_t handle /* in:obj */,
-                     FTB_event_name_t event /* in:obj */);
+                     const char *event /* in:str */);
 
 int ZOID_FTB_Catch ( FTB_client_handle_t handle /* in:obj */,
                      FTB_event_t *event /* out:ptr */,

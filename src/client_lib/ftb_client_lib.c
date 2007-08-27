@@ -447,7 +447,7 @@ int FTBC_Abort(FTB_client_handle_t handle)
 }
 
 
-int FTBC_Reg_throw(FTB_client_handle_t handle, FTB_event_name_t event_name)
+int FTBC_Reg_throw(FTB_client_handle_t handle, const char *event_name)
 {
     FTBM_msg_t msg;
     FTBC_comp_info_t *comp_info;
@@ -466,7 +466,7 @@ int FTBC_Reg_throw(FTB_client_handle_t handle, FTB_event_name_t event_name)
     return ret;
 }
 
-int FTBC_Reg_catch_polling_event(FTB_client_handle_t handle, FTB_event_name_t event_name)
+int FTBC_Reg_catch_polling_event(FTB_client_handle_t handle, const char* event_name)
 {
     FTBM_msg_t msg;
     FTBC_comp_info_t *comp_info;
@@ -512,6 +512,47 @@ int FTBC_Reg_catch_polling_mask(FTB_client_handle_t handle, const FTB_event_t *e
     return ret;
 }
 
+int FTBC_Reg_all_predefined_catch(FTB_client_handle_t handle)
+{
+    FTBM_msg_t msg;
+    FTBC_comp_info_t *comp_info;
+    int i, count;
+    FTB_event_t *events;
+    int ret;
+    LOOKUP_COMP_INFO(handle,comp_info);
+
+    FTB_INFO("FTBC_Reg_catch_polling_mask In");
+    if (!(comp_info->properties.catching_type & FTB_EVENT_CATCHING_POLLING)){
+        FTB_INFO("FTBC_Reg_catch_polling_mask Out");
+        return FTB_ERR_NOT_SUPPORTED;
+    }
+
+    if (FTBM_get_comp_catch_count(comp_info->id.client_id.comp_ctgy, comp_info->id.client_id.comp, &count) != FTB_SUCCESS) {
+        FTB_WARNING("FTBM_get_comp_catch_count failed");
+        return FTB_ERR_GENERAL;
+    }
+
+    events = (FTB_event_t *)malloc(sizeof(FTB_event_t)*count);
+    if (FTBM_get_comp_catch_count(comp_info->id.client_id.comp_ctgy, comp_info->id.client_id.comp, events) != FTB_SUCCESS) {
+        FTB_WARNING("FTBM_get_comp_catch_count failed");
+        return FTB_ERR_GENERAL;
+    }
+
+    memcpy(&msg.src,comp_info->id,sizeof(FTB_id_t));
+    msg.msg_type = FTBM_MSG_TYPE_REG_CATCH;
+    FTBM_Get_parent_location_id(&msg.dst.location_id);
+    for (i=0;i<count;i++) {
+        memcpy(&msg.event, event, sizeof(FTB_event_t));
+        ret = FTBM_Send(&msg);
+        if (ret != FTB_SUCCESS) {
+            FTB_WARNING("FTBM_Send failed");
+            break;
+        }
+    }
+
+    return ret;
+}
+
 static void util_add_to_callback_map(FTBC_comp_info_t *comp_info, const FTB_event_t *event, int (*callback)(FTB_event_t *, FTB_id_t *, void*), void *arg)
 {
     FTBC_callback_entry_t *entry = (FTBC_callback_entry_t *)malloc(sizeof(FTBC_callback_entry_t));
@@ -524,7 +565,7 @@ static void util_add_to_callback_map(FTBC_comp_info_t *comp_info, const FTB_even
     unlock_component(comp_info);
 }
 
-int FTBC_Reg_catch_notify_event(FTB_client_handle_t handle, FTB_event_name_t event_name, int (*callback)(FTB_event_t *, FTB_id_t *, void*), void *arg)
+int FTBC_Reg_catch_notify_event(FTB_client_handle_t handle, const char* event_name, int (*callback)(FTB_event_t *, FTB_id_t *, void*), void *arg)
 {
     FTBM_msg_t msg;
     FTBC_comp_info_t *comp_info;
@@ -575,7 +616,7 @@ int FTBC_Reg_catch_notify_mask(FTB_client_handle_t handle, const FTB_event_t *ev
     return ret;
 }
 
-int FTBC_Throw(FTB_client_handle_t handle, FTB_event_name_t event_name)
+int FTBC_Throw(FTB_client_handle_t handle, const char *event_name)
 {
     FTBM_msg_t msg;
     FTBC_comp_info_t *comp_info;

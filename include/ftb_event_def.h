@@ -28,9 +28,25 @@
 #define FTB_PINGPONG_EVENT_CLI               0x6
 #define FTB_PINGPONG_EVENT_SRV               0x7
 
-/*Definition of event name string*/
-#define MPICH2_ERROR_ABORT_STR               "MPICH2_ERROR_ABORT"
+int FTBM_event_table_init(void);
 
+int FTBM_get_event_by_name(const char *name, FTB_event_t *e);
+
+/*
+ FTBM_get_comp_catch_count
+ Get the total number of the event masks a specific component wants to catch.
+ The number will not change in runtime and will be used to allocate space for next interface
+ */
+int FTBM_get_comp_catch_count(FTB_comp_ctgy_t comp_ctgy, FTB_comp_t comp, int *count);
+
+/*
+ FTBM_get_comp_catch_masks
+ Get an array of the masks a component wants to catch. 
+ */
+int FTBM_get_comp_catch_masks(FTB_comp_ctgy_t comp_ctgy, FTB_comp_t comp, FTB_event_t *events);
+
+
+/*
 static inline int FTBM_get_event_by_name (FTB_event_name_t name, FTB_event_t *e)
 {
     int ret=FTB_SUCCESS;
@@ -89,5 +105,7 @@ static inline int FTBM_get_event_by_name (FTB_event_name_t name, FTB_event_t *e)
     }
     return ret;
 }
+
+*/
 
 #endif /*FTB_EVENT_DEF_H*/

@@ -8,13 +8,16 @@ int FTB_Init(FTB_comp_ctgy_t category, FTB_comp_t component, const FTB_component
     return ZOID_FTB_Init(category, component, properties, client_handle); 
 }
 
-int FTB_Reg_throw(FTB_client_handle_t handle, FTB_event_name_t event)
+int FTB_Reg_throw(FTB_client_handle_t handle, const char *event)
 {
     return ZOID_FTB_Reg_throw(handle, event);
 }
 
-int FTB_Reg_catch_polling_event(FTB_client_handle_t handle, FTB_event_name_t event)
+int FTB_Reg_catch_polling_event(FTB_client_handle_t handle, const char *name)
 {
+    if (name == NULL) {
+        return FTB_ERR_NULL_POINTER;
+    }
     return ZOID_FTB_Reg_catch_polling_event(handle, event);
 }
 
@@ -26,8 +29,11 @@ int FTB_Reg_catch_polling_mask(FTB_client_handle_t handle, const FTB_event_t *ev
     return ZOID_FTB_Reg_catch_polling_mask(handle, event);
 }
 
-int FTB_Reg_catch_notify_event(FTB_client_handle_t handle, FTB_event_name_t event, int (*callback)(FTB_event_t *, FTB_id_t *, void*), void *arg)
+int FTB_Reg_catch_notify_event(FTB_client_handle_t handle, const char *name, int (*callback)(FTB_event_t *, FTB_id_t *, void*), void *arg)
 {
+    if (name == NULL) {
+        return FTB_ERR_NULL_POINTER;
+    }
     return FTB_ERR_NOT_SUPPORTED;
 }
 
@@ -36,7 +42,12 @@ int FTB_Reg_catch_notify_mask(FTB_client_handle_t handle, const FTB_event_t *eve
     return FTB_ERR_NOT_SUPPORTED;
 }
 
-int FTB_Throw(FTB_client_handle_t handle, FTB_event_name_t event)
+int FTB_Reg_all_predefined_catch(FTB_client_handle_t handle)
+{
+    return ZOID_FTB_Reg_all_predefined_catch(handle);
+}
+
+int FTB_Throw(FTB_client_handle_t handle, const char *event)
 {
     return ZOID_FTB_Throw(handle, event);
 }

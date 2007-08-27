@@ -60,7 +60,7 @@ int FTB_Init(FTB_comp_ctgy_t category, FTB_comp_t component, const FTB_component
     FTB_Reg_throw
     Claim this component will throw a specific event in right condition. It is optional
  */
-int FTB_Reg_throw(FTB_client_handle_t handle, FTB_event_name_t event);
+int FTB_Reg_throw(FTB_client_handle_t handle, const char *event);
 
 /*
     FTB_Reg_catch
@@ -70,20 +70,25 @@ int FTB_Reg_throw(FTB_client_handle_t handle, FTB_event_name_t event);
     Same event is only reported once: 
         If an event matches both polling and notification, the event will be notified and can't be polled later
         If an event matches more than one masks in notification, only the callback of the first matched mask will be called.
+
+    FTB_Reg_all_predefined_catch provides an convenient way to register all the events a component is interested in catching 
+    as predefined in XML files. All these events will be registered as for polling.
 */
-int FTB_Reg_catch_polling_event(FTB_client_handle_t handle, FTB_event_name_t event);
+int FTB_Reg_catch_polling_event(FTB_client_handle_t handle, const char *name);
 
 int FTB_Reg_catch_polling_mask(FTB_client_handle_t handle, const FTB_event_t *event);
 
-int FTB_Reg_catch_notify_event(FTB_client_handle_t handle, FTB_event_name_t event, int (*callback)(FTB_event_t *, FTB_id_t *, void*), void *arg);
+int FTB_Reg_catch_notify_event(FTB_client_handle_t handle, const char *name, int (*callback)(FTB_event_t *, FTB_id_t *, void*), void *arg);
 
 int FTB_Reg_catch_notify_mask(FTB_client_handle_t handle, const FTB_event_t *event, int (*callback)(FTB_event_t *, FTB_id_t *, void*), void *arg);
+
+int FTB_Reg_all_predefined_catch(FTB_client_handle_t handle);
 
 /* 
     FTB_Throw
     Throw an event to FTB framework.
 */
-int FTB_Throw(FTB_client_handle_t handle, FTB_event_name_t event);
+int FTB_Throw(FTB_client_handle_t handle, const char *event);
 
 /* 
     FTB_Catch

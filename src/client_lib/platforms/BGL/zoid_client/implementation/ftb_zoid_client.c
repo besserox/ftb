@@ -46,13 +46,13 @@ int ZOID_FTB_Init( FTB_comp_ctgy_t category /* in:obj */,
 }
 
 int ZOID_FTB_Reg_throw( FTB_client_handle_t handle /* in:obj */,
-                        FTB_event_name_t event /* in:obj */)
+                        const char *event /* in:str */)
 {
     return FTBC_Reg_throw(handle, event);
 }
 
 int ZOID_FTB_Reg_catch_polling_event( FTB_client_handle_t handle /* in:obj */,
-                                      FTB_event_name_t event /* in:obj */)
+                                      const char *event /* in:str */)
 {
     return FTBC_Reg_catch_polling_event(handle, event);
 }
@@ -63,8 +63,13 @@ int ZOID_FTB_Reg_catch_polling_mask( FTB_client_handle_t handle /* in:obj */,
     return FTBC_Reg_catch_polling_mask(handle, event);
 }
 
+int ZOID_FTB_Reg_all_predefined_catch ( FTB_client_handle_t handle /* in:obj */)
+{
+    return FTBC_Reg_all_predefined_catch(handle);
+}
+
 int ZOID_FTB_Throw ( FTB_client_handle_t handle /* in:obj */,
-                     FTB_event_name_t event /* in:obj */)
+                     const char *event /* in:str */)
 {
     return FTBC_Throw(handle, event);
 }
