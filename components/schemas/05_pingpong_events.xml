@@ -1,0 +1,16 @@
+<ftb_component_details>
+<component>Pingpong</component>
+<component_category>Backplane</component_category>
+<throw_event>
+<event_severity>Info</event_severity>
+<event_category>General</event_category>
+<event_name>PINPONG_EVENT_SRV</event_name>
+<event_desc>This event is used by pingpong server</event_desc>
+</throw_event>
+<throw_event>
+<event_severity>Info</event_severity>
+<event_category>General</event_category>
+<event_name>PINPONG_EVENT_CLI</event_name>
+<event_desc>This event is used by pingpong client</event_desc>
+</throw_event>
+</ftb_component_details>

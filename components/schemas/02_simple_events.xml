@@ -1,0 +1,10 @@
+<ftb_component_details>
+<component>Simple</component>
+<component_category>Backplane</component_category>
+<throw_event>
+	<event_severity>Info</event_severity>
+	<event_category>General</event_category>
+	<event_name>Simple_event</event_name>
+	<event_desc>This event is used by watchdog</event_desc>
+</throw_event>
+</ftb_component_details>

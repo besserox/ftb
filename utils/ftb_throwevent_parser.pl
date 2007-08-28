@@ -50,7 +50,8 @@ sub trim {
 sub check_xml_files {
     foreach my $file (@_) {
 	if ((! -e $file) || (! -r $file) || (-z $file)){
-	    die "Input file \'$file\' cannot be read. It either does not exist or is unreadable or empty\n";
+	    print "Input file \'$file\' cannot be read. It either does not exist or is unreadable or empty\n";
+	    exit;
 	}
     }
     return 0;
@@ -90,7 +91,8 @@ sub evaluate_throw_event {
 		    $num_event_name += 1;
 		    $num_event_attr += 1;
 		    if ($str_event_name =~ / $event_name_new /) { 
-			    die "Duplicate event name: $event_name. Please correct errors\n"; 
+			    print "Duplicate event name: $event_name. Please correct errors\n";
+			    exit;
 		    }
 		    #$str_event_name .= "#define ".$event_name_new."    ".hex($num_event_name)."\n";
 		    $str_event_name .= "#define ".$event_name_new."    ".$num_event_name."\n";
@@ -125,7 +127,8 @@ sub evaluate_throw_event {
     }
     # Currently we are considering only 3 event attributes: event name, event severity and event category
     if ($num_event_attr != 3) {
-        die "value = $num_event_attr. Event Attributes are missing for a throw event in $input_file.  Parser exiting.\n"
+        print "value = $num_event_attr. Event Attributes are missing for a throw event in $input_file.  Parser exiting.\n";
+	exit;
     }
     else {
 	$total_throw_events += 1;
@@ -160,7 +163,8 @@ sub evaluate_element_node {
 	    $component_name =~ tr/a-z/A-Z/;
 	    $component_name_new = "$component_prefix"."$component_name";
 	    if ($str_component =~ / $component_name_new /) { 
-	        die "Duplicate component name: $component_name. Please correct errors\n"; 
+	        print "Duplicate component name: $component_name. Please correct errors\n"; 
+		exit;
 	    }
 	    $str_component .= "#define ".$component_name_new."     (1<<".$num_component.")\n";
 	    $num_component += 1;
@@ -177,8 +181,9 @@ sub evaluate_element_node {
 	    &evaluate_throw_event($node, $component_ctgy_name_new, $component_name_new, $input_file);
 	    last SWITCH;
 	}
-	die "An unexpected tag called \'", $node->getNodeName(),
+	print "An unexpected tag called \'", $node->getNodeName(),
 			"\' is present in one of the input files. Exiting..\n";
+	exit;
     }
     # Below it the return value; 
     $node->getNodeName(); 
@@ -189,7 +194,8 @@ sub evaluate_element_node {
 # The parser is aware of the format and tree layout of the node in the XML file
 my @input_files = @ARGV;
 if ($#input_files == -1 ) {
-    die "Usage:\nperl parser.pl file1.xml file2.xml ...\n";
+    print "Usage:\nperl parser.pl file1.xml file2.xml ...\n";
+    exit;
 }
 
 # &check_xml_files(@input_files);
@@ -226,10 +232,12 @@ foreach my $file (@input_files) {
 	}
     }
     if ($num_comp_attr != 2) {
-        die "Component and/or component category missing from $file. Parser exiting\n";
+        print "Component and/or component category missing from $file. Parser exiting\n";
+	exit;
     }
     if ($found != 1) {
-	die "<ftb_component_details> tag not found in $file. Parser exiting\n";
+	print "<ftb_component_details> tag not found in $file. Parser exiting\n";
+	exit;
     }
     
 } # done analyzing all input files

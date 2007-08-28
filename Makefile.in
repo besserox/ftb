@@ -30,6 +30,8 @@ CC=@CC@
 RANLIB=@RANLIB@
 LIBS_PTHREAD=@LIBS_PTHREAD@
 
+schema=@abs_top_srcdir@/components/schemas/*.xml
+
 SUBDIRS = src examples
 
 all: ftb ftb_examples
@@ -44,10 +46,6 @@ clean:
 
 
 ftb: .event_def .config_def
-	for i in `ls @abs_top_srcdir@/components/schemas`; do 				\
-	perl @abs_top_srcdir@/utils/ftb_throwevent_parser.pl @abs_top_srcdir@/components/schemas/$$i;	\
-	done										
-	/bin/mv @abs_top_builddir@/ftb_throw_events.h @abs_top_srcdir@/include/;	
 	if [ ! -e @TEMPSBIN@ ]; then mkdir @TEMPSBIN@; fi				
 	if [ ! -e @TEMPLIB@ ]; then mkdir @TEMPLIB@; fi					
 	${MAKE} -C src all
