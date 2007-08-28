@@ -6,11 +6,12 @@ export EVENT_DIR=$(FTB_HOME)/etc
 export EXAMPLE_DIR=$(PWD)
 export BIN_DIR=$(FTB_HOME)/bin
 export LIB_DIR=$(FTB_HOME)/lib
+export IB_HOME=/usr/local/ofed
 
 export EVENT_FILE=$(EVENT_DIR)/ftb_event_file
 export BUILT_IN_EVENT_CODE_FILE_PREFIX=ftb_built_in_event_list
-export CFLAGS=-I$(INC_DIR) -I/usr/local/ofed/include
-export FTBLDFLAGS=-L$(LIB_DIR) -L//usr/local/ofed/lib -libverbs
+export CFLAGS=-I$(INC_DIR) -I$(IB_HOME)/include -D_GNU_SOURCE_
+export FTBLDFLAGS=-L$(LIB_DIR) -L$(IB_HOME)/lib64 -libverbs
 
 all: server client examples
 
@@ -23,7 +24,7 @@ client: $(LIB_DIR)/libftb.so $(LIB_DIR)/libftb_polling.so
 $(EXAMPLE_DIR)/ftb_event_thrower: ftb_basic $(EXAMPLE_DIR)/ftb_event_thrower.c $(LIB_DIR)/libftb_polling.so
 	gcc $(CFLAGS) $(FTBLDFLAGS) -o $@ $(EXAMPLE_DIR)/ftb_event_thrower.c -lftb_polling
 
-examples: $(EXAMPLE_DIR)/ftb_port_status_thrower 
+examples: $(EXAMPLE_DIR)/ftb_port_status_thrower  $(EXAMPLE_DIR)/ftb_ib_event_handler 
 
 #===================================
 
@@ -50,23 +51,11 @@ $(LIB_DIR)/libftb.so: $(SRC_DIR)/libftb.c $(SRC_DIR)/ftb_util.c ftb_basic
 $(LIB_DIR)/libftb_polling.so: $(SRC_DIR)/libftb.c $(SRC_DIR)/ftb_util.c ftb_basic
 	gcc -fPIC -shared $(CFLAGS) -DFTB_CLIENT_POLLING_ONLY -o $@ $(SRC_DIR)/libftb.c $(SRC_DIR)/ftb_util.c $(SRC_DIR)/$(BUILT_IN_EVENT_CODE_FILE_PREFIX).c
 
-$(EXAMPLE_DIR)/ftb_watchdog: ftb_basic $(EXAMPLE_DIR)/ftb_watchdog.c $(LIB_DIR)/libftb_polling.so
-	gcc $(CFLAGS) $(FTBLDFLAGS) -o $@ $(EXAMPLE_DIR)/ftb_watchdog.c -lpthread -lftb_polling
-
-$(EXAMPLE_DIR)/ftb_logger: ftb_basic $(EXAMPLE_DIR)/ftb_logger.c $(LIB_DIR)/libftb.so
-	gcc $(CFLAGS) $(FTBLDFLAGS) -o $@ $(EXAMPLE_DIR)/ftb_logger.c -lpthread -lftb
-
-$(EXAMPLE_DIR)/ftb_event_thrower: ftb_basic $(EXAMPLE_DIR)/ftb_event_thrower.c $(LIB_DIR)/libftb_polling.so
-	gcc $(CFLAGS) $(FTBLDFLAGS) -o $@ $(EXAMPLE_DIR)/ftb_event_thrower.c -lftb_polling
-
 $(EXAMPLE_DIR)/ftb_port_status_thrower: ftb_basic $(EXAMPLE_DIR)/ftb_port_status_thrower.c $(LIB_DIR)/libftb_polling.so
 	gcc $(CFLAGS) $(FTBLDFLAGS) -o $@ $(EXAMPLE_DIR)/ftb_port_status_thrower.c -lftb_polling
 
-$(EXAMPLE_DIR)/ftb_event_lister: ftb_basic $(EXAMPLE_DIR)/ftb_event_lister.c $(LIB_DIR)/libftb_polling.so
-	gcc $(CFLAGS) $(FTBLDFLAGS) -o $@ $(EXAMPLE_DIR)/ftb_event_lister.c -lftb_polling
-
-$(EXAMPLE_DIR)/ftb_multi_callback_monitor: ftb_basic $(EXAMPLE_DIR)/ftb_multi_callback_monitor.c $(LIB_DIR)/libftb.so
-	gcc $(CFLAGS) $(FTBLDFLAGS) -o $@ $(EXAMPLE_DIR)/ftb_multi_callback_monitor.c -lpthread -lftb
+$(EXAMPLE_DIR)/ftb_ib_event_handler: ftb_basic $(EXAMPLE_DIR)/ftb_ib_event_handler.c $(LIB_DIR)/libftb_polling.so
+	gcc $(CFLAGS) $(FTBLDFLAGS) -o $@ $(EXAMPLE_DIR)/ftb_ib_event_handler.c -lftb_polling
 
 #==========================
 
