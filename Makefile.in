@@ -1,3 +1,11 @@
+#Please ignore blank spaces (if any) in the start of this file
+@ZOID_HOME@
+@ZOID_LIBC_PATH@
+@BLRTS_PATH@
+@CC_BLRTS@
+@AR_BLRTS@
+@RANLIB_BLRTS@
+@BGLSYS_LIB_PATH@
 sbindir=@sbindir@
 libdir=@libdir@
 abs_top_builddir=@abs_top_builddir@
@@ -30,8 +38,6 @@ CC=@CC@
 RANLIB=@RANLIB@
 LIBS_PTHREAD=@LIBS_PTHREAD@
 
-schema=@abs_top_srcdir@/components/schemas/*.xml
-
 SUBDIRS = src components/examples
 
 all: ftb ftb_examples
@@ -44,9 +50,7 @@ clean:
 #if [ -e @abs_top_srcdir@/include/ftb_throw_events.h ]; then \
 #	rm @abs_top_srcdir@/include/ftb_throw_events.h; fi
 
-
 ftb: .event_def .config_def
-	if [ "@ENABLE_BGL_SUPPORT@" == "yes" ]; then source @BGL_ENVFILE@; fi
 	if [ ! -e @TEMPSBIN@ ]; then mkdir @TEMPSBIN@; fi				
 	if [ ! -e @TEMPLIB@ ]; then mkdir @TEMPLIB@; fi					
 	${MAKE} -C src all

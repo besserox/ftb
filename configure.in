@@ -53,11 +53,9 @@ AC_MSG_CHECKING(user specified platform environment file)
 AC_MSG_RESULT($ENVFILE)
 
 FTB_LIB_LINUX_NAME=ftb
-ENABLE_BGL_SUPPORT=no
 if  test "$CLIENTS" == "linux"; then
 	clients="Linux";
 elif test "$CLIENTS" == "bgl"; then
-	ENABLE_BGL_SUPPORT=yes;
 	clients="BGL Linux";
 	unset_var=0;
 	ZOID_CLIENT_DIR='${abs_top_srcdir}/src/client_lib/platforms/BGL/zoid_client';
@@ -77,30 +75,44 @@ elif test "$CLIENTS" == "bgl"; then
 	if test -z "$ZOID_HOME"; then
 		unset_var=1;
 		echo "error: Required environment variable not set: ZOID_HOME. Please check BGL environment variables file." >&2;
+	else
+		ZOID_HOME="export ZOID_HOME=$ZOID_HOME";
 	fi
 	if test -z "$ZOID_LIBC_PATH"; then
 		unset_var=1;
 		echo "error: Required environment variable not set: ZOID_LIBC_PATH. Please check BGL environment variables file." >&2;
+	else
+		ZOID_LIBC_PATH="export ZOID_LIBC_PATH=$ZOID_LIBC_PATH";
 	fi
 	if test -z "$BLRTS_PATH"; then
 		unset_var=1;
 		echo "error: Required environment variable not set: BLRTS_PATH. Please check BGL environment variables file." >&2;
+	else
+		BLRTS_PATH="export BLRTS_PATH=$BLRTS_PATH";
 	fi
 	if test -z "$CC_BLRTS"; then
 		unset_var=1;
 		echo "error: Required enviroment variable not ste: CC_BLRTS. Please check BGL environment variables file.";
+	else
+		CC_BLRTS="export CC_BLRTS=$CC_BLRTS";
 	fi
 	if test -z "$AR_BLRTS"; then
 		unset_var=1;
 		echo "error: Required enviroment variable not ste: AR_BLRTS. Please check BGL environment variables file.";
+	else
+		AR_BLRTS="export AR_BLRTS=$AR_BLRTS";
 	fi
 	if test -z "$RANLIB_BLRTS"; then
 		unset_var=1;
 		echo "error: Required enviroment variable not ste: RANLIB_BLRTS. Please check BGL environment variables file.";
+	else
+		RANLIB_BLRTS="export RANLIB_BLRTS=$RANLIB_BLRTS";
 	fi
 	if test -z "$BGLSYS_LIB_PATH"; then
 		unset_var=1;
 		echo "error: Required environment variable not set: BGLSYS_LIB_PATH. Please check BGL environment variables file." >&2;
+	else
+		BGLSYS_LIB_PATH="export BGLSYS_LIB_PATH=$BGLSYS_LIB_PATH";
 	fi
 	if test $unset_var == 1; then
 		echo "configure script aborting...correct errors first" >&2;
@@ -147,7 +159,14 @@ CFLAGS_CLIENT='${CFLAGS_SRC} -I${abs_top_srcdir}/src/client_lib/include'
 CLIENT_LIB_OBJ='${abs_top_srcdir}/src/client_lib/ftb_client_lib.o'
 CFLAGS_MANAGER='${CFLAGS_SRC} -I${abs_top_srcdir}/src/manager_lib/network/include -I${abs_top_srcdir}/src/manager_lib/network/network_${network}/include ${FTB_NETWORK_CFLAG}  -I${abs_top_srcdir}/src/manager_lib/include'
 
-AC_SUBST(ENABLE_BGL_SUPPORT)
+
+AC_SUBST(ZOID_HOME)
+AC_SUBST(ZOID_LIBC_PATH)
+AC_SUBST(BLRTS_PATH)
+AC_SUBST(CC_BLRTS)
+AC_SUBST(AR_BLRTS)
+AC_SUBST(RANLIB_BLRTS)
+AC_SUBST(BGLSYS_LIB_PATH)
 AC_SUBST(BGL_ENVFILE)
 AC_SUBST(clients)
 AC_SUBST(FTB_NETWORK_CFLAG)
