@@ -41,8 +41,8 @@ clean:
 	rm -f .event_def .config_def
 	rm -rf @TEMPSBIN@;
 	rm -rf @TEMPLIB@;
-	if [ -e @abs_top_srcdir@/include/ftb_throw_events.h ]; then \
-	rm @abs_top_srcdir@/include/ftb_throw_events.h; fi
+#if [ -e @abs_top_srcdir@/include/ftb_throw_events.h ]; then \
+#	rm @abs_top_srcdir@/include/ftb_throw_events.h; fi
 
 
 ftb: .event_def .config_def
@@ -51,7 +51,7 @@ ftb: .event_def .config_def
 	${MAKE} -C src all
 
 ftb_examples:
-	${MAKE} -C examples all
+	${MAKE} -C components/examples all
 
 .event_def: 
 	touch .event_def
