@@ -32,7 +32,7 @@ LIBS_PTHREAD=@LIBS_PTHREAD@
 
 schema=@abs_top_srcdir@/components/schemas/*.xml
 
-SUBDIRS = src examples
+SUBDIRS = src components/examples
 
 all: ftb ftb_examples
 
@@ -46,6 +46,7 @@ clean:
 
 
 ftb: .event_def .config_def
+	if [ "@ENABLE_BGL_SUPPORT@" == "yes" ]; then source @BGL_ENVFILE@; fi
 	if [ ! -e @TEMPSBIN@ ]; then mkdir @TEMPSBIN@; fi				
 	if [ ! -e @TEMPLIB@ ]; then mkdir @TEMPLIB@; fi					
 	${MAKE} -C src all

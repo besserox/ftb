@@ -53,22 +53,26 @@ AC_MSG_CHECKING(user specified platform environment file)
 AC_MSG_RESULT($ENVFILE)
 
 FTB_LIB_LINUX_NAME=ftb
+ENABLE_BGL_SUPPORT=no
 if  test "$CLIENTS" == "linux"; then
 	clients="Linux";
 elif test "$CLIENTS" == "bgl"; then
+	ENABLE_BGL_SUPPORT=yes;
 	clients="BGL Linux";
 	unset_var=0;
 	ZOID_CLIENT_DIR='${abs_top_srcdir}/src/client_lib/platforms/BGL/zoid_client';
 	FTB_LIB_BGL_CN_NAME=ftb_blrts
 	if test "$ENVFILE" == ""; then
-		ENVFILE="bgl_setup_env";
+		BGL_ENVFILE="bgl_setup_env";
+	else
+		BGL_ENVFILE="$ENVFILE";
 	fi
-	if test ! -r "$ENVFILE" ; then
-		echo "error: BGL environment file '$ENVFILE' does not exist or is not readable";
+	if test ! -r "$BGL_ENVFILE" ; then
+		echo "error: BGL environment file '$BGL_ENVFILE' does not exist or is not readable";
 		echo "configure script aborting...correct errors first"
 		exit 1;
 	else
-		source $ENVFILE;
+		source $BGL_ENVFILE;
 	fi
 	if test -z "$ZOID_HOME"; then
 		unset_var=1;
@@ -143,6 +147,8 @@ CFLAGS_CLIENT='${CFLAGS_SRC} -I${abs_top_srcdir}/src/client_lib/include'
 CLIENT_LIB_OBJ='${abs_top_srcdir}/src/client_lib/ftb_client_lib.o'
 CFLAGS_MANAGER='${CFLAGS_SRC} -I${abs_top_srcdir}/src/manager_lib/network/include -I${abs_top_srcdir}/src/manager_lib/network/network_${network}/include ${FTB_NETWORK_CFLAG}  -I${abs_top_srcdir}/src/manager_lib/include'
 
+AC_SUBST(ENABLE_BGL_SUPPORT)
+AC_SUBST(BGL_ENVFILE)
 AC_SUBST(clients)
 AC_SUBST(FTB_NETWORK_CFLAG)
 AC_SUBST(network)
@@ -180,5 +186,6 @@ AC_OUTPUT(Makefile 								\
 	  src/client_lib/platforms/BGL/zoid_client/client/Makefile		\
 	  src/client_lib/platforms/BGL/zoid_client/server/Makefile		\
 	  src/agent/Makefile							\
-	  examples/Makefile)
+	  components/examples/Makefile)
+#examples/Makefile)
 
