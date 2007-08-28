@@ -32,7 +32,7 @@ LIBS_PTHREAD=@LIBS_PTHREAD@
 
 all: ${FTB_LIB_PATH_STATIC}/lib${FTB_LIB_BGL_CN_NAME}.a ftb_zoid_client
 
-CFLAGS = -Wall -g -I${INC_DIR} -I${abs_top_srcdir}/client_lib/platforms/BGL/zoid_client
+CFLAGS = -Wall -g -I${INC_DIR} -I${ZOID_CLIENT_DIR} 
 
 ZOID_CN_LIB = zoid_client/libftb_zoid_client_blrts.a
 
