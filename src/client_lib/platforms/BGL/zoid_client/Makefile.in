@@ -95,6 +95,6 @@ clean:
 	for i in ${SUBDIRS}; do ${MAKE} -C $$i $@; done
 	rm -f $(FTB_LIB_PATH_SHARED)/$(PREFIX)_preload.so 
 	rm -f lib$(PREFIX)_blrts.a $(PREFIX)_preload.so 
-	$(PREFIX)_defs.h $(PREFIX)_dispatch.c $(PREFIX)_dispatch.o *~
+	rm -f $(PREFIX)_defs.h $(PREFIX)_dispatch.c $(PREFIX)_dispatch.o *~
 
 distclean: clean
