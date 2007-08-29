@@ -63,7 +63,7 @@ static inline FTBN_bootstrap_entry_t *util_find_parent_addr(const FTBN_bootstrap
 
     if (FTBN_addr_count == 0)
         return NULL;
-    FTB_INFO("req level %d, old parent hostname %s, port %d", pkt_req->level, pkt_req->addr.name, pkt_req->addr.port); 
+    FTB_INFO("req level %d, old parent hostname %s, port %lu", pkt_req->level, pkt_req->addr.name, pkt_req->addr.port); 
     x = rand()%FTBN_addr_count;
     iter = FTBU_map_begin(FTBN_bootstrap_addr_map);
     /*Return the last suitable one in a random range*/

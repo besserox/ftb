@@ -18,7 +18,7 @@ int FTB_Reg_catch_polling_event(FTB_client_handle_t handle, const char *name)
     if (name == NULL) {
         return FTB_ERR_NULL_POINTER;
     }
-    return ZOID_FTB_Reg_catch_polling_event(handle, event);
+    return ZOID_FTB_Reg_catch_polling_event(handle, name);
 }
 
 int FTB_Reg_catch_polling_mask(FTB_client_handle_t handle, const FTB_event_t *event)
