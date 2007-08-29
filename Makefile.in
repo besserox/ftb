@@ -50,19 +50,15 @@ clean:
 #if [ -e @abs_top_srcdir@/include/ftb_throw_events.h ]; then \
 #	rm @abs_top_srcdir@/include/ftb_throw_events.h; fi
 
-ftb: .event_def .config_def
+ftb: 
 	if [ ! -e @TEMPSBIN@ ]; then mkdir @TEMPSBIN@; fi				
-	if [ ! -e @TEMPLIB@ ]; then mkdir @TEMPLIB@; fi					
+	if [ ! -e @TEMPLIB@ ]; then mkdir @TEMPLIB@; fi
+	if [ ! -e @TEMPLIB@/static ]; then mkdir @TEMPLIB@/static; fi
+	if [ ! -e @TEMPLIB@/shared ]; then mkdir @TEMPLIB@/shared; fi
 	${MAKE} -C src all
 
 ftb_examples:
 	${MAKE} -C components/examples all
-
-.event_def: 
-	touch .event_def
-
-.config_def:
-	touch .config_def
 
 install:
 	install -v -b -d @prefix@; 
