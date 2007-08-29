@@ -60,7 +60,7 @@ CFLAGS_SHARED = -fPIC -mpowerpc -pthread
 all: .object_files_built
 
 .object_files_built:
-	$(CC) -c $(CFLAGS) $(CFLAGS_SHARED) -I@ZOID_CLIENT_DIR@ -I$(ZOID_HOME)/include -I$(INC_DIR) *.c \
+	$(CC) -c $(CFLAGS) $(CFLAGS_SHARED) -I@ZOID_CLIENT_DIR@ -I$(ZOID_HOME)/include -I$(INC_DIR) *.c 
 	touch .object_files_built
 
 clean:
