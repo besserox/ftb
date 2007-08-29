@@ -16,8 +16,13 @@ my $event_name_suffix      = '_CODE';
 
 # Declare the global variables
 #  The below variabes will function as counters.
-my $num_component_ctgy = 0;
-my $num_component = 0;
+my $max_num_component_ctgy = 16;
+my $max_num_component = 8;
+my $max_num_event_ctgy = 8;
+my $max_num_event_severity = 8;
+my $max_num_event_name = 5000; # currently limiting events for each component to 5000
+my $num_component_ctgy = 1;
+my %num_component;
 my $num_event_ctgy = 0;
 my $num_event_severity = 0;
 my $num_event_name = 0;
@@ -85,6 +90,11 @@ sub evaluate_throw_event {
 	if ($event->getNodeType() eq ELEMENT_NODE) {
 	    SWITCH: {
 		if ($event->getNodeName() eq "event_name") {
+		    if ($num_event_name == $max_num_event_name) {
+			$_=$component_new; s/$component_prefix//;
+		        print "FTB cannot add more components to $_. Max limit of ( $max_num_event_name) reached\n";
+		        exit;
+	            }
 		    $event_name = &trim($event->getFirstChild()->getData());
 	    	    $event_name =~ tr/a-z/A-Z/;
 		    $event_name_new = "$event_name_prefix"."$event_name"."$event_name_suffix";
@@ -141,8 +151,18 @@ sub evaluate_element_node {
     my ($node, $input_file) = @_;
     my $component_ctgy_name = '';
     my $component_name = '';
+
+    if (($node->getNodeName() ne "component_category") && ($component_ctgy_name_new eq "")) {
+	    print "Component category not specified in the correct location in xml file: $input_file\n";
+	    exit;
+    }
+
     SWITCH: {
     	if ($node->getNodeName() eq "component_category") {
+	    if ($num_component_ctgy == $max_num_component_ctgy) {
+		    print "FTB cannot add more component categories. Max limit of ( $num_component_ctgy ) reached\n";
+		    exit;
+	    } 
 	    $component_ctgy_name = &trim($node->getFirstChild()->getData());
 	    $component_ctgy_name =~ tr/a-z/A-Z/;
 	    $component_ctgy_name_new = "$component_ctgy_prefix"."$component_ctgy_name";
@@ -151,6 +171,7 @@ sub evaluate_element_node {
 	    }
 	    $str_component_ctgy .= "#define ".$component_ctgy_name_new.	
 	    				"     (1<<".$num_component_ctgy.")\n";
+	    $num_component{$component_ctgy_name_new} = 0;
 	    $num_component_ctgy += 1;
 	    if ($DEBUG) {
 		print "Subroutine evaluate_element_node(): Found ",$node->getNodeName(),
@@ -159,6 +180,11 @@ sub evaluate_element_node {
 	    last SWITCH;
 	}
     	if ($node->getNodeName() eq "component") {
+	    if ($num_component{$component_ctgy_name_new} == $max_num_component) {
+		    $_=$component_ctgy_name_new; s/$component_ctgy_prefix//;
+		    print "FTB cannot add more components to $_ category. Max limit of ( $max_num_component ) reached\n";
+		    exit;
+	    }
 	    $component_name = &trim($node->getFirstChild()->getData());
 	    $component_name =~ tr/a-z/A-Z/;
 	    $component_name_new = "$component_prefix"."$component_name";
@@ -166,8 +192,9 @@ sub evaluate_element_node {
 	        print "Duplicate component name: $component_name. Please correct errors\n"; 
 		exit;
 	    }
-	    $str_component .= "#define ".$component_name_new."     (1<<".$num_component.")\n";
-	    $num_component += 1;
+	    $str_component .= "#define ".$component_name_new."     (1<<".$num_component{$component_ctgy_name_new}.")\n";
+	    $num_component{$component_ctgy_name_new} += 1;
+            $num_event_name = 0;
 	    if ($DEBUG) {
 	    	print "Subroutine evaluate_element_node(): Found ",$node->getNodeName(),
 				"=",$component_name,"\n";
@@ -178,6 +205,10 @@ sub evaluate_element_node {
 	    if ($DEBUG) {
 		print "Subroutine evaluate_element_node(): Found throw event. Further evaluating it.\n";
 	    }
+            if ($component_name_new eq "") {
+	      print "Component not specified in the correct location in xml file: $input_file\n";
+	      exit;
+            }
 	    &evaluate_throw_event($node, $component_ctgy_name_new, $component_name_new, $input_file);
 	    last SWITCH;
 	}
@@ -204,6 +235,7 @@ foreach my $file (@input_files) {
     my $element_type = '';
     my $num_comp_attr = 0;
     my $doc = $parser->parsefile($file);
+    $component_ctgy_name_new='';
     foreach my $node ($doc->getChildNodes()) {
 	if ($DEBUG) { 
 	    print "-----------------------------------------------------------\n";

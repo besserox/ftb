@@ -78,15 +78,8 @@ typedef struct FTB_client_id {
     uint8_t ext;/*extenion field*/
 }FTB_client_id_t;
 
+/* Reserved component category and component for use */
 #define FTB_COMP_MANAGER                   (1<<0)
-#define FTB_COMP_SIMPLE                    (1<<1)
-#define FTB_COMP_WATCHDOG                  (1<<2)
-#define FTB_COMP_POLLING_LOGGER            (1<<3)
-#define FTB_COMP_NOTIFY_LOGGER             (1<<4)
-#define FTB_TEST_COMP_1                    (1<<5)
-#define FTB_TEST_COMP_2                    (1<<6)
-#define FTB_TEST_COMP_3                    (1<<7)
-
 #define FTB_COMP_CTGY_BACKPLANE            (1<<0)
 
 typedef uint32_t FTB_client_handle_t;

@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <ftb_component_details>
-<component>mpich2</component>
 <component_category>mpi</component_category>
+<component>mpich2</component>
 <throw_event>
 	<event_severity>Error</event_severity>
 	<event_category>MPI_Resources</event_category>
@@ -12,6 +12,6 @@
 	<event_category>MPI_Resources</event_category>
 	<event_name>MEM_REGISTER_FAIL</event_name>
 	<event_desc>Memory Registration failed</event_desc>
-	<event_severity>Error</event_severity>
+	<event_severity>fatal</event_severity>
 </throw_event>
 </ftb_component_details>

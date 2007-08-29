@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <ftb_component_details>
+<component_category>ftb_examples</component_category>
 <component>watchdog</component>
-<component_category>Backplane</component_category>
 <throw_event>
 	<event_severity>Info</event_severity>
 	<event_category>General</event_category>

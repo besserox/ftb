@@ -1,0 +1,10 @@
+<ftb_component_details>
+<component_category>ftb_examples</component_category>
+<component>Multicomp_comp1</component>
+<throw_event>
+<event_severity>Info</event_severity>
+<event_category>General</event_category>
+<event_name>TEST_EVENT_1</event_name>
+<event_desc>Just another test event1</event_desc>
+</throw_event>
+</ftb_component_details>
