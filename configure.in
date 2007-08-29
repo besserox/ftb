@@ -6,7 +6,6 @@ AC_PREFIX_DEFAULT('/usr/local')
 saveCFLAGS=$CFLAGS
 AC_PROG_CC
 CFLAGS=$saveCFLAGS
-AC_PROG_INSTALL
 AC_PROG_RANLIB
 
 dnl Get bootstrap server name
@@ -127,6 +126,11 @@ for i in `ls $SCHEMA_FILES_PATH`; do
    temp=$temp"$i ";
 done
 perl $PARSER_PATH/ftb_throwevent_parser.pl $temp
+if test ! -e `pwd`/ftb_throw_events.h; then
+	echo "ftb_throw_events.h could not be created.";
+	echo "configure script aborting...correct errors first" >&2;
+	exit 1;
+fi
 /bin/mv `pwd`/ftb_throw_events.h `pwd`/include/;
 
 dnl Create include/ftb_conf file
@@ -206,5 +210,4 @@ AC_OUTPUT(Makefile 								\
 	  src/client_lib/platforms/BGL/zoid_client/server/Makefile		\
 	  src/agent/Makefile							\
 	  components/examples/Makefile)
-#examples/Makefile)
 
