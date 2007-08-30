@@ -5,6 +5,6 @@
 	<event_severity>Info</event_severity>
 	<event_category>General</event_category>
 	<event_name>Simple_event</event_name>
-	<event_desc>This event is used by watchdog</event_desc>
+	<event_desc>This event is used for testing and examples</event_desc>
 </throw_event>
 </ftb_component_details>

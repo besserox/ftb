@@ -66,6 +66,7 @@ int Comp2_Init()
 
     properties.catching_type = FTB_EVENT_CATCHING_POLLING;
     properties.err_handling = FTB_ERR_HANDLE_NONE;
+    properties.max_event_queue_size = FTB_DEFAULT_EVENT_POLLING_Q_LEN;
 
     printf("Comp2: FTB_Init\n");
     FTB_Init( FTB_EVENT_DEF_COMP_CTGY_FTB_EXAMPLES, FTB_EVENT_DEF_COMP_MULTICOMP_COMP2, &properties, &Comp2_ftb_handle);

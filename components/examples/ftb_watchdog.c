@@ -20,6 +20,7 @@ int main (int argc, char *argv[])
     FTB_client_handle_t handle;
     properties.catching_type = FTB_EVENT_CATCHING_POLLING;
     properties.err_handling = FTB_ERR_HANDLE_NONE;
+    properties.max_event_queue_size = FTB_DEFAULT_EVENT_POLLING_Q_LEN;
     char *tag_data = "my_tag";
     char tag_data_recv[30];
     FTB_dynamic_len_t data_len = 30;
