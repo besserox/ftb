@@ -11,10 +11,10 @@ FTB_client_handle_t Comp3_ftb_handle;
 
 int Comp3_evt_handler(FTB_event_t *evt, FTB_id_t *src, void *arg)
 {
-    printf("Comp3 caught event: comp_ctgy: %d, comp %d, severity: %d, event_ctgy %d, event_name %d, ",
-            evt->comp_ctgy, evt->comp, evt->severity, evt->event_ctgy, evt->event_name);
-    printf("from host %s, pid %d, comp_ctgy: %d, comp %d, extension %d\n",
-           src->location_id.hostname, src->location_id.pid, src->client_id.comp_ctgy,
+    printf("Comp3 caught event: comp_cat: %d, comp %d, severity: %d, event_cat %d, event_name %d, ",
+            evt->comp_cat, evt->comp, evt->severity, evt->event_cat, evt->event_name);
+    printf("from host %s, pid %d, comp_cat: %d, comp %d, extension %d\n",
+           src->location_id.hostname, src->location_id.pid, src->client_id.comp_cat,
            src->client_id.comp, src->client_id.ext);
     return 0;
 }
@@ -27,12 +27,12 @@ int Comp3_Init()
     properties.catching_type = FTB_EVENT_CATCHING_NOTIFICATION;
     properties.err_handling = FTB_ERR_HANDLE_NONE;
 
-    FTB_EVENT_MASK_ALL(mask);
+    FTB_EVENT_SET_ALL(mask);
     FTB_EVENT_CLR_SEVERITY(mask);
-    FTB_EVENT_MARK_SEVERITY(mask, FTB_EVENT_DEF_SEVERITY_INFO);
+    FTB_EVENT_SET_SEVERITY(mask, FTB_EVENT_DEF_SEVERITY_INFO);
 
     printf("Comp3: FTB_Init\n");
-    FTB_Init( FTB_EVENT_DEF_COMP_CTGY_FTB_EXAMPLES,  FTB_EVENT_DEF_COMP_MULTICOMP_COMP3, &properties, &Comp3_ftb_handle);
+    FTB_Init( FTB_EVENT_DEF_COMP_CAT_FTB_EXAMPLES,  FTB_EVENT_DEF_COMP_MULTICOMP_COMP3, &properties, &Comp3_ftb_handle);
     printf("Comp3: FTB_Reg_catch_notify_mask\n");
     FTB_Reg_catch_notify_mask(Comp3_ftb_handle, &mask, Comp3_evt_handler, NULL);
     
@@ -69,7 +69,7 @@ int Comp2_Init()
     properties.max_event_queue_size = FTB_DEFAULT_EVENT_POLLING_Q_LEN;
 
     printf("Comp2: FTB_Init\n");
-    FTB_Init( FTB_EVENT_DEF_COMP_CTGY_FTB_EXAMPLES, FTB_EVENT_DEF_COMP_MULTICOMP_COMP2, &properties, &Comp2_ftb_handle);
+    FTB_Init( FTB_EVENT_DEF_COMP_CAT_FTB_EXAMPLES, FTB_EVENT_DEF_COMP_MULTICOMP_COMP2, &properties, &Comp2_ftb_handle);
     printf("Comp2: FTB_Reg_catch_polling_event\n");
     FTB_Reg_catch_polling_event(Comp2_ftb_handle, "TEST_EVENT_1");
 
@@ -89,10 +89,10 @@ int Comp2_Func()
        if (ret == FTB_CAUGHT_NO_EVENT) {
            break;
        }
-       printf("Comp2 caught event: comp_ctgy: %d, comp %d, severity: %d, event_ctgy %d, event_name %d, ",
-            evt.comp_ctgy, evt.comp, evt.severity, evt.event_ctgy, evt.event_name);
-       printf("from host %s, pid %d, comp_ctgy: %d, comp %d, extension %d\n",
-           src.location_id.hostname, src.location_id.pid, src.client_id.comp_ctgy,
+       printf("Comp2 caught event: comp_cat: %d, comp %d, severity: %d, event_cat %d, event_name %d, ",
+            evt.comp_cat, evt.comp, evt.severity, evt.event_cat, evt.event_name);
+       printf("from host %s, pid %d, comp_cat: %d, comp %d, extension %d\n",
+           src.location_id.hostname, src.location_id.pid, src.client_id.comp_cat,
            src.client_id.comp, src.client_id.ext);
     }
 
@@ -120,10 +120,10 @@ FTB_client_handle_t Comp1_ftb_handle;
 
 int Comp1_evt_handler(FTB_event_t *evt, FTB_id_t *src, void *arg)
 {
-    printf("Comp1 caught event: comp_ctgy: %d, comp %d, severity: %d, event_ctgy %d, event_name %d, ",
-            evt->comp_ctgy, evt->comp, evt->severity, evt->event_ctgy, evt->event_name);
-    printf("from host %s, pid %d, comp_ctgy: %d, comp %d, extension %d\n",
-           src->location_id.hostname, src->location_id.pid, src->client_id.comp_ctgy,
+    printf("Comp1 caught event: comp_cat: %d, comp %d, severity: %d, event_cat %d, event_name %d, ",
+            evt->comp_cat, evt->comp, evt->severity, evt->event_cat, evt->event_name);
+    printf("from host %s, pid %d, comp_cat: %d, comp %d, extension %d\n",
+           src->location_id.hostname, src->location_id.pid, src->client_id.comp_cat,
            src->client_id.comp, src->client_id.ext);
     return 0;
 }
@@ -136,12 +136,12 @@ int Comp1_Init()
     properties.catching_type = FTB_EVENT_CATCHING_NOTIFICATION;
     properties.err_handling = FTB_ERR_HANDLE_NONE;
 
-    FTB_EVENT_MASK_ALL(mask);
+    FTB_EVENT_SET_ALL(mask);
     FTB_EVENT_CLR_SEVERITY(mask);
-    FTB_EVENT_MARK_SEVERITY(mask, FTB_EVENT_DEF_SEVERITY_FATAL);
+    FTB_EVENT_SET_SEVERITY(mask, FTB_EVENT_DEF_SEVERITY_FATAL);
 
     printf("Comp1: FTB_Init\n");
-    FTB_Init(FTB_EVENT_DEF_COMP_CTGY_FTB_EXAMPLES, FTB_EVENT_DEF_COMP_MULTICOMP_COMP1, &properties, &Comp1_ftb_handle);
+    FTB_Init(FTB_EVENT_DEF_COMP_CAT_FTB_EXAMPLES, FTB_EVENT_DEF_COMP_MULTICOMP_COMP1, &properties, &Comp1_ftb_handle);
     printf("Comp1: FTB_Reg_catch_notify_mask\n");
     FTB_Reg_catch_notify_mask(Comp1_ftb_handle, &mask, Comp1_evt_handler, NULL);
 

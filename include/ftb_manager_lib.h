@@ -29,23 +29,23 @@ typedef struct FTBM_msg {
 
 #define FTBM_EVENT_CLR_ALL(evt_mask) {\
     evt_mask.severity = 0x0; \
-    evt_mask.comp_ctgy = 0x0; \
+    evt_mask.comp_cat = 0x0; \
     evt_mask.comp = 0x0; \
-    evt_mask.event_ctgy = 0x0; \
+    evt_mask.event_cat = 0x0; \
     evt_mask.event_name = 0x0; \
 }
 
 #define FTBM_EVENT_CLR_SEVERITY(evt_mask) {\
     evt_mask.severity = 0x0; \
 }
-#define FTBM_EVENT_CLR_COMP_CTGY(evt_mask) {\
-    evt_mask.comp_ctgy = 0x0; \
+#define FTBM_EVENT_CLR_COMP_CAT(evt_mask) {\
+    evt_mask.comp_cat = 0x0; \
 }
 #define FTBM_EVENT_CLR_COMP(evt_mask) {\
     evt_mask.comp = 0x0; \
 }
-#define FTBM_EVENT_CLR_EVENT_CTGY(evt_mask) {\
-    evt_mask.event_ctgy = 0x0; \
+#define FTBM_EVENT_CLR_EVENT_CAT(evt_mask) {\
+    evt_mask.event_cat = 0x0; \
 }
 #define FTBM_EVENT_CLR_EVENT_NAME(evt_mask) {\
     evt_mask.event_name = 0x0; \
@@ -53,41 +53,41 @@ typedef struct FTBM_msg {
 
 
 /*use the underflow trick of unsigned int create all mask*/
-#define FTBM_EVENT_MASK_ALL(evt_mask) {\
+#define FTBM_EVENT_SET_ALL(evt_mask) {\
     evt_mask.severity = 0-1; \
-    evt_mask.comp_ctgy = 0-1; \
+    evt_mask.comp_cat = 0-1; \
     evt_mask.comp = 0-1; \
-    evt_mask.event_ctgy = 0-1; \
+    evt_mask.event_cat = 0-1; \
     evt_mask.event_name = 0-1; \
 }
 
-#define FTBM_EVENT_MARK_ALL_SEVERITY(evt_mask) {\
+#define FTBM_EVENT_SET_ALL_SEVERITY(evt_mask) {\
     evt_mask.severity = 0-1; \
 }
-#define FTBM_EVENT_MARK_ALL_COMP_CTGY(evt_mask) {\
-    evt_mask.comp_ctgy = 0-1; \
+#define FTBM_EVENT_SET_ALL_COMP_CAT(evt_mask) {\
+    evt_mask.comp_cat = 0-1; \
 }
-#define FTBM_EVENT_MARK_ALL_COMP(evt_mask) {\
+#define FTBM_EVENT_SET_ALL_COMP(evt_mask) {\
     evt_mask.comp = 0-1; \
 }
-#define FTBM_EVENT_MARK_ALL_EVENT_CTGY(evt_mask) {\
-    evt_mask.event_ctgy = 0-1; \
+#define FTBM_EVENT_SET_ALL_EVENT_CAT(evt_mask) {\
+    evt_mask.event_cat = 0-1; \
 }
-#define FTBM_EVENT_MARK_ALL_EVENT_NAME(evt_mask) {\
+#define FTBM_EVENT_SET_ALL_EVENT_NAME(evt_mask) {\
     evt_mask.event_name = 0-1; \
 }
 
-#define FTBM_EVENT_MARK_SEVERITY(evt_mask, val) {\
+#define FTBM_EVENT_SET_SEVERITY(evt_mask, val) {\
     evt_mask.severity = evt_mask.severity | val; \
 }
-#define FTBM_EVENT_MARK_COMP_CTGY(evt_mask, val) {\
-    evt_mask.comp_ctgy = evt_mask.comp_ctgy | val; \
+#define FTBM_EVENT_SET_COMP_CAT(evt_mask, val) {\
+    evt_mask.comp_cat = evt_mask.comp_cat | val; \
 }
-#define FTBM_EVENT_MARK_COMP(evt_mask, val) {\
+#define FTBM_EVENT_SET_COMP(evt_mask, val) {\
     evt_mask.comp = evt_mask.comp | val; \
 }
-#define FTBM_EVENT_MARK_EVENT_CTGY(evt_mask, val) {\
-    evt_mask.event_ctgy = evt_mask.event_ctgy | val; \
+#define FTBM_EVENT_SET_EVENT_CAT(evt_mask, val) {\
+    evt_mask.event_cat = evt_mask.event_cat | val; \
 }
 
 /*different from others because event_name field can only have one valid value*/

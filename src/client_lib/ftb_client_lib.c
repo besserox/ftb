@@ -236,7 +236,7 @@ static void *callback_component(void *arg)
     return NULL;
 }
 
-int FTBC_Init(FTB_comp_ctgy_t category, FTB_comp_t component, uint8_t extension, const FTB_component_properties_t *properties, FTB_client_handle_t *client_handle)
+int FTBC_Init(FTB_comp_cat_t category, FTB_comp_t component, uint8_t extension, const FTB_component_properties_t *properties, FTB_client_handle_t *client_handle)
 {
     FTBC_comp_info_t *comp_info;
     FTB_INFO("FTBC_Init In");
@@ -260,7 +260,7 @@ int FTBC_Init(FTB_comp_ctgy_t category, FTB_comp_t component, uint8_t extension,
     num_components++;
     unlock_client();
     comp_info->id = (FTB_id_t *)malloc(sizeof(FTB_id_t));
-    comp_info->id->client_id.comp_ctgy = category;
+    comp_info->id->client_id.comp_cat = category;
     comp_info->id->client_id.comp = component;
     comp_info->id->client_id.ext = extension;
     FTBM_Get_location_id(&comp_info->id->location_id);
@@ -528,7 +528,7 @@ int FTBC_Reg_all_predefined_catch(FTB_client_handle_t handle)
         return FTB_ERR_NOT_SUPPORTED;
     }
 
-    if (FTBM_get_comp_catch_count(comp_info->id->client_id.comp_ctgy, comp_info->id->client_id.comp, &count) != FTB_SUCCESS) {
+    if (FTBM_get_comp_catch_count(comp_info->id->client_id.comp_cat, comp_info->id->client_id.comp, &count) != FTB_SUCCESS) {
         FTB_WARNING("FTBM_get_comp_catch_count failed");
         return FTB_ERR_GENERAL;
     }
@@ -539,7 +539,7 @@ int FTBC_Reg_all_predefined_catch(FTB_client_handle_t handle)
     }
 
     events = (FTB_event_t *)malloc(sizeof(FTB_event_t)*count);
-    if (FTBM_get_comp_catch_masks(comp_info->id->client_id.comp_ctgy, comp_info->id->client_id.comp, events) != FTB_SUCCESS) {
+    if (FTBM_get_comp_catch_masks(comp_info->id->client_id.comp_cat, comp_info->id->client_id.comp, events) != FTB_SUCCESS) {
         FTB_WARNING("FTBM_get_comp_catch_masks failed");
         return FTB_ERR_GENERAL;
     }

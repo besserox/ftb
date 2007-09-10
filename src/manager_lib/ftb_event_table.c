@@ -23,7 +23,7 @@ int FTBM_event_table_init()
 static ENTRY* util_search_event_hash(const char *name) 
 {
     ENTRY event;
-    event.key= name;
+    event.key= (char *)name;
     return (hsearch(event, FIND));
 }
 
@@ -33,8 +33,8 @@ int FTBM_get_event_by_name(const char *name, FTB_event_t *e)
     if ((found_event = util_search_event_hash(name)) != NULL) {
             e->event_name = ((FTBM_throw_event_t *)found_event->data)->event_name;
             e->severity   = ((FTBM_throw_event_t *)found_event->data)->severity;
-            e->event_ctgy = ((FTBM_throw_event_t *)found_event->data)->event_ctgy;
-            e->comp_ctgy  = ((FTBM_throw_event_t *)found_event->data)->comp_ctgy;
+            e->event_cat = ((FTBM_throw_event_t *)found_event->data)->event_cat;
+            e->comp_cat  = ((FTBM_throw_event_t *)found_event->data)->comp_cat;
             e->comp       = ((FTBM_throw_event_t *)found_event->data)->comp;
     } 
     else {
@@ -43,13 +43,13 @@ int FTBM_get_event_by_name(const char *name, FTB_event_t *e)
     return FTB_SUCCESS;
 }
 
-int FTBM_get_comp_catch_count(FTB_comp_ctgy_t comp_ctgy, FTB_comp_t comp, int *count)
+int FTBM_get_comp_catch_count(FTB_comp_cat_t comp_cat, FTB_comp_t comp, int *count)
 {
     *count = 0;
     return FTB_SUCCESS;
 }
 
-int FTBM_get_comp_catch_masks(FTB_comp_ctgy_t comp_ctgy, FTB_comp_t comp, FTB_event_t *events)
+int FTBM_get_comp_catch_masks(FTB_comp_cat_t comp_cat, FTB_comp_t comp, FTB_event_t *events)
 {
     return FTB_SUCCESS;
 }

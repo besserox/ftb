@@ -25,7 +25,7 @@ int main (int argc, char *argv[])
     char tag_data_recv[30];
     FTB_dynamic_len_t data_len = 30;
 
-    FTB_Init(FTB_EVENT_DEF_COMP_CTGY_FTB_EXAMPLES, FTB_EVENT_DEF_COMP_WATCHDOG, &properties, &handle);
+    FTB_Init(FTB_EVENT_DEF_COMP_CAT_FTB_EXAMPLES, FTB_EVENT_DEF_COMP_WATCHDOG, &properties, &handle);
     FTB_Reg_throw(handle, "WATCH_DOG_EVENT");
     FTB_Reg_catch_polling_event(handle, "WATCH_DOG_EVENT");
     FTB_Add_dynamic_tag(handle, 1, tag_data, strlen(tag_data)+1);

@@ -21,10 +21,10 @@ int event_logger(FTB_event_t *evt, FTB_id_t *src, void *arg)
     FILE* log_fp = (FILE*)arg;
     time_t current = time(NULL);
     fprintf(log_fp,"%s\t",asctime(localtime(&current)));
-    fprintf(log_fp,"Caught event: comp_ctgy: %d, comp %d, severity: %d, event_ctgy %d, event_name %d, ",
-            evt->comp_ctgy, evt->comp, evt->severity, evt->event_ctgy, evt->event_name);
-    fprintf(log_fp,"from host %s, pid %d, comp_ctgy: %d, comp %d, extension %d\n",
-           src->location_id.hostname, src->location_id.pid, src->client_id.comp_ctgy,
+    fprintf(log_fp,"Caught event: comp_cat: %d, comp %d, severity: %d, event_cat %d, event_name %d, ",
+            evt->comp_cat, evt->comp, evt->severity, evt->event_cat, evt->event_name);
+    fprintf(log_fp,"from host %s, pid %d, comp_cat: %d, comp %d, extension %d\n",
+           src->location_id.hostname, src->location_id.pid, src->client_id.comp_cat,
            src->client_id.comp, src->client_id.ext);
     fflush(log_fp);
     return 0;
@@ -53,8 +53,8 @@ int main (int argc, char *argv[])
     properties.catching_type = FTB_EVENT_CATCHING_NOTIFICATION;
     properties.err_handling = FTB_ERR_HANDLE_NONE;
 
-    FTB_EVENT_MASK_ALL(mask);
-    FTB_Init(FTB_EVENT_DEF_COMP_CTGY_FTB_EXAMPLES, FTB_EVENT_DEF_COMP_NOTIFY_LOGGER,  &properties, &handle);
+    FTB_EVENT_SET_ALL(mask);
+    FTB_Init(FTB_EVENT_DEF_COMP_CAT_FTB_EXAMPLES, FTB_EVENT_DEF_COMP_NOTIFY_LOGGER,  &properties, &handle);
     FTB_Reg_catch_notify_mask(handle, &mask, event_logger, (void*)log_fp);
 
     signal(SIGINT, Int_handler);

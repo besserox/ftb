@@ -15,12 +15,12 @@ int FTBU_match_mask(const FTB_event_t *event, const FTB_event_t *mask)
     }
     if ( (event->severity & mask->severity) != 0
      && (event->severity & ~mask->severity) == 0
-     && (event->comp_ctgy & mask->comp_ctgy) != 0
-     && (event->comp_ctgy & ~mask->comp_ctgy) == 0
+     && (event->comp_cat & mask->comp_cat) != 0
+     && (event->comp_cat & ~mask->comp_cat) == 0
      && (event->comp & mask->comp) != 0
      && (event->comp & ~mask->comp) == 0
-     && (event->event_ctgy & mask->event_ctgy) != 0
-     && (event->event_ctgy & ~mask->event_ctgy) == 0)
+     && (event->event_cat & mask->event_cat) != 0
+     && (event->event_cat & ~mask->event_cat) == 0)
         return 1;
     else 
         return 0;
@@ -38,7 +38,7 @@ int FTBU_is_equal_location_id(const FTB_location_id_t *lhs, const FTB_location_i
 int FTBU_is_equal_ftb_id(const FTB_id_t *lhs, const FTB_id_t *rhs)
 {
     if (lhs->client_id.comp == rhs->client_id.comp
-   && lhs->client_id.comp_ctgy == rhs->client_id.comp_ctgy
+   && lhs->client_id.comp_cat == rhs->client_id.comp_cat
    && lhs->client_id.ext == rhs->client_id.ext) {
         return FTBU_is_equal_location_id(&lhs->location_id, &rhs->location_id);
    }
@@ -48,9 +48,9 @@ int FTBU_is_equal_ftb_id(const FTB_id_t *lhs, const FTB_id_t *rhs)
 int FTBU_is_equal_event(const FTB_event_t *lhs, const FTB_event_t *rhs)
 {
     if ( (lhs->severity == rhs->severity)
-     && (lhs->comp_ctgy == rhs->comp_ctgy) 
+     && (lhs->comp_cat == rhs->comp_cat) 
      && (lhs->comp == rhs->comp) 
-     && (lhs->event_ctgy == rhs->event_ctgy)
+     && (lhs->event_cat == rhs->event_cat)
      && (lhs->event_name == rhs->event_name) )
         return 1;
     else 

@@ -5,7 +5,7 @@
 FILE* FTBU_log_file_fp;
 /*Linux wrapper for client_lib*/
 
-int FTB_Init(const FTB_comp_ctgy_t category, const FTB_comp_t component, const FTB_component_properties_t *properties, FTB_client_handle_t *client_handle)
+int FTB_Init(const FTB_comp_cat_t category, const FTB_comp_t component, const FTB_component_properties_t *properties, FTB_client_handle_t *client_handle)
 {
     FTBU_log_file_fp = stderr;
     return FTBC_Init(category, component, 0, properties, client_handle); /*Set extention to 0*/

@@ -56,15 +56,15 @@ If specified, an additional thread is generated.
 */
 
 typedef uint8_t FTB_severity_t;
-typedef uint16_t FTB_comp_ctgy_t;
+typedef uint16_t FTB_comp_cat_t;
 typedef uint8_t FTB_comp_t;
-typedef uint8_t FTB_event_ctgy_t;
+typedef uint8_t FTB_event_cat_t;
 typedef uint16_t FTB_event_name_t;
 typedef uint8_t FTB_dynamic_len_t;
 
 #define FTB_EVENT_SIZE                   64
 #define FTB_MAX_DYNAMIC_DATA_SIZE   ((FTB_EVENT_SIZE)-sizeof(FTB_severity_t)\
-    -sizeof(FTB_comp_ctgy_t)-sizeof(FTB_comp_t)-sizeof(FTB_event_ctgy_t)\
+    -sizeof(FTB_comp_cat_t)-sizeof(FTB_comp_t)-sizeof(FTB_event_cat_t)\
     -sizeof(FTB_event_name_t)-sizeof(FTB_dynamic_len_t))
 
 typedef struct FTB_location_id {
@@ -73,18 +73,18 @@ typedef struct FTB_location_id {
 }FTB_location_id_t;
 
 typedef struct FTB_client_id {
-    FTB_comp_ctgy_t comp_ctgy;
+    FTB_comp_cat_t comp_cat;
     FTB_comp_t comp;
     uint8_t ext;/*extenion field*/
 }FTB_client_id_t;
 
 /* Reserved component category and component for use */
 #define FTB_COMP_MANAGER                   (1<<0)
-#define FTB_COMP_CTGY_BACKPLANE            (1<<0)
+#define FTB_COMP_CAT_BACKPLANE            (1<<0)
 
 typedef uint32_t FTB_client_handle_t;
 
-#define FTB_CLIENT_ID_TO_HANDLE(id)  ((id).comp_ctgy<<16 | (id).comp<<8 | (id).ext)
+#define FTB_CLIENT_ID_TO_HANDLE(id)  ((id).comp_cat<<16 | (id).comp<<8 | (id).ext)
 
 typedef struct FTB_id {
     FTB_location_id_t location_id;
@@ -120,9 +120,9 @@ typedef uint8_t FTB_tag_t;
 /*event and event_mask using same structure*/
 typedef struct FTB_event{
     FTB_severity_t  severity;
-    FTB_comp_ctgy_t comp_ctgy;
+    FTB_comp_cat_t comp_cat;
     FTB_comp_t comp;
-    FTB_event_ctgy_t event_ctgy;
+    FTB_event_cat_t event_cat;
     FTB_event_name_t event_name;
     char dynamic_data[FTB_MAX_DYNAMIC_DATA_SIZE];
     FTB_dynamic_len_t len;

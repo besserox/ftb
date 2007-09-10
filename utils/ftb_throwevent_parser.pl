@@ -7,36 +7,36 @@ my $outfile = "ftb_throw_events.h";
 my $parser  = new XML::DOM::Parser();
 
 # Declare the Prefixes for the event and component attributes
-my $component_ctgy_prefix  = 'FTB_EVENT_DEF_COMP_CTGY_';
+my $component_cat_prefix  = 'FTB_EVENT_DEF_COMP_CAT_';
 my $component_prefix       = 'FTB_EVENT_DEF_COMP_';
 my $event_severity_prefix  = 'FTB_EVENT_DEF_SEVERITY_';
-my $event_ctgy_prefix      = 'FTB_EVENT_DEF_EVENT_CTGY_';
+my $event_cat_prefix      = 'FTB_EVENT_DEF_EVENT_CAT_';
 my $event_name_prefix      = 'FTB_EVENT_DEF_';
 my $event_name_suffix      = '_CODE';
 
 # Declare the global variables
 #  The below variabes will function as counters.
-my $max_num_component_ctgy = 16;
+my $max_num_component_cat = 16;
 my $max_num_component = 8;
-my $max_num_event_ctgy = 8;
+my $max_num_event_cat = 8;
 my $max_num_event_severity = 8;
 my $max_num_event_name = 5000; # currently limiting events for each component to 5000
-my $num_component_ctgy = 1;
+my $num_component_cat = 1;
 my %num_component;
-my $num_event_ctgy = 0;
+my $num_event_cat = 0;
 my $num_event_severity = 0;
 my $num_event_name = 0;
 
 # The below variables will function as string for holding the data to be written to output file
-my $str_component_ctgy = "/*Definition of component categories*/\n";
+my $str_component_cat = "/*Definition of component categories*/\n";
 my $str_component = "/*Definition of components*/\n";
-my $str_event_ctgy = "/*Definition of event categories*/\n";
+my $str_event_cat = "/*Definition of event categories*/\n";
 my $str_event_severity = "/*Definition of event severity*/\n";
 my $str_event_name = "/*Definition of event name*/\n";
 my $str_struct = '';
 
 # The below variables will fucntion as temporary variables
-my $component_ctgy_name_new = '';
+my $component_cat_name_new = '';
 my $component_name_new = '';
 my $total_throw_events = 0;
 my $DEBUG = 0;
@@ -80,11 +80,11 @@ sub write_file {
 
 # Subroutine to handle throw_event ELEMENT_NODE
 sub evaluate_throw_event {
-    my ($node, $component_ctgy_new, $component_new, $input_file) = @_;
+    my ($node, $component_cat_new, $component_new, $input_file) = @_;
     my $num_event_attr = 0;
     my $event_name_new = '';
     my $event_severity_new = '';
-    my $event_ctgy_new = '';
+    my $event_cat_new = '';
     my $event_name = '';
     foreach my $event ($node->getChildNodes()) {
 	if ($event->getNodeType() eq ELEMENT_NODE) {
@@ -121,15 +121,15 @@ sub evaluate_throw_event {
 		    last SWITCH;
 		}
 		if ($event->getNodeName() eq "event_category" ) {
-		    my $event_ctgy = &trim($event->getFirstChild()->getData());
-	    	    $event_ctgy =~ tr/a-z/A-Z/;
-		    $event_ctgy_new = "$event_ctgy_prefix"."$event_ctgy";
+		    my $event_cat = &trim($event->getFirstChild()->getData());
+	    	    $event_cat =~ tr/a-z/A-Z/;
+		    $event_cat_new = "$event_cat_prefix"."$event_cat";
 		    $num_event_attr += 1 ;
-		    if ($str_event_ctgy =~ / $event_ctgy_new /) { 
+		    if ($str_event_cat =~ / $event_cat_new /) { 
 		    	last SWITCH;
 		    }
-	            $str_event_ctgy .= "#define ".$event_ctgy_new."     (1<<".$num_event_ctgy.")\n";
-		    $num_event_ctgy += 1;
+	            $str_event_cat .= "#define ".$event_cat_new."     (1<<".$num_event_cat.")\n";
+		    $num_event_cat += 1;
 		    last SWITCH;
 		}
 	    }
@@ -142,46 +142,46 @@ sub evaluate_throw_event {
     }
     else {
 	$total_throw_events += 1;
-	$str_struct .= "\{\"$event_name\", $event_name_new, $event_severity_new, $event_ctgy_new, $component_ctgy_new, $component_new\}, \n";
+	$str_struct .= "\{\"$event_name\", $event_name_new, $event_severity_new, $event_cat_new, $component_cat_new, $component_new\}, \n";
     }
 }
 
 # Subroutine to evaluate value contained in second-level ELEMENT_NODE
 sub evaluate_element_node {
     my ($node, $input_file) = @_;
-    my $component_ctgy_name = '';
+    my $component_cat_name = '';
     my $component_name = '';
 
-    if (($node->getNodeName() ne "component_category") && ($component_ctgy_name_new eq "")) {
+    if (($node->getNodeName() ne "component_category") && ($component_cat_name_new eq "")) {
 	    print "Component category not specified in the correct location in xml file: $input_file\n";
 	    exit;
     }
 
     SWITCH: {
     	if ($node->getNodeName() eq "component_category") {
-	    if ($num_component_ctgy == $max_num_component_ctgy) {
-		    print "FTB cannot add more component categories. Max limit of ( $num_component_ctgy ) reached\n";
+	    if ($num_component_cat == $max_num_component_cat) {
+		    print "FTB cannot add more component categories. Max limit of ( $num_component_cat ) reached\n";
 		    exit;
 	    } 
-	    $component_ctgy_name = &trim($node->getFirstChild()->getData());
-	    $component_ctgy_name =~ tr/a-z/A-Z/;
-	    $component_ctgy_name_new = "$component_ctgy_prefix"."$component_ctgy_name";
-	    if ($str_component_ctgy =~ / $component_ctgy_name_new /) { 
+	    $component_cat_name = &trim($node->getFirstChild()->getData());
+	    $component_cat_name =~ tr/a-z/A-Z/;
+	    $component_cat_name_new = "$component_cat_prefix"."$component_cat_name";
+	    if ($str_component_cat =~ / $component_cat_name_new /) { 
                 last SWITCH;
 	    }
-	    $str_component_ctgy .= "#define ".$component_ctgy_name_new.	
-	    				"     (1<<".$num_component_ctgy.")\n";
-	    $num_component{$component_ctgy_name_new} = 0;
-	    $num_component_ctgy += 1;
+	    $str_component_cat .= "#define ".$component_cat_name_new.	
+	    				"     (1<<".$num_component_cat.")\n";
+	    $num_component{$component_cat_name_new} = 0;
+	    $num_component_cat += 1;
 	    if ($DEBUG) {
 		print "Subroutine evaluate_element_node(): Found ",$node->getNodeName(),
-				"=",$component_ctgy_name,"\n";
+				"=",$component_cat_name,"\n";
 	    }
 	    last SWITCH;
 	}
     	if ($node->getNodeName() eq "component") {
-	    if ($num_component{$component_ctgy_name_new} == $max_num_component) {
-		    $_=$component_ctgy_name_new; s/$component_ctgy_prefix//;
+	    if ($num_component{$component_cat_name_new} == $max_num_component) {
+		    $_=$component_cat_name_new; s/$component_cat_prefix//;
 		    print "FTB cannot add more components to $_ category. Max limit of ( $max_num_component ) reached\n";
 		    exit;
 	    }
@@ -192,8 +192,8 @@ sub evaluate_element_node {
 	        print "Duplicate component name: $component_name. Please correct errors\n"; 
 		exit;
 	    }
-	    $str_component .= "#define ".$component_name_new."     (1<<".$num_component{$component_ctgy_name_new}.")\n";
-	    $num_component{$component_ctgy_name_new} += 1;
+	    $str_component .= "#define ".$component_name_new."     (1<<".$num_component{$component_cat_name_new}.")\n";
+	    $num_component{$component_cat_name_new} += 1;
             $num_event_name = 0;
 	    if ($DEBUG) {
 	    	print "Subroutine evaluate_element_node(): Found ",$node->getNodeName(),
@@ -209,7 +209,7 @@ sub evaluate_element_node {
 	      print "Component not specified in the correct location in xml file: $input_file\n";
 	      exit;
             }
-	    &evaluate_throw_event($node, $component_ctgy_name_new, $component_name_new, $input_file);
+	    &evaluate_throw_event($node, $component_cat_name_new, $component_name_new, $input_file);
 	    last SWITCH;
 	}
 	print "An unexpected tag called \'", $node->getNodeName(),
@@ -235,7 +235,7 @@ foreach my $file (@input_files) {
     my $element_type = '';
     my $num_comp_attr = 0;
     my $doc = $parser->parsefile($file);
-    $component_ctgy_name_new='';
+    $component_cat_name_new='';
     foreach my $node ($doc->getChildNodes()) {
 	if ($DEBUG) { 
 	    print "-----------------------------------------------------------\n";
@@ -280,10 +280,10 @@ my $start_data = "/* This file is automatically generated by the xmlparser. It w
 			"used by the FTB framework to interpret components and events*/\n";
 my $end_data = "";
 &write_file("CREATE", $start_data."\n\n", $outfile);
-&write_file("APPEND", $str_component_ctgy."\n\n", $outfile);
+&write_file("APPEND", $str_component_cat."\n\n", $outfile);
 &write_file("APPEND", $str_component."\n\n", $outfile);
 &write_file("APPEND", $str_event_name."\n\n", $outfile);
-&write_file("APPEND", $str_event_ctgy."\n\n", $outfile);
+&write_file("APPEND", $str_event_cat."\n\n", $outfile);
 &write_file("APPEND", $str_event_severity."\n\n", $outfile);
 &write_file("APPEND", $str_struct."\n\n", $outfile);
 &write_file("APPEND", $end_data."\n\n", $outfile);

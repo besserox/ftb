@@ -3,7 +3,7 @@
 #include "libftb.h"
 #include "ftb_zoid_client.h"
 
-int FTB_Init(FTB_comp_ctgy_t category, FTB_comp_t component, const FTB_component_properties_t *properties, FTB_client_handle_t *client_handle)
+int FTB_Init(FTB_comp_cat_t category, FTB_comp_t component, const FTB_component_properties_t *properties, FTB_client_handle_t *client_handle)
 {
     return ZOID_FTB_Init(category, component, properties, client_handle); 
 }

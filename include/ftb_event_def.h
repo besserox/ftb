@@ -7,8 +7,8 @@ typedef struct FTBM_throw_event_t{
     char event_name_char[1024];
     FTB_event_name_t event_name;
     FTB_severity_t  severity;
-    FTB_event_ctgy_t event_ctgy;
-    FTB_comp_ctgy_t comp_ctgy;
+    FTB_event_cat_t event_cat;
+    FTB_comp_cat_t comp_cat;
     FTB_comp_t comp;
 }FTBM_throw_event_t;
 
@@ -21,13 +21,13 @@ int FTBM_get_event_by_name(const char *name, FTB_event_t *e);
  Get the total number of the event masks a specific component wants to catch.
  The number will not change in runtime and will be used to allocate space for next interface
  */
-int FTBM_get_comp_catch_count(FTB_comp_ctgy_t comp_ctgy, FTB_comp_t comp, int *count);
+int FTBM_get_comp_catch_count(FTB_comp_cat_t comp_cat, FTB_comp_t comp, int *count);
 
 /*
  FTBM_get_comp_catch_masks
  Get an array of the masks a component wants to catch. 
  */
-int FTBM_get_comp_catch_masks(FTB_comp_ctgy_t comp_ctgy, FTB_comp_t comp, FTB_event_t *events);
+int FTBM_get_comp_catch_masks(FTB_comp_cat_t comp_cat, FTB_comp_t comp, FTB_event_t *events);
 
 
 /*
@@ -37,51 +37,51 @@ static inline int FTBM_get_event_by_name (FTB_event_name_t name, FTB_event_t *e)
     switch (name) {
         case FTB_PINGPONG_EVENT_CLI:
             e->severity = FTB_EVENT_DEF_SEVERITY_INFO;
-            e->comp_ctgy = FTB_COMP_CTGY_BACKPLANE;
+            e->comp_cat = FTB_COMP_CAT_BACKPLANE;
             e->comp = FTB_COMP_SIMPLE;
-            e->event_ctgy = FTB_EVENT_DEF_EVENT_CTGY_GENERAL;
+            e->event_cat = FTB_EVENT_DEF_EVENT_CAT_GENERAL;
             e->event_name = name;
             break;
         case FTB_PINGPONG_EVENT_SRV:
             e->severity = FTB_EVENT_DEF_SEVERITY_INFO;
-            e->comp_ctgy = FTB_COMP_CTGY_BACKPLANE;
+            e->comp_cat = FTB_COMP_CAT_BACKPLANE;
             e->comp = FTB_COMP_SIMPLE;
-            e->event_ctgy = FTB_EVENT_DEF_EVENT_CTGY_GENERAL;
+            e->event_cat = FTB_EVENT_DEF_EVENT_CAT_GENERAL;
             e->event_name = name;
             break;
         case FTB_TEST_EVENT_1:
             e->severity = FTB_EVENT_DEF_SEVERITY_INFO;
-            e->comp_ctgy = FTB_COMP_CTGY_BACKPLANE;
+            e->comp_cat = FTB_COMP_CAT_BACKPLANE;
             e->comp = FTB_TEST_COMP_1;
-            e->event_ctgy = FTB_EVENT_DEF_EVENT_CTGY_GENERAL;
+            e->event_cat = FTB_EVENT_DEF_EVENT_CAT_GENERAL;
             e->event_name = name;
             break;
         case FTB_TEST_EVENT_2:
             e->severity = FTB_EVENT_DEF_SEVERITY_FATAL;
-            e->comp_ctgy = FTB_COMP_CTGY_BACKPLANE;
+            e->comp_cat = FTB_COMP_CAT_BACKPLANE;
             e->comp = FTB_TEST_COMP_2;
-            e->event_ctgy = FTB_EVENT_DEF_EVENT_CTGY_GENERAL;
+            e->event_cat = FTB_EVENT_DEF_EVENT_CAT_GENERAL;
             e->event_name = name;
             break;
         case SIMPLE_EVENT:
             e->severity = FTB_EVENT_DEF_SEVERITY_INFO;
-            e->comp_ctgy = FTB_COMP_CTGY_BACKPLANE;
+            e->comp_cat = FTB_COMP_CAT_BACKPLANE;
             e->comp = FTB_COMP_SIMPLE;
-            e->event_ctgy = FTB_EVENT_DEF_EVENT_CTGY_GENERAL;
+            e->event_cat = FTB_EVENT_DEF_EVENT_CAT_GENERAL;
             e->event_name = name;
             break;
         case WATCH_DOG_EVENT:
             e->severity = FTB_EVENT_DEF_SEVERITY_INFO;
-            e->comp_ctgy = FTB_COMP_CTGY_BACKPLANE;
+            e->comp_cat = FTB_COMP_CAT_BACKPLANE;
             e->comp = FTB_COMP_WATCHDOG;
-            e->event_ctgy = FTB_EVENT_DEF_EVENT_CTGY_GENERAL;
+            e->event_cat = FTB_EVENT_DEF_EVENT_CAT_GENERAL;
             e->event_name = name;
             break;
         case MPICH2_ERROR_ABORT:
             e->severity = FTB_EVENT_DEF_SEVERITY_FATAL;
-            e->comp_ctgy = FTB_EVENT_DEF_COMP_CTGY_MPI;
+            e->comp_cat = FTB_EVENT_DEF_COMP_CAT_MPI;
             e->comp = FTB_EVENT_DEF_COMP_MPICH2;
-            e->event_ctgy = FTB_EVENT_DEF_EVENT_CTGY_GENERAL;
+            e->event_cat = FTB_EVENT_DEF_EVENT_CAT_GENERAL;
             e->event_name = name;
             break;
         default:

@@ -7,7 +7,7 @@
 
 */
 
-int FTBC_Init(const FTB_comp_ctgy_t category, const FTB_comp_t component, uint8_t extension, const FTB_component_properties_t *properties, FTB_client_handle_t *client_handle);
+int FTBC_Init(const FTB_comp_cat_t category, const FTB_comp_t component, uint8_t extension, const FTB_component_properties_t *properties, FTB_client_handle_t *client_handle);
 
 int FTBC_Reg_throw(FTB_client_handle_t handle, const char *event);
 

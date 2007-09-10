@@ -57,8 +57,8 @@ int main (int argc, char *argv[])
     properties.catching_type = FTB_EVENT_CATCHING_NOTIFICATION;
     properties.err_handling = FTB_ERR_HANDLE_NONE;
 
-    FTB_EVENT_MASK_ALL(mask);
-    FTB_Init(FTB_EVENT_DEF_COMP_CTGY_FTB_EXAMPLES, FTB_EVENT_DEF_COMP_PINGPONG, &properties, &handle);
+    FTB_EVENT_SET_ALL(mask);
+    FTB_Init(FTB_EVENT_DEF_COMP_CAT_FTB_EXAMPLES, FTB_EVENT_DEF_COMP_PINGPONG, &properties, &handle);
 
     if (is_server) {
         FTB_Reg_catch_notify_event(handle, "PINGPONG_EVENT_CLI", pingpong_server, (void*)&handle);

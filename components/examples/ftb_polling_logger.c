@@ -40,8 +40,8 @@ int main (int argc, char *argv[])
     properties.err_handling = FTB_ERR_HANDLE_NONE;
     properties.max_event_queue_size = FTB_DEFAULT_EVENT_POLLING_Q_LEN;
 
-    FTB_EVENT_MASK_ALL(mask);
-    FTB_Init(FTB_EVENT_DEF_COMP_CTGY_FTB_EXAMPLES, FTB_EVENT_DEF_COMP_POLLING_LOGGER, &properties, &handle);
+    FTB_EVENT_SET_ALL(mask);
+    FTB_Init(FTB_EVENT_DEF_COMP_CAT_FTB_EXAMPLES, FTB_EVENT_DEF_COMP_POLLING_LOGGER, &properties, &handle);
     FTB_Reg_catch_polling_mask(handle, &mask);
 
     signal(SIGINT, Int_handler);
@@ -60,10 +60,10 @@ int main (int argc, char *argv[])
         else {
             time_t current = time(NULL);
             fprintf(log_fp,"%s\t",asctime(localtime(&current)));
-            fprintf(log_fp,"Caught event: comp_ctgy: %d, comp %d, severity: %d, event_ctgy %d, event_name %d, ",
-                   event.comp_ctgy, event.comp, event.severity, event.event_ctgy, event.event_name);
-            fprintf(log_fp,"from host %s, pid %d, comp_ctgy: %d, comp %d, extension %d\n",
-                   src.location_id.hostname, src.location_id.pid, src.client_id.comp_ctgy,
+            fprintf(log_fp,"Caught event: comp_cat: %d, comp %d, severity: %d, event_cat %d, event_name %d, ",
+                   event.comp_cat, event.comp, event.severity, event.event_cat, event.event_name);
+            fprintf(log_fp,"from host %s, pid %d, comp_cat: %d, comp %d, extension %d\n",
+                   src.location_id.hostname, src.location_id.pid, src.client_id.comp_cat,
                    src.client_id.comp, src.client_id.ext);
             fflush(log_fp);
         }

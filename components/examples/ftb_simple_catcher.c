@@ -18,7 +18,7 @@ int main (int argc, char *argv[])
     properties.max_event_queue_size = FTB_DEFAULT_EVENT_POLLING_Q_LEN;
 
     printf("FTB_Init\n");
-    FTB_Init(FTB_EVENT_DEF_COMP_CTGY_FTB_EXAMPLES, FTB_EVENT_DEF_COMP_SIMPLE, &properties, &handle);
+    FTB_Init(FTB_EVENT_DEF_COMP_CAT_FTB_EXAMPLES, FTB_EVENT_DEF_COMP_SIMPLE, &properties, &handle);
     printf("FTB_Reg_catch_polling_event\n");
     FTB_Reg_catch_polling_event(handle, "SIMPLE_EVENT");
     for(i=0;i<12;i++) {
@@ -31,10 +31,10 @@ int main (int argc, char *argv[])
             printf("FTB_Catch\n");
             ret = FTB_Catch(handle, &event, &src);
             if (ret == FTB_CAUGHT_EVENT) {
-                printf("Caught event: comp_ctgy: %d, comp %d, severity: %d, event_ctgy %d, event_name %d\n",
-                   event.comp_ctgy, event.comp, event.severity, event.event_ctgy, event.event_name);
-                printf("From host %s, pid %d, comp_ctgy: %d, comp %d, extension %d\n",
-                   src.location_id.hostname, src.location_id.pid, src.client_id.comp_ctgy,
+                printf("Caught event: comp_cat: %d, comp %d, severity: %d, event_cat %d, event_name %d\n",
+                   event.comp_cat, event.comp, event.severity, event.event_cat, event.event_name);
+                printf("From host %s, pid %d, comp_cat: %d, comp %d, extension %d\n",
+                   src.location_id.hostname, src.location_id.pid, src.client_id.comp_cat,
                    src.client_id.comp, src.client_id.ext);
             }
             else {

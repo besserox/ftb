@@ -14,33 +14,33 @@ Event mask macros
 
 #define FTB_EVENT_CLR_SEVERITY(evt_mask)  FTBM_EVENT_CLR_SEVERITY(evt_mask)
 
-#define FTB_EVENT_CLR_COMP_CTGY(evt_mask)  FTBM_EVENT_CLR_COMP_CTGY(evt_mask) 
+#define FTB_EVENT_CLR_COMP_CAT(evt_mask)  FTBM_EVENT_CLR_COMP_CAT(evt_mask) 
 
 #define FTB_EVENT_CLR_COMP(evt_mask)  FTBM_EVENT_CLR_COMP(evt_mask) 
 
-#define FTB_EVENT_CLR_EVENT_CTGY(evt_mask)  FTBM_EVENT_CLR_EVENT_CTGY(evt_mask) 
+#define FTB_EVENT_CLR_EVENT_CAT(evt_mask)  FTBM_EVENT_CLR_EVENT_CAT(evt_mask) 
 
 #define FTB_EVENT_CLR_EVENT_NAME(evt_mask) FTBM_EVENT_CLR_EVENT_NAME(evt_mask) 
     
-#define FTB_EVENT_MASK_ALL(evt_mask)  FTBM_EVENT_MASK_ALL(evt_mask) 
+#define FTB_EVENT_SET_ALL(evt_mask)  FTBM_EVENT_SET_ALL(evt_mask) 
     
-#define FTB_EVENT_MARK_ALL_SEVERITY(evt_mask)  FTBM_EVENT_MARK_ALL_SEVERITY(evt_mask) 
+#define FTB_EVENT_SET_ALL_SEVERITY(evt_mask)  FTBM_EVENT_SET_ALL_SEVERITY(evt_mask) 
 
-#define FTB_EVENT_MARK_ALL_COMP_CTGY(evt_mask)  FTBM_EVENT_MARK_ALL_COMP_CTGY(evt_mask) 
+#define FTB_EVENT_SET_ALL_COMP_CAT(evt_mask)  FTBM_EVENT_SET_ALL_COMP_CAT(evt_mask) 
 
-#define FTB_EVENT_MARK_ALL_COMP(evt_mask)  FTBM_EVENT_MARK_ALL_COMP(evt_mask) 
+#define FTB_EVENT_SET_ALL_COMP(evt_mask)  FTBM_EVENT_SET_ALL_COMP(evt_mask) 
 
-#define FTB_EVENT_MARK_ALL_EVENT_CTGY(evt_mask)  FTBM_EVENT_MARK_ALL_EVENT_CTGY(evt_mask) 
+#define FTB_EVENT_SET_ALL_EVENT_CAT(evt_mask)  FTBM_EVENT_SET_ALL_EVENT_CAT(evt_mask) 
 
-#define FTB_EVENT_MARK_ALL_EVENT_NAME(evt_mask)  FTBM_EVENT_MARK_ALL_EVENT_NAME(evt_mask) 
+#define FTB_EVENT_SET_ALL_EVENT_NAME(evt_mask)  FTBM_EVENT_SET_ALL_EVENT_NAME(evt_mask) 
     
-#define FTB_EVENT_MARK_SEVERITY(evt_mask, val)  FTBM_EVENT_MARK_SEVERITY(evt_mask, val) 
+#define FTB_EVENT_SET_SEVERITY(evt_mask, val)  FTBM_EVENT_SET_SEVERITY(evt_mask, val) 
 
-#define FTB_EVENT_MARK_COMP_CTGY(evt_mask, val)  FTBM_EVENT_MARK_ALL_COMP_CTGY(evt_mask, val) 
+#define FTB_EVENT_SET_COMP_CAT(evt_mask, val)  FTBM_EVENT_SET_COMP_CAT(evt_mask, val) 
 
-#define FTB_EVENT_MARK_COMP(evt_mask, val)  FTBM_EVENT_MARK_ALL_COMP(evt_mask, val) 
+#define FTB_EVENT_SET_COMP(evt_mask, val)  FTBM_EVENT_SET_COMP(evt_mask, val) 
 
-#define FTB_EVENT_MARK_EVENT_CTGY(evt_mask, val)  FTBM_EVENT_MARK_ALL_EVENT_CTGY(evt_mask, val) 
+#define FTB_EVENT_SET_EVENT_CAT(evt_mask, val)  FTBM_EVENT_SET_EVENT_CAT((evt_mask, val) 
 
 #define FTB_EVENT_SET_EVENT_NAME(evt_mask, val)  FTBM_EVENT_SET_EVENT_NAME(evt_mask, val) 
 
@@ -54,7 +54,7 @@ TOADD: Dynamic fields macros
     If properties == NULL, it will use a lightweight default configuration: 
     FTB_ERR_HANDLE_NONE + FTB_EVENT_CATCHING_POLLING
 */
-int FTB_Init(FTB_comp_ctgy_t category, FTB_comp_t component, const FTB_component_properties_t *properties, FTB_client_handle_t *client_handle);
+int FTB_Init(FTB_comp_cat_t category, FTB_comp_t component, const FTB_component_properties_t *properties, FTB_client_handle_t *client_handle);
 
 /*
     FTB_Reg_throw

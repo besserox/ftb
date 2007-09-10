@@ -36,7 +36,7 @@ void ftb_zoid_client_fini()
 #endif
 }
 
-int ZOID_FTB_Init( FTB_comp_ctgy_t category /* in:obj */,
+int ZOID_FTB_Init( FTB_comp_cat_t category /* in:obj */,
                    FTB_comp_t component /* in:obj */,
                    const FTB_component_properties_t *properties /* in:ptr:nullok */,
                    FTB_client_handle_t *client_handle /* out:ptr */ )
