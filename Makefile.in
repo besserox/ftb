@@ -65,7 +65,9 @@ install:
 	install -v -b -d @sbindir@;
 	install -v -b -d @includedir@;
 	install -v -b -d @libdir@ @libdir@/shared @libdir@/static;
+	install -v -b -d @prefix@/components/examples;
 	install -v -b @TEMPSBIN@/* @sbindir@;
 	install -v -b @TEMPLIB@/shared/* @libdir@/shared/;
 	install -v -b @TEMPLIB@/static/* @libdir@/static/;
 	install -v -b @abs_top_srcdir@/include/* @includedir@;
+	install -v -b @abs_top_srcdir@/components/examples/ftb_* @prefix@/components/examples;
