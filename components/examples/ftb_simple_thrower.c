@@ -17,7 +17,7 @@ int main (int argc, char *argv[])
     properties.err_handling = FTB_ERR_HANDLE_NONE;
 
     printf("FTB_Init\n");
-    FTB_Init(FTB_EVENT_DEF_COMP_CAT_FTB_EXAMPLES, FTB_EVENT_DEF_COMP_SIMPLE, &properties, &handle);
+    FTB_Init(FTB_EXAMPLES, SIMPLE, &properties, &handle);
     printf("FTB_Reg_throw\n");
     FTB_Reg_throw(handle, "SIMPLE_EVENT");
     for (i=0;i<12;i++) {

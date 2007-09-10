@@ -2,7 +2,7 @@
 <component_category>ftb_examples</component_category>
 <component>Simple</component>
 <throw_event>
-	<event_severity>Info</event_severity>
+	<event_severity>ftb_info</event_severity>
 	<event_category>General</event_category>
 	<event_name>Simple_event</event_name>
 	<event_desc>This event is used for testing and examples</event_desc>

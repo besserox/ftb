@@ -18,7 +18,7 @@ int main (int argc, char *argv[])
     properties.max_event_queue_size = FTB_DEFAULT_EVENT_POLLING_Q_LEN;
 
     printf("FTB_Init\n");
-    FTB_Init(FTB_EVENT_DEF_COMP_CAT_FTB_EXAMPLES, FTB_EVENT_DEF_COMP_SIMPLE, &properties, &handle);
+    FTB_Init(FTB_EXAMPLES, SIMPLE, &properties, &handle);
     printf("FTB_Reg_catch_polling_event\n");
     FTB_Reg_catch_polling_event(handle, "SIMPLE_EVENT");
     for(i=0;i<12;i++) {

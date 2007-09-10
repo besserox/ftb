@@ -41,7 +41,7 @@ int main (int argc, char *argv[])
     properties.max_event_queue_size = FTB_DEFAULT_EVENT_POLLING_Q_LEN;
 
     FTB_EVENT_SET_ALL(mask);
-    FTB_Init(FTB_EVENT_DEF_COMP_CAT_FTB_EXAMPLES, FTB_EVENT_DEF_COMP_POLLING_LOGGER, &properties, &handle);
+    FTB_Init(FTB_EXAMPLES, POLLING_LOGGER, &properties, &handle);
     FTB_Reg_catch_polling_mask(handle, &mask);
 
     signal(SIGINT, Int_handler);

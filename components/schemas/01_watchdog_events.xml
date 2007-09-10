@@ -3,7 +3,7 @@
 <component_category>ftb_examples</component_category>
 <component>watchdog</component>
 <throw_event>
-	<event_severity>Info</event_severity>
+	<event_severity>ftb_info</event_severity>
 	<event_category>General</event_category>
 	<event_name>WATCH_DOG_EVENT</event_name>
 	<event_desc>This event is used by watchdog</event_desc>

@@ -28,7 +28,7 @@ int main (int argc, char *argv[])
     properties.err_handling = FTB_ERR_HANDLE_NONE;
 
     printf("FTB_Init\n");
-    FTB_Init(FTB_EVENT_DEF_COMP_CAT_MPI, FTB_EVENT_DEF_COMP_EXAMPLE_MPI, &properties, &handle);
+    FTB_Init(MPI, EXAMPLE_MPI, &properties, &handle);
     printf("FTB_Reg_throw\n");
     FTB_Reg_throw(handle, "MPI_SIMPLE_EVENT");
 

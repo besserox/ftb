@@ -54,7 +54,7 @@ int main (int argc, char *argv[])
     properties.err_handling = FTB_ERR_HANDLE_NONE;
 
     FTB_EVENT_SET_ALL(mask);
-    FTB_Init(FTB_EVENT_DEF_COMP_CAT_FTB_EXAMPLES, FTB_EVENT_DEF_COMP_NOTIFY_LOGGER,  &properties, &handle);
+    FTB_Init(FTB_EXAMPLES, NOTIFY_LOGGER,  &properties, &handle);
     FTB_Reg_catch_notify_mask(handle, &mask, event_logger, (void*)log_fp);
 
     signal(SIGINT, Int_handler);

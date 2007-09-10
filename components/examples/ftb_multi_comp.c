@@ -29,10 +29,10 @@ int Comp3_Init()
 
     FTB_EVENT_SET_ALL(mask);
     FTB_EVENT_CLR_SEVERITY(mask);
-    FTB_EVENT_SET_SEVERITY(mask, FTB_EVENT_DEF_SEVERITY_INFO);
+    FTB_EVENT_SET_SEVERITY(mask,FTB_INFO);
 
     printf("Comp3: FTB_Init\n");
-    FTB_Init( FTB_EVENT_DEF_COMP_CAT_FTB_EXAMPLES,  FTB_EVENT_DEF_COMP_MULTICOMP_COMP3, &properties, &Comp3_ftb_handle);
+    FTB_Init(FTB_EXAMPLES, MULTICOMP_COMP3, &properties, &Comp3_ftb_handle);
     printf("Comp3: FTB_Reg_catch_notify_mask\n");
     FTB_Reg_catch_notify_mask(Comp3_ftb_handle, &mask, Comp3_evt_handler, NULL);
     
@@ -69,7 +69,7 @@ int Comp2_Init()
     properties.max_event_queue_size = FTB_DEFAULT_EVENT_POLLING_Q_LEN;
 
     printf("Comp2: FTB_Init\n");
-    FTB_Init( FTB_EVENT_DEF_COMP_CAT_FTB_EXAMPLES, FTB_EVENT_DEF_COMP_MULTICOMP_COMP2, &properties, &Comp2_ftb_handle);
+    FTB_Init( FTB_EXAMPLES, MULTICOMP_COMP2, &properties, &Comp2_ftb_handle);
     printf("Comp2: FTB_Reg_catch_polling_event\n");
     FTB_Reg_catch_polling_event(Comp2_ftb_handle, "TEST_EVENT_1");
 
@@ -138,10 +138,10 @@ int Comp1_Init()
 
     FTB_EVENT_SET_ALL(mask);
     FTB_EVENT_CLR_SEVERITY(mask);
-    FTB_EVENT_SET_SEVERITY(mask, FTB_EVENT_DEF_SEVERITY_FATAL);
+    FTB_EVENT_SET_SEVERITY(mask, FTB_FATAL);
 
     printf("Comp1: FTB_Init\n");
-    FTB_Init(FTB_EVENT_DEF_COMP_CAT_FTB_EXAMPLES, FTB_EVENT_DEF_COMP_MULTICOMP_COMP1, &properties, &Comp1_ftb_handle);
+    FTB_Init(FTB_EXAMPLES, MULTICOMP_COMP1, &properties, &Comp1_ftb_handle);
     printf("Comp1: FTB_Reg_catch_notify_mask\n");
     FTB_Reg_catch_notify_mask(Comp1_ftb_handle, &mask, Comp1_evt_handler, NULL);
 

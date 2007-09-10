@@ -3,7 +3,7 @@
 <component_category>mpi</component_category>
 <component>mpi_example</component>
 <throw_event>
-	<event_severity>Info</event_severity>
+	<event_severity>ftb_info</event_severity>
 	<event_category>General</event_category>
 	<event_name>mpi_simple_event</event_name>
 	<event_desc>This event is used by a sample mpi application</event_desc>
