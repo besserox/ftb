@@ -32,9 +32,9 @@ LIBS_PTHREAD=@LIBS_PTHREAD@
 
 all: ${clients}
 
-Linux: ftb_watchdog ftb_polling_logger ftb_simple_thrower ftb_simple_catcher ftb_notify_logger ftb_multi_comp
+linux: ftb_watchdog ftb_polling_logger ftb_simple_thrower ftb_simple_catcher ftb_notify_logger ftb_multi_comp
 
-BGL: ftb_simple_thrower_bgl ftb_simple_catcher_bgl
+bgl: ftb_simple_thrower_bgl ftb_simple_catcher_bgl
 
 CFLAGS_LINUX  = -Wall -g -I${INC_DIR}
 LDFLAGS_LINUX = -L${FTB_LIB_PATH_SHARED}

@@ -194,7 +194,7 @@ sub evaluate_element_node {
 	    }
 	    $str_component .= "#define ".$component_name_new."     (1<<".$num_component{$component_cat_name_new}.")\n";
 	    $num_component{$component_cat_name_new} += 1;
-            $num_event_name = 0;
+	    #$num_event_name = 0;
 	    if ($DEBUG) {
 	    	print "Subroutine evaluate_element_node(): Found ",$node->getNodeName(),
 				"=",$component_name,"\n";

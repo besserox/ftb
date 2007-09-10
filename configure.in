@@ -53,11 +53,11 @@ AC_MSG_RESULT($ENVFILE)
 
 FTB_LIB_LINUX_NAME=ftb
 if  test "$CLIENTS" == "linux"; then
-	clients="Linux";
+	clients="linux";
 elif test "$CLIENTS" == "bgl"; then
-	clients="BGL Linux";
+	clients="bgl linux";
 	unset_var=0;
-	ZOID_CLIENT_DIR='${abs_top_srcdir}/src/client_lib/platforms/BGL/zoid_client';
+	ZOID_CLIENT_DIR='${abs_top_srcdir}/src/client_lib/platforms/bgl/zoid_client';
 	FTB_LIB_BGL_CN_NAME=ftb_blrts
 	if test "$ENVFILE" == ""; then
 		BGL_ENVFILE="bgl_setup_env";
@@ -202,12 +202,12 @@ AC_OUTPUT(Makefile 								\
 	  src/manager_lib/network/network_sock/Makefile				\
 	  src/client_lib/Makefile 						\
 	  src/client_lib/platforms/Makefile 					\
-	  src/client_lib/platforms/Linux/Makefile 				\
-	  src/client_lib/platforms/BGL/Makefile 				\
-	  src/client_lib/platforms/BGL/zoid_client/Makefile 			\
-	  src/client_lib/platforms/BGL/zoid_client/implementation/Makefile	\
-	  src/client_lib/platforms/BGL/zoid_client/client/Makefile		\
-	  src/client_lib/platforms/BGL/zoid_client/server/Makefile		\
+	  src/client_lib/platforms/linux/Makefile 				\
+	  src/client_lib/platforms/bgl/Makefile 				\
+	  src/client_lib/platforms/bgl/zoid_client/Makefile 			\
+	  src/client_lib/platforms/bgl/zoid_client/implementation/Makefile	\
+	  src/client_lib/platforms/bgl/zoid_client/client/Makefile		\
+	  src/client_lib/platforms/bgl/zoid_client/server/Makefile		\
 	  src/agent/Makefile							\
 	  components/examples/Makefile)
 
