@@ -34,15 +34,15 @@ Event mask macros
 
 #define FTB_EVENT_SET_ALL_EVENT_NAME(evt_mask)  FTBM_EVENT_SET_ALL_EVENT_NAME(evt_mask) 
     
-#define FTB_EVENT_SET_SEVERITY(evt_mask, val)  FTBM_EVENT_SET_SEVERITY(evt_mask, val) 
+#define FTB_EVENT_SET_SEVERITY(evt_mask, sev)  FTBM_EVENT_SET_SEVERITY(evt_mask, sev) 
 
-#define FTB_EVENT_SET_COMP_CAT(evt_mask, val)  FTBM_EVENT_SET_COMP_CAT(evt_mask, val) 
+#define FTB_EVENT_SET_COMP_CAT(evt_mask, comp_cat)  FTBM_EVENT_SET_COMP_CAT(evt_mask, comp_cat) 
 
-#define FTB_EVENT_SET_COMP(evt_mask, val)  FTBM_EVENT_SET_COMP(evt_mask, val) 
+#define FTB_EVENT_SET_COMP(evt_mask, comp)  FTBM_EVENT_SET_COMP(evt_mask, comp) 
 
-#define FTB_EVENT_SET_EVENT_CAT(evt_mask, val)  FTBM_EVENT_SET_EVENT_CAT((evt_mask, val) 
+#define FTB_EVENT_SET_EVENT_CAT(evt_mask, event_cat)  FTBM_EVENT_SET_EVENT_CAT(evt_mask, event_cat) 
 
-#define FTB_EVENT_SET_EVENT_NAME(evt_mask, val)  FTBM_EVENT_SET_EVENT_NAME(evt_mask, val) 
+#define FTB_EVENT_SET_EVENT_NAME(evt_mask, event_name)  FTBM_EVENT_SET_EVENT_NAME(evt_mask, event_name) 
 
 /*
 TOADD: Dynamic fields macros
