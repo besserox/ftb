@@ -117,6 +117,29 @@ int FTBC_util_is_equal_tag(const void *lhs_void, const void* rhs_void)
     unlock_client();\
 }while(0)
 
+static int util_split_namespace(FTB_namespace_t ns, char *region_name, char *category_name, char *component_name)
+{
+    char *tempstr=(char*)malloc(sizeof(FTB_namespace_t)+1);
+    char *str=(char*)malloc(sizeof(FTB_namespace_t)+1);
+    int i=0; 
+    for (i=0; i<strlen(ns); i++) tempstr[i]=toupper(ns[i]);
+    tempstr[i]='\0';
+    str=strsep(&tempstr,".");
+    strcpy(region_name,str);
+    str=strsep(&tempstr,".");
+    strcpy(category_name,str);
+    str=strsep(&tempstr,".");
+    strcpy(component_name,str);
+    if ((strcmp(region_name,"\0")==0) || (strcmp(category_name,"\0")==0) || (strcmp(component_name,"\0")==0) 
+            || (tempstr != NULL) 
+            || (strlen(region_name)> FTB_MAX_REGION) 
+            || (strlen(category_name) > FTB_MAX_COMP_CAT) 
+            || (strlen(component_name) > FTB_MAX_COMP)
+            || (strcmp(region_name, "FTB")!=0)) {
+        return FTB_ERR_NAMESPACE_FORMAT;
+    }
+    return FTB_SUCCESS;
+}
 
 static void util_push_to_comp_polling_list(FTBC_comp_info_t *comp_info, FTBC_event_inst_list_t *entry)
 {/*Assumes it holds the lock of that comp*/
@@ -236,9 +259,21 @@ static void *callback_component(void *arg)
     return NULL;
 }
 
-int FTBC_Init(FTB_comp_cat_t category, FTB_comp_t component, uint8_t extension, const FTB_component_properties_t *properties, FTB_client_handle_t *client_handle)
+int FTBC_Init(FTB_comp_info_t *cinfo, uint8_t extension, const FTB_component_properties_t *properties, FTB_client_handle_t *client_handle)
 {
     FTBC_comp_info_t *comp_info;
+
+    FTB_comp_cat_t category;
+    FTB_comp_t component;
+    char category_name[FTB_MAX_COMP_CAT+1];
+    char component_name[FTB_MAX_COMP+1];
+    char region_name[FTB_MAX_REGION +1];
+    
+    if (util_split_namespace(cinfo->comp_namespace, region_name, category_name, component_name)) {
+        FTB_WARNING("Invalid namespace format");
+        FTB_INFO("FTBC_Init Out");
+        return FTB_ERR_NAMESPACE_FORMAT;
+    }
     FTB_INFO("FTBC_Init In");
     comp_info = (FTBC_comp_info_t*)malloc(sizeof(FTBC_comp_info_t));
     if (properties != NULL) {
@@ -254,11 +289,18 @@ int FTBC_Init(FTB_comp_cat_t category, FTB_comp_t component, uint8_t extension, 
         FTBC_comp_info_map = FTBU_map_init(NULL); /*Since the key: client_handle is uint32_t*/
         FTBC_tag_map = FTBU_map_init(FTBC_util_is_equal_tag);
         memset(tag_string,0,FTB_MAX_DYNAMIC_DATA_SIZE);
+        FTBM_hash_init();
+        FTBM_compcat_table_init();
+        FTBM_comp_table_init();
         FTBM_event_table_init();
         FTBM_Init(1);
     }
     num_components++;
     unlock_client();
+    if (FTBM_get_compcat_by_name(category_name, &category) == FTB_ERR_HASHKEY_NOT_FOUND)
+        return FTB_ERR_NAMESPACE_FORMAT;
+    if (FTBM_get_comp_by_name(component_name, &component)  == FTB_ERR_HASHKEY_NOT_FOUND)
+            return FTB_ERR_NAMESPACE_FORMAT;
     comp_info->id = (FTB_id_t *)malloc(sizeof(FTB_id_t));
     comp_info->id->client_id.comp_cat = category;
     comp_info->id->client_id.comp = component;
@@ -669,7 +711,6 @@ int FTBC_Catch(FTB_client_handle_t handle, FTB_event_t *event, FTB_id_t *src)
         FTB_INFO("FTBC_Catch Out");
         return FTB_CAUGHT_EVENT;
     }
-
     /*Then poll FTBM once*/
     while (FTBM_Poll(&msg,&incoming_src) == FTB_SUCCESS) {
         if (FTB_CLIENT_ID_TO_HANDLE(msg.dst.client_id)==handle) {

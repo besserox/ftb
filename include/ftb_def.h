@@ -8,7 +8,7 @@
 #ifdef __cplusplus
 extern "C" {
 #endif 
-
+#define FTB_DEBUG   1
 #define FTB_MAX_HOST_NAME              64
 
 typedef uint8_t FTB_err_handling_t;
@@ -22,7 +22,7 @@ In case of some error, that FTB client just stop functioning,
 all subsequent FTB calls will take no effect and return 
 FTB_ERR_GENERAL immediately 
 */
-#define FTB_ERR_HANLDE_NOTIFICATION              0x1
+#define FTB_ERR_HANDLE_NOTIFICATION              0x1
 /*
 If some error happened, FTB will generate an event and next 
 time when FTB_Catch is called, that event will be caught by 
@@ -62,10 +62,35 @@ typedef uint8_t FTB_event_cat_t;
 typedef uint16_t FTB_event_name_t;
 typedef uint8_t FTB_dynamic_len_t;
 
+#define FTB_MAX_REGION               16
+#define FTB_MAX_COMP_CAT             32
+#define FTB_MAX_COMP                 32
+#define FTB_MAX_EVENT_NAME           32
+#define FTB_MAX_SEVERITY             16
+#define FTB_MAX_DESC               1024
+#define FTB_MAX_EVENT_DATA           64
+#define FTB_MAX_JOBID                16
+#define FTB_MAX_INST_NAME            16
+#define FTB_MAX_NAMESPACE            82  /* FTB_MAX_REGION + FTB_MAX_COMP_CAT + FTB_MAX_COMP + 2 */
+#define FTB_MAX_SCHEMA_VER           16
+#define FTB_MAX_ERRMSG_LEN           1024
+
 #define FTB_EVENT_SIZE                   64
 #define FTB_MAX_DYNAMIC_DATA_SIZE   ((FTB_EVENT_SIZE)-sizeof(FTB_severity_t)\
     -sizeof(FTB_comp_cat_t)-sizeof(FTB_comp_t)-sizeof(FTB_event_cat_t)\
     -sizeof(FTB_event_name_t)-sizeof(FTB_dynamic_len_t))
+
+typedef char FTB_schema_ver_t[FTB_MAX_SCHEMA_VER];
+typedef char FTB_namespace_t[FTB_MAX_NAMESPACE];
+typedef char FTB_inst_name_t[FTB_MAX_INST_NAME];
+typedef char FTB_jobid_t[FTB_MAX_JOBID];
+
+typedef struct FTB_comp_info {
+    FTB_schema_ver_t schema_ver;
+    FTB_namespace_t comp_namespace;
+    FTB_inst_name_t inst_name;
+    FTB_jobid_t jobid;
+}FTB_comp_info_t;
 
 typedef struct FTB_location_id {
     char hostname[FTB_MAX_HOST_NAME];
@@ -110,7 +135,9 @@ typedef struct FTB_component_properties {
 #define FTB_ERR_TAG_CONFLICT                    (-8)
 #define FTB_ERR_TAG_NOT_FOUND                   (-9)
 #define FTB_ERR_NOT_INITIALIZED                 (-2)
-#define FTB_ERR_EVENT_NOT_FOUND                 (-16)
+#define FTB_ERR_HASHKEY_NOT_FOUND               (-16)
+#define FTB_ERR_NAMESPACE_FORMAT                (-20)
+
 
 #define FTB_CAUGHT_NO_EVENT                     0
 #define FTB_CAUGHT_EVENT                        1

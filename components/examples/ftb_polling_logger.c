@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <signal.h>
 #include <time.h>
+#include <string.h>
 
 #include "libftb.h"
 #include "ftb_event_def.h"
@@ -35,13 +36,20 @@ int main (int argc, char *argv[])
         fprintf(stderr,"failed to open file %s\n",argv[1]);
         return -1;
     }
+    FTB_comp_info_t cinfo;
+    char err_msg[128];
+    strcpy(cinfo.comp_namespace,"FTB.FTB_EXAMPLES.POLLING_LOGGER");
+    strcpy(cinfo.schema_ver, "0.5");
+    strcpy(cinfo.inst_name,"abc");
+    strcpy(cinfo.jobid,"1234");
+    FTB_Init(&cinfo, &handle,err_msg );
 
     properties.catching_type = FTB_EVENT_CATCHING_POLLING;
     properties.err_handling = FTB_ERR_HANDLE_NONE;
     properties.max_event_queue_size = FTB_DEFAULT_EVENT_POLLING_Q_LEN;
 
     FTB_EVENT_SET_ALL(mask);
-    FTB_Init(FTB_EXAMPLES, POLLING_LOGGER, &properties, &handle);
+    //FTB_Init(FTB_EXAMPLES, POLLING_LOGGER, &properties, &handle);
     FTB_Reg_catch_polling_mask(handle, &mask);
 
     signal(SIGINT, Int_handler);

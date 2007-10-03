@@ -5,11 +5,20 @@
 FILE* FTBU_log_file_fp;
 /*Linux wrapper for client_lib*/
 
-int FTB_Init(const FTB_comp_cat_t category, const FTB_comp_t component, const FTB_component_properties_t *properties, FTB_client_handle_t *client_handle)
+
+int FTB_Init(FTB_comp_info_t *comp_info, FTB_client_handle_t *client_handle, char *error_msg)
 {
+    FTB_component_properties_t properties;
     FTBU_log_file_fp = stderr;
-    return FTBC_Init(category, component, 0, properties, client_handle); /*Set extention to 0*/
+    printf("In FTB_Init\n");
+    properties.catching_type= FTB_EVENT_CATCHING_POLLING+FTB_EVENT_CATCHING_NOTIFICATION;
+    properties.err_handling = FTB_ERR_HANDLE_NONE;
+    properties.max_event_queue_size = FTB_DEFAULT_EVENT_POLLING_Q_LEN;
+    error_msg=NULL;
+    printf("In FTB_Init %d\n",properties.catching_type);
+    return FTBC_Init(comp_info, 0, &properties, client_handle); /*Set extention to 0*/
 }
+
 
 int FTB_Reg_throw(FTB_client_handle_t handle, const char *event)
 {

@@ -36,13 +36,13 @@ void ftb_zoid_client_fini()
 #endif
 }
 
-int ZOID_FTB_Init( FTB_comp_cat_t category /* in:obj */,
-                   FTB_comp_t component /* in:obj */,
-                   const FTB_component_properties_t *properties /* in:ptr:nullok */,
-                   FTB_client_handle_t *client_handle /* out:ptr */ )
+int ZOID_FTB_Init( FTB_comp_info_t *comp_info /* in:ptr */,
+                   FTB_client_handle_t *client_handle /* out:ptr */
+                   char *error_msg /* out:str */)
 {
+    FTB_component_properties_t *properties=NULL;
     int proc_id = __zoid_calling_process_id();
-    return FTBC_Init(category, component, proc_id, properties, client_handle);
+    return FTBC_Init(comp_info, proc_id, properties, client_handle);
 }
 
 int ZOID_FTB_Reg_throw( FTB_client_handle_t handle /* in:obj */,

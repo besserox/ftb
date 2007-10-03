@@ -16,16 +16,23 @@ void Int_handler(int sig){
 
 int main (int argc, char *argv[])
 {
-    FTB_component_properties_t properties;
-    FTB_client_handle_t handle;
-    properties.catching_type = FTB_EVENT_CATCHING_POLLING;
-    properties.err_handling = FTB_ERR_HANDLE_NONE;
-    properties.max_event_queue_size = FTB_DEFAULT_EVENT_POLLING_Q_LEN;
+    FTB_comp_info_t cinfo;
+    FTB_id_t src;
     char *tag_data = "my_tag";
+    char err_msg[128];
+
+    FTB_client_handle_t handle;
     char tag_data_recv[30];
     FTB_dynamic_len_t data_len = 30;
-
-    FTB_Init(FTB_EXAMPLES, WATCHDOG, &properties, &handle);
+    
+    strcpy(cinfo.comp_namespace,"FTB.FTB_EXAMPLES.FTB_WAtchdog");
+    strcpy(cinfo.schema_ver, "0.5");
+    strcpy(cinfo.inst_name,"abc");
+    strcpy(cinfo.jobid,"1234");
+    if (FTB_Init(&cinfo, &handle, err_msg)!=FTB_SUCCESS) {
+        printf("Invalid namespace format %s\n",cinfo.comp_namespace);
+        exit(-1);
+    }
     FTB_Reg_throw(handle, "WATCH_DOG_EVENT");
     FTB_Reg_catch_polling_event(handle, "WATCH_DOG_EVENT");
     FTB_Add_dynamic_tag(handle, 1, tag_data, strlen(tag_data)+1);
@@ -35,7 +42,7 @@ int main (int argc, char *argv[])
         int ret = 0;
         FTB_Throw(handle, "WATCH_DOG_EVENT");
         sleep(1);
-        ret = FTB_Catch(handle, &evt, NULL);
+        ret = FTB_Catch(handle, &evt, &src);
         if (ret == FTB_CAUGHT_NO_EVENT) {
             fprintf(stderr,"Watchdog: event lost!\n");
             break;

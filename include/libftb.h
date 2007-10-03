@@ -53,8 +53,10 @@ TOADD: Dynamic fields macros
     Initialize FTB functionality.
     If properties == NULL, it will use a lightweight default configuration: 
     FTB_ERR_HANDLE_NONE + FTB_EVENT_CATCHING_POLLING
+    int FTB_Init(FTB_comp_cat_t category, FTB_comp_t component, const FTB_component_properties_t *properties, 
+                    FTB_client_handle_t *client_handle);
 */
-int FTB_Init(FTB_comp_cat_t category, FTB_comp_t component, const FTB_component_properties_t *properties, FTB_client_handle_t *client_handle);
+int FTB_Init(FTB_comp_info_t *comp_info, FTB_client_handle_t *client_handle, char *error_msg);
 
 /*
     FTB_Reg_throw
