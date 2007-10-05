@@ -25,6 +25,7 @@ typedef struct FTBM_msg {
     FTB_id_t src;
     FTB_id_t dst;
     FTB_event_t event;
+    FTB_event_data_t eventdata;
 }FTBM_msg_t;
 
 #define FTBM_EVENT_CLR_ALL(evt_mask) {\

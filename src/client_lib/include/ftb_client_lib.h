@@ -21,7 +21,7 @@ int FTBC_Reg_catch_notify_mask(FTB_client_handle_t handle, const FTB_event_t *ev
 
 int FTBC_Reg_all_predefined_catch(FTB_client_handle_t handle);
 
-int FTBC_Throw(FTB_client_handle_t handle, const char *event);
+int FTBC_Throw(FTB_client_handle_t handle, const char *event, FTB_event_data_t *datadetails, char *error_msg);
 
 int FTBC_Catch(FTB_client_handle_t handle, FTB_event_t *event, FTB_id_t *src);
 

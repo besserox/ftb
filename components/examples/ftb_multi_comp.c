@@ -5,6 +5,7 @@
 #include "ftb_event_def.h"
 #include "ftb_throw_events.h"
 
+char err_msg[FTB_MAX_ERRMSG_LEN];
 /*************  Component 3  ******************/
 
 FTB_client_handle_t Comp3_ftb_handle;
@@ -96,8 +97,8 @@ int Comp2_Func()
            src.client_id.comp, src.client_id.ext);
     }
 
-    printf("Comp2: FTB_Throw\n");
-    FTB_Throw(Comp2_ftb_handle, "TEST_EVENT_2");
+    printf("Comp2: FTB_Publish_event\n");
+    FTB_Publish_event(Comp2_ftb_handle, "TEST_EVENT_2",NULL,err_msg);
 
     return 0;
 }
@@ -155,8 +156,8 @@ int Comp1_Func()
     static int i=0;
     i++;
     if (i%5 == 0) {
-        printf("Comp1: FTB_Throw\n");
-        FTB_Throw(Comp1_ftb_handle, "TEST_EVENT_1");
+        printf("Comp1: FTB_Publish_event\n");
+        FTB_Publish_event(Comp1_ftb_handle, "TEST_EVENT_1", NULL, err_msg);
     }
 
     Comp2_Func();

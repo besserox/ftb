@@ -7,17 +7,19 @@
 #include "ftb_event_def.h"
 #include "ftb_throw_events.h"
 
+char err_msg[FTB_MAX_ERRMSG_LEN];
+
 int main (int argc, char *argv[])
 {
     FTB_component_properties_t properties;
     FTB_client_handle_t handle;
     int i;
-    char err_msg[1024];
 
     printf("Begin\n");
     properties.catching_type = FTB_EVENT_CATCHING_NONE;
     properties.err_handling = FTB_ERR_HANDLE_NONE;
     FTB_comp_info_t cinfo;
+    
     strcpy(cinfo.comp_namespace,"FTB.FTB_EXAMPLES.SIMPLE");
     strcpy(cinfo.schema_ver, "0.5");
     strcpy(cinfo.inst_name,"abc");
@@ -32,8 +34,8 @@ int main (int argc, char *argv[])
     printf("FTB_Reg_throw\n");
     FTB_Reg_throw(handle, "SIMPLE_EVENT");
     for (i=0;i<12;i++) {
-        printf("FTB_Throw\n");
-        FTB_Throw(handle, "SIMPLE_EVENT");
+        printf("FTB_Publish_event\n");
+        FTB_Publish_event(handle, "SIMPLE_EVENT", NULL, err_msg);
         printf("sleep(10)\n");
         sleep(10);
     }

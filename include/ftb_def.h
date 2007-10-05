@@ -75,10 +75,10 @@ typedef uint8_t FTB_dynamic_len_t;
 #define FTB_MAX_SCHEMA_VER           16
 #define FTB_MAX_ERRMSG_LEN           1024
 
-#define FTB_EVENT_SIZE                   64
+#define FTB_EVENT_SIZE                   128
 #define FTB_MAX_DYNAMIC_DATA_SIZE   ((FTB_EVENT_SIZE)-sizeof(FTB_severity_t)\
     -sizeof(FTB_comp_cat_t)-sizeof(FTB_comp_t)-sizeof(FTB_event_cat_t)\
-    -sizeof(FTB_event_name_t)-sizeof(FTB_dynamic_len_t))
+    -sizeof(FTB_event_name_t)-sizeof(FTB_event_data_t)-sizeof(FTB_dynamic_len_t))
 
 typedef char FTB_schema_ver_t[FTB_MAX_SCHEMA_VER];
 typedef char FTB_namespace_t[FTB_MAX_NAMESPACE];
@@ -102,6 +102,11 @@ typedef struct FTB_client_id {
     FTB_comp_t comp;
     uint8_t ext;/*extenion field*/
 }FTB_client_id_t;
+
+typedef struct FTB_data {
+    int datalen;
+    char data[FTB_MAX_EVENT_DATA];
+}FTB_event_data_t;
 
 /* Reserved component category and component for use */
 #define FTB_COMP_MANAGER                   (1<<0)

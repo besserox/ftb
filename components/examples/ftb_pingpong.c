@@ -12,6 +12,7 @@ static struct timeval begin, end;
 static int is_server = 0;
 static int count = 0; 
 static int iter = 0;
+char err_msg[FTB_MAX_ERRMSG_LEN];
 
 void Sig_handler(int sig){
     if (sig == SIGINT || sig == SIGTERM)
@@ -22,7 +23,7 @@ int pingpong_server(FTB_event_t *evt, FTB_id_t *src, void *arg)
 {
     count++;
     FTB_client_handle_t *handle = (FTB_client_handle_t *)arg;
-    FTB_Throw(*handle, "PINGPONG_EVENT_SRV");
+    FTB_Publish_event(*handle, "PINGPONG_EVENT_SRV", NULL, err_msg);
     return 0;
 }
 
@@ -35,7 +36,7 @@ int pingpong_client(FTB_event_t *evt, FTB_id_t *src, void *arg)
         return 0;
     }
     FTB_client_handle_t *handle = (FTB_client_handle_t *)arg;
-    FTB_Throw(*handle, "PINGPONG_EVENT_CLI");
+    FTB_Publish_event(*handle, "PINGPONG_EVENT_CLI", NULL, err_msg);
     return 0;
 }
 
@@ -68,7 +69,7 @@ int main (int argc, char *argv[])
     else {
         FTB_Reg_catch_notify_event(handle, "PINGPONG_EVENT_SRV", pingpong_client, (void*)&handle);
         gettimeofday(&begin,NULL);
-        FTB_Throw(handle, "PINGPONG_EVENT_CLI");
+        FTB_Publish_event(handle, "PINGPONG_EVENT_CLI",NULL,err_msg);
     }
 
     while(!done) {

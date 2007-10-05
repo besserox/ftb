@@ -664,13 +664,14 @@ int FTBC_Reg_catch_notify_mask(FTB_client_handle_t handle, const FTB_event_t *ev
     return ret;
 }
 
-int FTBC_Throw(FTB_client_handle_t handle, const char *event_name)
+int FTBC_Throw(FTB_client_handle_t handle, const char *event_name,  FTB_event_data_t *datadetails, char *err_msg)
 {
     FTBM_msg_t msg;
     FTBC_comp_info_t *comp_info;
     int ret;
     LOOKUP_COMP_INFO(handle,comp_info);
-
+    *err_msg = 0;
+    
     FTB_INFO("FTBC_Throw In");
     FTBM_get_event_by_name(event_name, &msg.event);
     lock_client();
@@ -678,6 +679,10 @@ int FTBC_Throw(FTB_client_handle_t handle, const char *event_name)
     unlock_client();
 
     memcpy(&msg.src,comp_info->id,sizeof(FTB_id_t));
+    if (datadetails == NULL) {
+        datadetails=(FTB_event_data_t*)malloc(sizeof(FTB_event_data_t));
+    }
+    memcpy(&msg.eventdata, datadetails, sizeof(FTB_event_data_t));
     msg.msg_type = FTBM_MSG_TYPE_NOTIFY;
     FTBM_Get_parent_location_id(&msg.dst.location_id);
     ret = FTBM_Send(&msg);

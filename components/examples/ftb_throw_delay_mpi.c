@@ -7,6 +7,8 @@
 #include "ftb_event_def.h"
 #include "ftb_throw_events.h"
 
+char err_msg[FTB_MAX_ERRMSG_LEN];
+
 int main (int argc, char *argv[])
 {
     FTB_component_properties_t properties;
@@ -38,7 +40,7 @@ int main (int argc, char *argv[])
     MPI_Barrier(MPI_COMM_WORLD);
     begin = MPI_Wtime();
     for (i=0;i<count;i++) {
-        FTB_Throw(handle, "MPI_SIMPLE_EVENT");
+        FTB_Publish_event(handle, "MPI_SIMPLE_EVENT", NULL, err_msg);
     }
     end = MPI_Wtime();
     delay = end-begin;

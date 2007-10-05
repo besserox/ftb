@@ -10,7 +10,7 @@
 /* START-ZOID-SCANNER ID=10 INIT=ftb_zoid_client_init FINI=ftb_zoid_client_fini */
 
 int ZOID_FTB_Init( FTB_comp_info_t *comp_info /* in:ptr */,
-                   FTB_client_handle_t *client_handle /* out:ptr */ 
+                   FTB_client_handle_t *client_handle /* out:ptr */, 
                    char *error_msg /* out:str */);
 
 int ZOID_FTB_Reg_throw( FTB_client_handle_t handle /* in:obj */,
@@ -25,7 +25,9 @@ int ZOID_FTB_Reg_catch_polling_mask( FTB_client_handle_t handle /* in:obj */,
 int ZOID_FTB_Reg_all_predefined_catch ( FTB_client_handle_t handle /* in:obj */);
 
 int ZOID_FTB_Throw ( FTB_client_handle_t handle /* in:obj */,
-                     const char *event /* in:str */);
+                     const char *event /* in:str */,
+                     FTB_event_data_t *datadetails /* in:ptr */,
+                     char *error_msg /* out:str */);
 
 int ZOID_FTB_Catch ( FTB_client_handle_t handle /* in:obj */,
                      FTB_event_t *event /* out:ptr */,

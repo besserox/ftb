@@ -10,12 +10,10 @@ int FTB_Init(FTB_comp_info_t *comp_info, FTB_client_handle_t *client_handle, cha
 {
     FTB_component_properties_t properties;
     FTBU_log_file_fp = stderr;
-    printf("In FTB_Init\n");
     properties.catching_type= FTB_EVENT_CATCHING_POLLING+FTB_EVENT_CATCHING_NOTIFICATION;
     properties.err_handling = FTB_ERR_HANDLE_NONE;
     properties.max_event_queue_size = FTB_DEFAULT_EVENT_POLLING_Q_LEN;
-    error_msg=NULL;
-    printf("In FTB_Init %d\n",properties.catching_type);
+    *error_msg=0;
     return FTBC_Init(comp_info, 0, &properties, client_handle); /*Set extention to 0*/
 }
 
@@ -50,9 +48,9 @@ int FTB_Reg_all_predefined_catch(FTB_client_handle_t handle)
     return FTBC_Reg_all_predefined_catch(handle);
 }
 
-int FTB_Throw(FTB_client_handle_t handle, const char *event)
+int FTB_Publish_event(FTB_client_handle_t handle, const char *event, FTB_event_data_t *datadetails, char *error_msg)
 {
-    return FTBC_Throw(handle, event);
+    return FTBC_Throw(handle, event, datadetails, error_msg);
 }
 
 int FTB_Catch(FTB_client_handle_t handle, FTB_event_t *event, FTB_id_t *src)

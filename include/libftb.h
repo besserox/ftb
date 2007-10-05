@@ -87,10 +87,10 @@ int FTB_Reg_catch_notify_mask(FTB_client_handle_t handle, const FTB_event_t *eve
 int FTB_Reg_all_predefined_catch(FTB_client_handle_t handle);
 
 /* 
-    FTB_Throw
+    FTB_Publish_event
     Throw an event to FTB framework.
 */
-int FTB_Throw(FTB_client_handle_t handle, const char *event);
+int FTB_Publish_event(FTB_client_handle_t handle, const char *event, FTB_event_data_t *datadetails, char *error_msg);
 
 /* 
     FTB_Catch
