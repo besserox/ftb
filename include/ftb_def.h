@@ -9,7 +9,6 @@
 extern "C" {
 #endif 
 #define FTB_DEBUG   1
-#define FTB_MAX_HOST_NAME              64
 
 typedef uint8_t FTB_err_handling_t;
 /*
@@ -55,35 +54,44 @@ This component will catch event by notification callback functions.
 If specified, an additional thread is generated.
 */
 
-typedef uint8_t FTB_severity_t;
-typedef uint16_t FTB_comp_cat_t;
-typedef uint8_t FTB_comp_t;
-typedef uint8_t FTB_event_cat_t;
-typedef uint16_t FTB_event_name_t;
+typedef uint8_t FTB_severity_code_t;
+typedef uint16_t FTB_comp_cat_code_t;
+typedef uint8_t FTB_comp_code_t;
+typedef uint8_t FTB_event_cat_code_t;
+typedef uint16_t FTB_event_name_code_t;
 typedef uint8_t FTB_dynamic_len_t;
 
 #define FTB_MAX_REGION               16
 #define FTB_MAX_COMP_CAT             32
 #define FTB_MAX_COMP                 32
 #define FTB_MAX_EVENT_NAME           32
-#define FTB_MAX_SEVERITY             16
+#define FTB_MAX_SEVERITY             32
 #define FTB_MAX_DESC               1024
 #define FTB_MAX_EVENT_DATA           64
 #define FTB_MAX_JOBID                16
 #define FTB_MAX_INST_NAME            16
 #define FTB_MAX_NAMESPACE            82  /* FTB_MAX_REGION + FTB_MAX_COMP_CAT + FTB_MAX_COMP + 2 */
 #define FTB_MAX_SCHEMA_VER           16
+#define FTB_MAX_HOST_NAME              64
 #define FTB_MAX_ERRMSG_LEN           1024
-
-#define FTB_EVENT_SIZE                   128
-#define FTB_MAX_DYNAMIC_DATA_SIZE   ((FTB_EVENT_SIZE)-sizeof(FTB_severity_t)\
-    -sizeof(FTB_comp_cat_t)-sizeof(FTB_comp_t)-sizeof(FTB_event_cat_t)\
-    -sizeof(FTB_event_name_t)-sizeof(FTB_event_data_t)-sizeof(FTB_dynamic_len_t))
+#define FTB_EVENT_SIZE               256
 
 typedef char FTB_schema_ver_t[FTB_MAX_SCHEMA_VER];
 typedef char FTB_namespace_t[FTB_MAX_NAMESPACE];
 typedef char FTB_inst_name_t[FTB_MAX_INST_NAME];
 typedef char FTB_jobid_t[FTB_MAX_JOBID];
+typedef char FTB_region_t[FTB_MAX_REGION];
+typedef char FTB_comp_cat_t[FTB_MAX_COMP_CAT];
+typedef char FTB_comp_t[FTB_MAX_COMP];
+typedef char FTB_severity_t[FTB_MAX_SEVERITY];
+typedef char FTB_event_name_t[FTB_MAX_EVENT_NAME];
+typedef char FTB_hostname_t[FTB_MAX_HOST_NAME];
+
+#define FTB_MAX_DYNAMIC_DATA_SIZE   ((FTB_EVENT_SIZE)-sizeof(FTB_severity_code_t)\
+    -sizeof(FTB_comp_cat_code_t)-sizeof(FTB_comp_code_t)-sizeof(FTB_event_cat_code_t)\
+    -sizeof(FTB_event_name_code_t)-sizeof(FTB_region_t)-sizeof(FTB_jobid_t)\
+    -sizeof(FTB_inst_name_t)-sizeof(FTB_hostname_t)-sizeof(int)-sizeof(FTB_dynamic_len_t)\
+    -sizeof(FTB_event_data_t))
 
 typedef struct FTB_comp_info {
     FTB_schema_ver_t schema_ver;
@@ -98,8 +106,8 @@ typedef struct FTB_location_id {
 }FTB_location_id_t;
 
 typedef struct FTB_client_id {
-    FTB_comp_cat_t comp_cat;
-    FTB_comp_t comp;
+    FTB_comp_cat_code_t comp_cat;
+    FTB_comp_code_t comp;
     uint8_t ext;/*extenion field*/
 }FTB_client_id_t;
 
@@ -109,10 +117,11 @@ typedef struct FTB_data {
 }FTB_event_data_t;
 
 /* Reserved component category and component for use */
-#define FTB_COMP_MANAGER                   (1<<0)
-#define FTB_COMP_CAT_BACKPLANE            (1<<0)
+#define FTB_COMP_MANAGER                  1 
+#define FTB_COMP_CAT_BACKPLANE            1
 
 typedef uint32_t FTB_client_handle_t;
+
 
 #define FTB_CLIENT_ID_TO_HANDLE(id)  ((id).comp_cat<<16 | (id).comp<<8 | (id).ext)
 
@@ -139,27 +148,63 @@ typedef struct FTB_component_properties {
 #define FTB_ERR_TAG_NO_SPACE                    (-7)
 #define FTB_ERR_TAG_CONFLICT                    (-8)
 #define FTB_ERR_TAG_NOT_FOUND                   (-9)
-#define FTB_ERR_NOT_INITIALIZED                 (-2)
+#define FTB_ERR_NOT_INITIALIZED                 (-10)
+#define FTB_INVALID_FIELD_SIZE                  (-11)
+#define FTB_MASK_NOT_INITIALIZED                (-12)
+#define FTB_INVALID_VALUE                       (-13)
 #define FTB_ERR_HASHKEY_NOT_FOUND               (-16)
 #define FTB_ERR_NAMESPACE_FORMAT                (-20)
 
 
-#define FTB_CAUGHT_NO_EVENT                     0
+#define FTB_CAUGHT_NO_EVENT                     -31
 #define FTB_CAUGHT_EVENT                        1
 
 typedef uint8_t FTB_tag_t;
 
 /*event and event_mask using same structure*/
 typedef struct FTB_event{
+    FTB_severity_code_t  severity;
+    FTB_comp_cat_code_t comp_cat;
+    FTB_comp_code_t comp;
+    FTB_event_cat_code_t event_cat;
+    FTB_event_name_code_t event_name;
+    FTB_region_t region;
+    FTB_jobid_t jobid;
+    FTB_inst_name_t inst_name;
+    FTB_hostname_t hostname;
+    int seqnum;
+    FTB_dynamic_len_t len;
+    FTB_event_data_t event_data;
+    char dynamic_data[FTB_MAX_DYNAMIC_DATA_SIZE];
+}FTB_event_t;
+
+//typedef FTB_event_t  FTB_catch_event_info_t;
+typedef struct FTB_catch_event_info{
     FTB_severity_t  severity;
     FTB_comp_cat_t comp_cat;
     FTB_comp_t comp;
-    FTB_event_cat_t event_cat;
+    //FTB_event_cat_t event_cat;
     FTB_event_name_t event_name;
-    char dynamic_data[FTB_MAX_DYNAMIC_DATA_SIZE];
+    FTB_region_t region;
+    FTB_jobid_t jobid;
+    FTB_inst_name_t inst_name;
+    FTB_hostname_t hostname;
+    int seqnum;
     FTB_dynamic_len_t len;
-}FTB_event_t;
+    FTB_event_data_t event_data;
+    FTB_location_id_t incoming_src;
+    char dynamic_data[FTB_MAX_DYNAMIC_DATA_SIZE];
+}FTB_catch_event_info_t;
 
+typedef struct FTB_event_mask {
+    FTB_event_t event;
+    int initialized;
+}FTB_event_mask_t;
+
+typedef struct FTB_subscribe_handle {
+    FTB_client_handle_t chandle;
+    FTB_event_mask_t cmask;
+}FTB_subscribe_handle_t;
 
 #ifdef __cplusplus
 } /*extern "C"*/

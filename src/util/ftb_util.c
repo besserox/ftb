@@ -7,23 +7,47 @@
 extern FILE* FTBU_log_file_fp;
 
 int FTBU_match_mask(const FTB_event_t *event, const FTB_event_t *mask)
-{
-    FTB_event_name_t temp = mask->event_name+1;
-    if (temp != 0) {
-        /* event name is not masked to match all */
-        return (mask->event_name == event->event_name);
+{   
+    /*
+    printf("For Maskregion=%s Eventregion=%s\n", mask->region, event->region);
+    printf("For Maskjobid=%s Eventjobid=%s\n", mask->jobid, event->jobid);
+    printf("For Mask inst_name=%s Event inst_name=%s\n", mask->inst_name, event->inst_name);
+    printf("For Mask hostname=%s Event hostname=%s\n", mask->hostname, event->hostname);
+    printf("Severity mask=%d and event=%d\n", mask->severity, event->severity);
+    printf("Comp cat mask=%d and event=%d\n", mask->comp_cat, event->comp_cat);
+    printf("comp mask=%d and event=%d\n", mask->comp, event->comp);
+    printf("event cat mask=%d and event=%d\n", mask->event_cat, event->event_cat);
+    printf("event name mask=%d and event=%d\n", mask->event_name, event->event_name);
+    */
+
+    if (((strcasecmp(event->region, mask->region) == 0) ||
+            (strcasecmp(mask->region, "ALL") == 0)) &&
+            ((strcasecmp(event->jobid, mask->jobid) == 0) ||
+             (strcasecmp(mask->jobid, "ALL") ==0)) &&
+            ((strcasecmp(event->inst_name, mask->inst_name) == 0) ||
+             (strcasecmp(mask->inst_name, "ALL") == 0)) &&
+            ((strcasecmp(event->hostname, mask->hostname) == 0) ||
+             (strcasecmp(mask->hostname, "ALL") == 0))) {
+        FTB_event_name_code_t temp = mask->event_name+1;
+        if (temp != 0) {
+            /* event name is not masked to match all */
+            return (mask->event_name == event->event_name);
+        }
+        if ((event->severity & mask->severity) != 0
+                && (event->severity & ~mask->severity) == 0
+                && (event->comp_cat & mask->comp_cat) != 0
+                && (event->comp_cat & ~mask->comp_cat) == 0
+                && (event->comp & mask->comp) != 0 
+                && (event->comp & ~mask->comp) == 0
+                && (event->event_cat & mask->event_cat) != 0
+                && (event->event_cat & ~mask->event_cat) == 0) {
+            return 1;
+        }
+        else {
+            return 0;
+        }
     }
-    if ( (event->severity & mask->severity) != 0
-     && (event->severity & ~mask->severity) == 0
-     && (event->comp_cat & mask->comp_cat) != 0
-     && (event->comp_cat & ~mask->comp_cat) == 0
-     && (event->comp & mask->comp) != 0
-     && (event->comp & ~mask->comp) == 0
-     && (event->event_cat & mask->event_cat) != 0
-     && (event->event_cat & ~mask->event_cat) == 0)
-        return 1;
-    else 
-        return 0;
+    return 0;
 }
 
 int FTBU_is_equal_location_id(const FTB_location_id_t *lhs, const FTB_location_id_t *rhs)

@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <search.h>
 #include <string.h>
+#include <stdlib.h>
 #include "ftb_def.h"
 #include "ftb_event_def.h"
 #include "ftb_throw_events.h"
@@ -43,6 +44,21 @@ int FTBM_comp_table_init()
    return 0;
 }
 
+int FTBM_severity_table_init()
+{
+    ENTRY severity;
+    FTBM_severity_entry_t *info_ptr = FTB_severity_table;
+    int i = 0;
+    for (i=0; i<FTB_TOTAL_SEVERITY; i++) {
+        severity.key = FTB_severity_table[i].severity_char;
+        severity.data = info_ptr;
+        info_ptr++;
+        hsearch(severity, ENTER);
+    }
+    return 0;
+    
+}
+
 int FTBM_event_table_init() 
 {
    ENTRY event;
@@ -83,7 +99,7 @@ int FTBM_get_event_by_name(const char *name, FTB_event_t *e)
 }
 
 
-int FTBM_get_compcat_by_name(const char *name, FTB_comp_cat_t *val)
+int FTBM_get_compcat_by_name(const char *name, FTB_comp_cat_code_t *val)
 {
     ENTRY *found;
     if ((found = util_search_hash(name)) != NULL) {
@@ -95,7 +111,7 @@ int FTBM_get_compcat_by_name(const char *name, FTB_comp_cat_t *val)
     return FTB_SUCCESS;
 }
 
-int FTBM_get_comp_by_name(const char *name, FTB_comp_t *val)
+int FTBM_get_comp_by_name(const char *name, FTB_comp_code_t *val)
 {
     ENTRY *found;
     if ((found = util_search_hash(name)) != NULL) {
@@ -108,13 +124,54 @@ int FTBM_get_comp_by_name(const char *name, FTB_comp_t *val)
 }
 
 
-int FTBM_get_comp_catch_count(FTB_comp_cat_t comp_cat, FTB_comp_t comp, int *count)
+int FTBM_get_severity_by_name(const char *name, FTB_severity_code_t *val)
+{
+    ENTRY *found;
+    if ((found = util_search_hash(name)) != NULL) {
+            *val = ((FTBM_severity_entry_t *)found->data)->severity;
+    }
+    else {
+        return FTB_ERR_HASHKEY_NOT_FOUND;
+    }
+    return FTB_SUCCESS;
+}
+
+int FTBM_get_string_by_id(int id, char *name, char *type)
+{
+    if (strcmp(type, "comp_cat") == 0) {
+        if (id > FTB_TOTAL_COMP_CAT) 
+            return FTB_INVALID_VALUE;
+        else 
+            strcpy(name, FTB_comp_cat_table_rev[id]);
+    }
+    else if (strcmp(type, "comp") == 0) { 
+        if (id > FTB_TOTAL_COMP) 
+            return FTB_INVALID_VALUE;
+        else 
+            strcpy(name, FTB_comp_table_rev[id]);
+    }
+    else if (strcmp(type, "severity") == 0) { 
+        if (id > FTB_TOTAL_SEVERITY) 
+            return FTB_INVALID_VALUE;
+        else 
+            strcpy(name, FTB_severity_table_rev[id]);
+    }
+    else if (strcmp(type, "event_name") == 0) { 
+        if (id > FTB_EVENT_DEF_TOTAL_THROW_EVENTS) 
+            return FTB_INVALID_VALUE;
+        else 
+            strcpy(name, FTB_event_table_rev[id]);
+    }
+    return FTB_SUCCESS;
+}
+    
+int FTBM_get_comp_catch_count(FTB_comp_cat_code_t comp_cat, FTB_comp_code_t comp, int *count)
 {
     *count = 0;
     return FTB_SUCCESS;
 }
 
-int FTBM_get_comp_catch_masks(FTB_comp_cat_t comp_cat, FTB_comp_t comp, FTB_event_t *events)
+int FTBM_get_comp_catch_masks(FTB_comp_cat_code_t comp_cat, FTB_comp_code_t comp, FTB_event_t *events)
 {
     return FTB_SUCCESS;
 }

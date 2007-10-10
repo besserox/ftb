@@ -27,7 +27,7 @@ typedef struct FTBC_event_inst_list {
 
 typedef struct FTBC_callback_entry{
     FTB_event_t *mask;
-    int (*callback)(FTB_event_t *, FTB_id_t *, void*);
+    int (*callback)(FTB_catch_event_info_t *, void*);
     void *arg;
 }FTBC_callback_entry_t;
 
@@ -52,6 +52,10 @@ typedef struct FTBC_comp_info{
     volatile int finalizing;
     FTBU_list_node_t* callback_event_queue; /* entry type: event_inst_list*/
     FTBC_map_mask_2_callback_entry_t *callback_map;
+    FTB_region_t comp_region; //This assumes a component can throw only in one region
+    FTB_jobid_t comp_jobid;
+    FTB_inst_name_t comp_inst_name;
+    int seqnum;
 }FTBC_comp_info_t;
 
 static pthread_mutex_t FTBC_lock = PTHREAD_MUTEX_INITIALIZER;
@@ -135,7 +139,7 @@ static int util_split_namespace(FTB_namespace_t ns, char *region_name, char *cat
             || (strlen(region_name)> FTB_MAX_REGION) 
             || (strlen(category_name) > FTB_MAX_COMP_CAT) 
             || (strlen(component_name) > FTB_MAX_COMP)
-            || (strcmp(region_name, "FTB")!=0)) {
+            || (strcasecmp(region_name, "FTB")!=0)) {
         return FTB_ERR_NAMESPACE_FORMAT;
     }
     return FTB_SUCCESS;
@@ -241,7 +245,48 @@ static void *callback_component(void *arg)
             callback_entry = (FTBC_callback_entry_t *)FTBU_map_get_data(iter);
             if (FTBU_match_mask(&entry->event_inst, callback_entry->mask))  {
                 /*Make callback*/
-                (*callback_entry->callback)(&entry->event_inst, &entry->src, callback_entry->arg);
+                //(*callback_entry->callback)(&entry->event_inst, &entry->src, callback_entry->arg);
+                FTB_catch_event_info_t ce_event;
+                char name[128];
+                int ret = 0;
+                ret = FTBM_get_string_by_id(entry->event_inst.comp_cat, name, "comp_cat");
+                if (ret != FTB_SUCCESS) {
+                    FTB_WARNING("Incoming event matches mask but is from unknown component category\n");
+                }
+                else 
+                    strcpy(ce_event.comp_cat, name);
+                
+                ret = FTBM_get_string_by_id(entry->event_inst.comp, name, "comp");
+                if (ret != FTB_SUCCESS) {
+                    FTB_WARNING("Incoming event matches mask but is from unknown component\n");
+                }
+                else 
+                    strcpy(ce_event.comp, name);
+                
+                ret = FTBM_get_string_by_id(entry->event_inst.severity, name, "severity");
+                if (ret != FTB_SUCCESS) {
+                    FTB_WARNING("Incoming event matches mask but is of unknown severity\n");
+                }
+                else 
+                    strcpy(ce_event.severity, name);
+                
+                ret = FTBM_get_string_by_id(entry->event_inst.event_name, name, "event_name");
+                if (ret != FTB_SUCCESS) {
+                    FTB_WARNING("Incoming event matches mask but the event name is unknown to FTB\n");
+                }
+                    strcpy(ce_event.event_name, name);
+                strcpy(ce_event.region, entry->event_inst.region);
+                strcpy(ce_event.jobid, entry->event_inst.jobid);
+                strcpy(ce_event.inst_name, entry->event_inst.inst_name);
+                strcpy(ce_event.hostname, entry->event_inst.hostname);
+                memcpy(&ce_event.seqnum, &entry->event_inst.seqnum, sizeof(int));
+                memcpy(&ce_event.len, &entry->event_inst.len, sizeof(FTB_dynamic_len_t));
+                memcpy(&ce_event.event_data, &entry->event_inst.event_data, sizeof(FTB_event_data_t));
+                memcpy(&ce_event.incoming_src, &entry->src.location_id, sizeof(FTB_location_id_t));
+                memcpy(ce_event.dynamic_data, entry->event_inst.dynamic_data,  FTB_MAX_DYNAMIC_DATA_SIZE);
+                
+                (*callback_entry->callback)(&ce_event, callback_entry->arg);
+                //(*callback_entry->callback)((FTB_catch_event_info_t *)&entry->event_inst, callback_entry->arg);
                 FTBU_list_remove_entry((FTBU_list_node_t *)entry);
                 free(entry);
                 callback_done = 1;
@@ -263,11 +308,11 @@ int FTBC_Init(FTB_comp_info_t *cinfo, uint8_t extension, const FTB_component_pro
 {
     FTBC_comp_info_t *comp_info;
 
-    FTB_comp_cat_t category;
-    FTB_comp_t component;
+    FTB_comp_cat_code_t category;
+    FTB_comp_code_t component;
     char category_name[FTB_MAX_COMP_CAT+1];
     char component_name[FTB_MAX_COMP+1];
-    char region_name[FTB_MAX_REGION +1];
+    char region_name[FTB_MAX_REGION+1];
     
     if (util_split_namespace(cinfo->comp_namespace, region_name, category_name, component_name)) {
         FTB_WARNING("Invalid namespace format");
@@ -293,6 +338,7 @@ int FTBC_Init(FTB_comp_info_t *cinfo, uint8_t extension, const FTB_component_pro
         FTBM_compcat_table_init();
         FTBM_comp_table_init();
         FTBM_event_table_init();
+        FTBM_severity_table_init();
         FTBM_Init(1);
     }
     num_components++;
@@ -311,6 +357,10 @@ int FTBC_Init(FTB_comp_info_t *cinfo, uint8_t extension, const FTB_component_pro
     
     comp_info->finalizing = 0;
     comp_info->event_queue_size = 0;
+    comp_info->seqnum = 0;
+    strcpy(comp_info->comp_region, region_name);
+    strcpy(comp_info->comp_inst_name, cinfo->inst_name);
+    strcpy(comp_info->comp_jobid, cinfo->jobid);
     if (comp_info->properties.catching_type & FTB_EVENT_CATCHING_POLLING) {
         if (comp_info->properties.max_event_queue_size == 0) {
             FTB_WARNING("Polling queue size equal to 0, changing to default value");
@@ -373,11 +423,127 @@ int FTBC_Init(FTB_comp_info_t *cinfo, uint8_t extension, const FTB_component_pro
     return FTB_SUCCESS;
 }
 
+int FTBC_Create_mask(FTB_event_mask_t * event_mask, char *field_name, char *field_val)
+{
+    if (strlen(field_val) <= 0) 
+        return FTB_INVALID_FIELD_SIZE;
+
+    if (event_mask->initialized != 1) {
+        if ((strcasecmp(field_name, "all") != 0) && (strcasecmp(field_val, "init") !=0 ))
+                return FTB_MASK_NOT_INITIALIZED;
+    }
+    if ((strcasecmp(field_name, "all") == 0) && (strcasecmp(field_val, "init") == 0 )) {
+                event_mask->initialized = 1;
+                strcpy(event_mask->event.region, "ALL");
+                strcpy(event_mask->event.hostname, "ALL");
+                strcpy(event_mask->event.inst_name, "ALL");
+                strcpy(event_mask->event.jobid, "ALL");
+                event_mask->event.severity = 0-1;
+                event_mask->event.comp_cat = 0-1; 
+                event_mask->event.comp = 0-1; 
+                event_mask->event.event_cat = 0-1; 
+                event_mask->event.event_name = 0-1;
+    }
+    else if (strcasecmp(field_name, "hostname") == 0) {
+        if (strlen(field_val) > FTB_MAX_HOST_NAME) 
+            return FTB_INVALID_FIELD_SIZE; 
+        strcpy(event_mask->event.hostname, field_val);
+    }
+    else if (strcasecmp(field_name, "jobid") == 0) {
+        if (strlen(field_val) > FTB_MAX_JOBID) 
+            return FTB_INVALID_FIELD_SIZE; 
+        strcpy(event_mask->event.jobid, field_val);
+    }
+    else if (strcasecmp(field_name, "inst_name") == 0) {
+        if (strlen(field_val) > FTB_MAX_INST_NAME) 
+            return FTB_INVALID_FIELD_SIZE; 
+        strcpy(event_mask->event.inst_name, field_val);
+    }
+    else if (strcasecmp(field_name, "namespace") == 0) {
+        char region_name[FTB_MAX_REGION+1];
+        char comp_name[FTB_MAX_COMP+1];
+        char comp_cat[FTB_MAX_COMP_CAT+1];
+        FTB_comp_cat_code_t comp_cat_code = 0;
+        FTB_comp_code_t comp_code = 0;
+        int ret = 0;
+        
+        if (sizeof(field_val) > FTB_MAX_NAMESPACE) 
+            return FTB_INVALID_FIELD_SIZE; 
+        
+        util_split_namespace(field_val, region_name, comp_cat, comp_name);
+        if ((strlen(region_name) > FTB_MAX_REGION) || 
+                (strlen(comp_name) > FTB_MAX_COMP) || 
+                (strlen(comp_cat) > FTB_MAX_COMP_CAT)) {
+            FTB_INFO("Returning field as FTB_INVALID_FIELD_SIZE");
+            return FTB_INVALID_FIELD_SIZE; 
+        }
+        strcpy(event_mask->event.region, region_name);
+       
+        if (strcasecmp(comp_cat, "ALL") == 0) 
+            comp_cat_code = 0-1;
+        else {
+            ret = FTBM_get_compcat_by_name(comp_cat, &comp_cat_code);
+            if (ret == FTB_ERR_HASHKEY_NOT_FOUND) 
+                return FTB_INVALID_VALUE;
+        }
+        
+        if (strcasecmp(comp_name, "ALL") == 0) 
+            comp_code = 0-1;
+        else {
+            ret = FTBM_get_comp_by_name(comp_name, &comp_code);
+            if (ret == FTB_ERR_HASHKEY_NOT_FOUND) 
+                return FTB_INVALID_VALUE;
+        }
+        
+        event_mask->event.comp_cat = comp_cat_code;
+        event_mask->event.comp = comp_code;
+        event_mask->event.event_cat = 0-1;
+        
+    }
+    else if (strcasecmp(field_name, "severity") == 0) {
+        int ret = 0, i = 0;
+        char tempstr[FTB_MAX_SEVERITY+1];
+        FTB_severity_code_t severity_code = 0;
+        
+        if (sizeof(field_val) > FTB_MAX_SEVERITY) 
+            return FTB_INVALID_FIELD_SIZE; 
+        
+        for (i=0; i<strlen(field_val); i++) 
+            tempstr[i]=toupper(field_val[i]);
+        ret = FTBM_get_severity_by_name(tempstr, &severity_code);
+        if (ret == FTB_ERR_HASHKEY_NOT_FOUND) 
+            return FTB_INVALID_VALUE;
+        event_mask->event.severity=severity_code;
+    }
+    else if (strcasecmp(field_name, "event_name") == 0){
+        FTB_event_t evt;
+        int ret = 0, i = 0;
+        char tempstr[FTB_MAX_EVENT_NAME+1];
+
+        if (sizeof(field_val) > FTB_MAX_EVENT_NAME) 
+            return FTB_INVALID_FIELD_SIZE; 
+        
+        for (i=0; i<strlen(field_val)+1; i++) 
+            tempstr[i]=toupper(field_val[i]);
+        ret = FTBM_get_event_by_name(tempstr, &evt);
+        if (ret == FTB_ERR_HASHKEY_NOT_FOUND) 
+            return FTB_INVALID_VALUE;
+        event_mask->event.event_name = evt.event_name;
+        event_mask->event.severity   = evt.severity;
+        event_mask->event.comp       = evt.comp;
+        event_mask->event.comp_cat   = evt.comp_cat;
+        event_mask->event.event_cat  = evt.event_cat;
+    }
+    else 
+        return FTB_INVALID_VALUE;
+    return FTB_SUCCESS;
+}
+
 static void util_finalize_component(FTBC_comp_info_t * comp_info)
 {
     FTBM_Component_dereg(comp_info->id);
-    
     free(comp_info->id);
+    FTB_INFO("in util_finalize_component -- after FTBM_Component_dereg\n");
     if (comp_info->event_queue) {
         FTBU_list_node_t *temp;
         FTBU_list_node_t *pos;
@@ -387,6 +553,8 @@ static void util_finalize_component(FTBC_comp_info_t * comp_info)
         }
         free(comp_info->event_queue);
     }
+
+    FTB_INFO("In util_finalize_component: Free comp_info->event_queue\n");
 
     if (comp_info->properties.catching_type & FTB_EVENT_CATCHING_NOTIFICATION) {
         FTBU_map_iterator_t iter;
@@ -405,6 +573,7 @@ static void util_finalize_component(FTBC_comp_info_t * comp_info)
         }
         FTBU_map_finalize(comp_info->callback_map);
     }
+    FTB_INFO("in util_finalize_component -- done\n");
 }
 
 int FTBC_Finalize(FTB_client_handle_t handle)
@@ -525,6 +694,10 @@ int FTBC_Reg_catch_polling_event(FTB_client_handle_t handle, const char* event_n
     FTBM_get_event_by_name(event_name, &msg.event);
     memcpy(&msg.src,comp_info->id,sizeof(FTB_id_t));
     msg.msg_type = FTBM_MSG_TYPE_REG_CATCH;
+    strcpy(msg.event.region, "ALL");
+    strcpy(msg.event.jobid, "ALL");
+    strcpy(msg.event.inst_name, "ALL");
+    strcpy(msg.event.hostname, "ALL");
     FTBM_Get_parent_location_id(&msg.dst.location_id);
 
     ret = FTBM_Send(&msg);
@@ -601,7 +774,8 @@ int FTBC_Reg_all_predefined_catch(FTB_client_handle_t handle)
     return ret;
 }
 
-static void util_add_to_callback_map(FTBC_comp_info_t *comp_info, const FTB_event_t *event, int (*callback)(FTB_event_t *, FTB_id_t *, void*), void *arg)
+//static void util_add_to_callback_map(FTBC_comp_info_t *comp_info, const FTB_event_t *event, int (*callback)(FTB_event_t *, FTB_id_t *, void*), void *arg)
+static void util_add_to_callback_map(FTBC_comp_info_t *comp_info, const FTB_event_t *event, int (*callback)(FTB_catch_event_info_t *, void*), void *arg)
 {
     FTBC_callback_entry_t *entry = (FTBC_callback_entry_t *)malloc(sizeof(FTBC_callback_entry_t));
     entry->mask = (FTB_event_t *)malloc(sizeof(FTB_event_t));
@@ -613,7 +787,8 @@ static void util_add_to_callback_map(FTBC_comp_info_t *comp_info, const FTB_even
     unlock_component(comp_info);
 }
 
-int FTBC_Reg_catch_notify_event(FTB_client_handle_t handle, const char* event_name, int (*callback)(FTB_event_t *, FTB_id_t *, void*), void *arg)
+//int FTBC_Reg_catch_notify_event(FTB_client_handle_t handle, const char* event_name, int (*callback)(FTB_event_t *, FTB_id_t *, void*), void *arg)
+int FTBC_Reg_catch_notify_event(FTB_client_handle_t handle, const char* event_name, int (*callback)(FTB_catch_event_info_t *, void*), void *arg)
 {
     FTBM_msg_t msg;
     FTBC_comp_info_t *comp_info;
@@ -639,7 +814,8 @@ int FTBC_Reg_catch_notify_event(FTB_client_handle_t handle, const char* event_na
     return ret;
 }
 
-int FTBC_Reg_catch_notify_mask(FTB_client_handle_t handle, const FTB_event_t *event, int (*callback)(FTB_event_t *, FTB_id_t *, void*), void *arg)
+//int FTBC_Reg_catch_notify_mask(FTB_client_handle_t handle, const FTB_event_t *event, int (*callback)(FTB_event_t *, FTB_id_t *, void*), void *arg)
+int FTBC_Reg_catch_notify_mask(FTB_client_handle_t handle, const FTB_event_t *event, int (*callback)(FTB_catch_event_info_t *, void*), void *arg)
 {
     FTBM_msg_t msg;
     FTBC_comp_info_t *comp_info;
@@ -651,7 +827,6 @@ int FTBC_Reg_catch_notify_mask(FTB_client_handle_t handle, const FTB_event_t *ev
         FTB_INFO("FTBC_Reg_catch_notify_mask Out");
         return FTB_ERR_NOT_SUPPORTED;
     }
-
     util_add_to_callback_map(comp_info, event, callback, arg);
 
     memcpy(&msg.event, event, sizeof(FTB_event_t));
@@ -664,25 +839,29 @@ int FTBC_Reg_catch_notify_mask(FTB_client_handle_t handle, const FTB_event_t *ev
     return ret;
 }
 
-int FTBC_Throw(FTB_client_handle_t handle, const char *event_name,  FTB_event_data_t *datadetails, char *err_msg)
+int FTBC_Throw(FTB_client_handle_t handle, const char *event_name,  FTB_event_data_t *datadetails)
 {
     FTBM_msg_t msg;
     FTBC_comp_info_t *comp_info;
     int ret;
     LOOKUP_COMP_INFO(handle,comp_info);
-    *err_msg = 0;
     
     FTB_INFO("FTBC_Throw In");
     FTBM_get_event_by_name(event_name, &msg.event);
     lock_client();
     memcpy(&msg.event.dynamic_data, tag_string, FTB_MAX_DYNAMIC_DATA_SIZE);
     unlock_client();
-
+    comp_info->seqnum +=1; 
     memcpy(&msg.src,comp_info->id,sizeof(FTB_id_t));
     if (datadetails == NULL) {
         datadetails=(FTB_event_data_t*)malloc(sizeof(FTB_event_data_t));
     }
-    memcpy(&msg.eventdata, datadetails, sizeof(FTB_event_data_t));
+    memcpy(&msg.event.event_data, datadetails, sizeof(FTB_event_data_t));
+    strcpy(msg.event.hostname, msg.src.location_id.hostname);
+    strcpy(msg.event.region, comp_info->comp_region);
+    strcpy(msg.event.inst_name, comp_info->comp_inst_name);
+    strcpy(msg.event.jobid, comp_info->comp_jobid);
+    msg.event.seqnum=comp_info->seqnum;
     msg.msg_type = FTBM_MSG_TYPE_NOTIFY;
     FTBM_Get_parent_location_id(&msg.dst.location_id);
     ret = FTBM_Send(&msg);
@@ -690,32 +869,90 @@ int FTBC_Throw(FTB_client_handle_t handle, const char *event_name,  FTB_event_da
     return ret;
 }
 
-int FTBC_Catch(FTB_client_handle_t handle, FTB_event_t *event, FTB_id_t *src)
+//int FTBC_Catch(FTB_client_handle_t handle, FTB_event_t *event, FTB_id_t *src)
+int FTBC_Catch(FTB_subscribe_handle_t shandle, FTB_catch_event_info_t *ce_event)
 {
     FTBM_msg_t msg;
     FTB_location_id_t incoming_src;
     FTBC_comp_info_t *comp_info;
     FTBC_event_inst_list_t *entry;
     FTB_INFO("FTBC_Catch In");
+    FTB_client_handle_t handle;
+    handle = shandle.chandle;
     LOOKUP_COMP_INFO(handle,comp_info);
 
+    //*error_msg = 0;
     if (!(comp_info->properties.catching_type & FTB_EVENT_CATCHING_POLLING)){
         FTB_INFO("FTBC_Catch Out");
         return FTB_ERR_NOT_SUPPORTED;
     }
-    
+
+   
     lock_component(comp_info);
     if (comp_info->event_queue_size > 0) {
+        int event_found = 0;
+        FTBC_event_inst_list_t *start = (FTBC_event_inst_list_t *)comp_info->event_queue->next;
         entry = (FTBC_event_inst_list_t *)comp_info->event_queue->next;
-        memcpy(event, &entry->event_inst, sizeof(FTB_event_t));
-        memcpy(src, &entry->src, sizeof(FTB_id_t));
-        FTBU_list_remove_entry((FTBU_list_node_t *)entry);
+        do { 
+            if (FTBU_match_mask(&entry->event_inst, &shandle.cmask.event))  {
+                event_found = 1;
+                char name[128];
+                int ret = 0;
+                ret = FTBM_get_string_by_id(entry->event_inst.comp_cat, name, "comp_cat");
+                if (ret != FTB_SUCCESS) {
+                    FTB_WARNING("Incoming event matches mask but is from unknown component category\n");
+                }
+                else 
+                    strcpy(ce_event->comp_cat, name);
+                
+                ret = FTBM_get_string_by_id(entry->event_inst.comp, name, "comp");
+                if (ret != FTB_SUCCESS) {
+                    FTB_WARNING("Incoming event matches mask but is from unknown component\n");
+                }
+                else 
+                    strcpy(ce_event->comp, name);
+                
+                ret = FTBM_get_string_by_id(entry->event_inst.severity, name, "severity");
+                if (ret != FTB_SUCCESS) {
+                    FTB_WARNING("Incoming event matches mask but is of unknown severity\n");
+                }
+                else 
+                    strcpy(ce_event->severity, name);
+                
+                ret = FTBM_get_string_by_id(entry->event_inst.event_name, name, "event_name");
+                if (ret != FTB_SUCCESS) {
+                    FTB_WARNING("Incoming event matches mask but the event name is unknown to FTB\n");
+                }
+                else 
+                    strcpy(ce_event->event_name, name);
+                strcpy(ce_event->region, entry->event_inst.region);
+                strcpy(ce_event->jobid, entry->event_inst.jobid);
+                strcpy(ce_event->inst_name, entry->event_inst.inst_name);
+                strcpy(ce_event->hostname, entry->event_inst.hostname);
+                memcpy(&ce_event->seqnum, &entry->event_inst.seqnum, sizeof(int));
+                memcpy(&ce_event->len, &entry->event_inst.len, sizeof(FTB_dynamic_len_t));
+                memcpy(&ce_event->event_data, &entry->event_inst.event_data, sizeof(FTB_event_data_t));
+                memcpy(&ce_event->incoming_src, &entry->src.location_id, sizeof(FTB_location_id_t));
+                //memcpy(ce_event->dynamic_data, entry->event_inst.dynamic_data, entry->event_inst.len);
+                memcpy(ce_event->dynamic_data, entry->event_inst.dynamic_data,  FTB_MAX_DYNAMIC_DATA_SIZE);
+                break;
+            }
+            else {
+                entry = (FTBC_event_inst_list_t *)entry->next;
+            }
+        } while (entry != start);
+        if (event_found) {
+            FTBU_list_remove_entry((FTBU_list_node_t *)entry);
+            comp_info->event_queue_size--;
+            unlock_component(comp_info);
+        }
         free(entry);
-        comp_info->event_queue_size--;
-        unlock_component(comp_info);
-        FTB_INFO("FTBC_Catch Out");
-        return FTB_CAUGHT_EVENT;
+        if (event_found) {
+            FTB_INFO("FTBC_Catch Out");
+            return FTB_CAUGHT_EVENT;
+        }
     }
+    
     /*Then poll FTBM once*/
     while (FTBM_Poll(&msg,&incoming_src) == FTB_SUCCESS) {
         if (FTB_CLIENT_ID_TO_HANDLE(msg.dst.client_id)==handle) {
@@ -746,13 +983,57 @@ int FTBC_Catch(FTB_client_handle_t handle, FTB_event_t *event, FTB_id_t *src)
             }
             if (!is_for_callback) {
                 FTB_INFO("Not for callback");
-                memcpy(event, &msg.event,sizeof(FTB_event_t));
-                if (src != NULL) {
-                    memcpy(src, &msg.src, sizeof(FTB_id_t));
+                char name[128];
+                int ret = 0;
+                if (FTBU_match_mask(&msg.event, &shandle.cmask.event))  {
+                    
+                    ret = FTBM_get_string_by_id(msg.event.comp_cat, name, "comp_cat");
+                    if (ret != FTB_SUCCESS) {
+                        FTB_WARNING("Incoming event matches mask but is from unknown component category\n");
+                    }
+                    else 
+                        strcpy(ce_event->comp_cat, name);
+                    
+                    ret = FTBM_get_string_by_id(msg.event.comp, name, "comp");
+                    if (ret != FTB_SUCCESS) {
+                        FTB_WARNING("Incoming event matches mask but is from unknown component\n");
+                    }
+                    else 
+                        strcpy(ce_event->comp, name);
+                    
+                    ret = FTBM_get_string_by_id(msg.event.severity, name, "severity");
+                    if (ret != FTB_SUCCESS) {
+                        FTB_WARNING("Incoming event matches mask but is of unknown severity\n");
+                    }
+                    else 
+                        strcpy(ce_event->severity, name);
+                    
+                    ret = FTBM_get_string_by_id(msg.event.event_name, name, "event_name");
+                    if (ret != FTB_SUCCESS) {
+                        FTB_WARNING("Incoming event matches mask but the event name is unknown to FTB\n");
+                    }
+                    else 
+                        strcpy(ce_event->event_name, name);
+                    strcpy(ce_event->region, msg.event.region);
+                    strcpy(ce_event->jobid,  msg.event.jobid);
+                    strcpy(ce_event->inst_name, msg.event.inst_name);
+                    strcpy(ce_event->hostname, msg.event.hostname);
+                    memcpy(&ce_event->seqnum, &msg.event.seqnum, sizeof(int));
+                    memcpy(&ce_event->len, &msg.event.len, sizeof(FTB_dynamic_len_t));
+                    memcpy(&ce_event->event_data, &msg.event.event_data, sizeof(FTB_event_data_t));
+                    memcpy(&ce_event->incoming_src, &msg.src.location_id, sizeof(FTB_location_id_t));
+                    memcpy(ce_event->dynamic_data, msg.event.dynamic_data,  FTB_MAX_DYNAMIC_DATA_SIZE);
+                    //memcpy(temp_src, &entry->src, sizeof(FTB_id_t));
+                    unlock_component(comp_info);
+                    FTB_INFO("FTBC_Catch Out");
+                    return FTB_CAUGHT_EVENT;
                 }
-                unlock_component(comp_info);
-                FTB_INFO("FTBC_Catch Out");
-                return FTB_CAUGHT_EVENT;
+                else {
+                    unlock_component(comp_info);
+                    util_handle_FTBM_msg(&msg);
+                    FTB_INFO("FTBC_Catch Out");
+                    return FTB_CAUGHT_NO_EVENT;
+                }
             }
         }
         else {
@@ -761,22 +1042,72 @@ int FTBC_Catch(FTB_client_handle_t handle, FTB_event_t *event, FTB_id_t *src)
             util_handle_FTBM_msg(&msg);
             lock_component(comp_info);
             FTB_INFO("Testing whether someone else got my events");
+            int event_found = 0;
             if (comp_info->event_queue_size > 0) {
                 entry = (FTBC_event_inst_list_t *)comp_info->event_queue->next;
-                memcpy(event, &entry->event_inst, sizeof(FTB_event_t));
-                memcpy(src, &entry->src, sizeof(FTB_id_t));
-                FTBU_list_remove_entry((FTBU_list_node_t *)entry);
+                FTBC_event_inst_list_t * start = (FTBC_event_inst_list_t *)comp_info->event_queue->next;
+                char name[128];
+                int ret = 0;
+                do { 
+                    if (FTBU_match_mask(&entry->event_inst, &shandle.cmask.event))  {
+                        ret = FTBM_get_string_by_id(entry->event_inst.comp_cat, name, "comp_cat");
+                        if (ret != FTB_SUCCESS) {
+                            FTB_WARNING("Incoming event matches mask but is from unknown component category\n");
+                        }
+                        else 
+                            strcpy(ce_event->comp_cat, name);
+                    
+                        ret = FTBM_get_string_by_id(entry->event_inst.comp, name, "comp");
+                        if (ret != FTB_SUCCESS) {
+                            FTB_WARNING("Incoming event matches mask but is from unknown component\n");
+                        }
+                        else 
+                            strcpy(ce_event->comp, name);
+                    
+                        ret = FTBM_get_string_by_id(entry->event_inst.severity, name, "severity");
+                        if (ret != FTB_SUCCESS) {
+                            FTB_WARNING("Incoming event matches mask but is of unknown severity\n");
+                        }
+                        else 
+                            strcpy(ce_event->severity, name);
+                    
+                        ret = FTBM_get_string_by_id(entry->event_inst.event_name, name, "event_name");
+                        if (ret != FTB_SUCCESS) {
+                            FTB_WARNING("Incoming event matches mask but the event name is unknown to FTB\n");
+                        }
+                        else 
+                            strcpy(ce_event->event_name, name);
+                        strcpy(ce_event->region, entry->event_inst.region);
+                        strcpy(ce_event->jobid, entry->event_inst.jobid);
+                        strcpy(ce_event->inst_name, entry->event_inst.inst_name);
+                        strcpy(ce_event->hostname, entry->event_inst.hostname);
+                        memcpy(&ce_event->seqnum, &entry->event_inst.seqnum, sizeof(int));
+                        memcpy(&ce_event->len, &entry->event_inst.len, sizeof(FTB_dynamic_len_t));
+                        memcpy(&ce_event->event_data, &entry->event_inst.event_data, sizeof(FTB_event_data_t));
+                        memcpy(&ce_event->incoming_src, &entry->src.location_id, sizeof(FTB_location_id_t));
+                        memcpy(ce_event->dynamic_data, entry->event_inst.dynamic_data,  FTB_MAX_DYNAMIC_DATA_SIZE);
+                        event_found = 1;
+                        break;
+                    }
+                    else {
+                        entry = (FTBC_event_inst_list_t *)entry->next;
+                    }
+                } while (entry != start);
+                if (event_found) {
+                    FTBU_list_remove_entry((FTBU_list_node_t *)entry);
+                    comp_info->event_queue_size--;
+                }
                 free(entry);
-                comp_info->event_queue_size--;
                 unlock_component(comp_info);
-                FTB_INFO("FTBC_Catch Out");
-                return FTB_CAUGHT_EVENT;
+                if (event_found) {
+                    FTB_INFO("FTBC_Catch Out");
+                 return FTB_CAUGHT_EVENT;
+                }
             }
             FTB_INFO("No events put in my queue, keep polling");
         }
     }
     unlock_component(comp_info);
-
     FTB_INFO("FTBC_Catch Out");
     return FTB_CAUGHT_NO_EVENT;
 }
@@ -872,7 +1203,8 @@ int FTBC_Remove_dynamic_tag(FTB_client_handle_t handle, FTB_tag_t tag)
     return FTB_SUCCESS;
 }
 
-int FTBC_Read_dynamic_tag(const FTB_event_t *event, FTB_tag_t tag, char *tag_data, FTB_dynamic_len_t *data_len)
+//int FTBC_Read_dynamic_tag(const FTB_event_t *event, FTB_tag_t tag, char *tag_data, FTB_dynamic_len_t *data_len)
+int FTBC_Read_dynamic_tag(const FTB_catch_event_info_t *event, FTB_tag_t tag, char *tag_data, FTB_dynamic_len_t *data_len)
 {
     uint8_t tag_count;
     uint8_t i;
@@ -890,19 +1222,19 @@ int FTBC_Read_dynamic_tag(const FTB_event_t *event, FTB_tag_t tag, char *tag_dat
         offset+=sizeof(FTB_dynamic_len_t);
         if (tag == temp_tag) {
             if (*data_len < temp_len) {
-                FTB_INFO("FTBC_Read_dynamic_tag Out");
+                FTB_INFO("FTBC_Read_dynamic_tag (FTB_ERR_TAG_NO_SPACE) Out");
                 return FTB_ERR_TAG_NO_SPACE;
             }
             else {
                 *data_len = temp_len;
                 memcpy(tag_data, event->dynamic_data + offset, temp_len);
-                FTB_INFO("FTBC_Read_dynamic_tag Out");
+                FTB_INFO("FTBC_Read_dynamic_tag (FTB_SUCCESS) Out");
                 return FTB_SUCCESS;
             }
         }
     }
 
-    FTB_INFO("FTBC_Read_dynamic_tag Out");
+    FTB_INFO("FTBC_Read_dynamic_tag (FTB_ERR_TAG_NOT_FOUND) Out");
     return FTB_ERR_TAG_NOT_FOUND;
 }
 
