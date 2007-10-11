@@ -35,6 +35,7 @@ process.
 */
 
 typedef uint8_t FTB_event_catching_t;
+typedef char FTB_catching_style_t[32];
 /*
 The mechanism to catch events required by component, 
 defined as FTB_EVENT_CATCHING_NONE, or | of the others.
@@ -100,6 +101,7 @@ typedef struct FTB_comp_info {
     FTB_namespace_t comp_namespace;
     FTB_inst_name_t inst_name;
     FTB_jobid_t jobid;
+    FTB_catching_style_t catch_style; 
 }FTB_comp_info_t;
 
 typedef struct FTB_location_id {

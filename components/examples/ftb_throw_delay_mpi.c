@@ -4,8 +4,7 @@
 #include "mpi.h"
 
 #include "libftb.h"
-#include "ftb_event_def.h"
-#include "ftb_throw_events.h"
+#include "ftb_mpi_mpi_example_events.h"
 
 char err_msg[FTB_MAX_ERRMSG_LEN];
 
@@ -33,6 +32,8 @@ int main (int argc, char *argv[])
     strcpy(cinfo.schema_ver, "0.5"); 
     strcpy(cinfo.inst_name, "");
     strcpy(cinfo.jobid,"");
+    strcpy(cinfo.catch_style, "FTB_NO_CATCH");
+    
     printf("FTB_Init\n");
     ret = FTB_Init(&cinfo, &handle, err_msg);
     if (ret != FTB_SUCCESS) {

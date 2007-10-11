@@ -11,9 +11,23 @@ int FTB_Init(FTB_comp_info_t *comp_info, FTB_client_handle_t *client_handle, cha
 {
     FTB_component_properties_t properties;
     FTBU_log_file_fp = stderr;
-    properties.catching_type= FTB_EVENT_CATCHING_POLLING+FTB_EVENT_CATCHING_NOTIFICATION;
     properties.err_handling = FTB_ERR_HANDLE_NONE;
-    properties.max_event_queue_size = FTB_DEFAULT_EVENT_POLLING_Q_LEN;
+    if (strcasecmp(comp_info->catch_style, "FTB_POLLING_CATCH") == 0) {
+        properties.catching_type= FTB_EVENT_CATCHING_POLLING;
+        properties.max_event_queue_size = FTB_DEFAULT_EVENT_POLLING_Q_LEN;
+    }
+    else if (strcasecmp(comp_info->catch_style, "FTB_NOTIFY_CATCH") == 0) {
+        properties.catching_type= FTB_EVENT_CATCHING_NOTIFICATION;
+        properties.max_event_queue_size = 0;
+    }
+    else if (strcasecmp(comp_info->catch_style, "FTB_NO_CATCH") == 0) {
+        properties.catching_type= FTB_EVENT_CATCHING_NONE;
+        properties.max_event_queue_size = 0;
+    }
+    else { /* user can also sepecify FTB_POLLING_NOTIFY_CATCH */
+        properties.catching_type= FTB_EVENT_CATCHING_POLLING+FTB_EVENT_CATCHING_NOTIFICATION;
+        properties.max_event_queue_size = FTB_DEFAULT_EVENT_POLLING_Q_LEN;
+    }
     *error_msg=0;
     return FTBC_Init(comp_info, 0, &properties, client_handle); /*Set extention to 0*/
 }

@@ -1221,7 +1221,7 @@ int FTBC_Read_dynamic_tag(const FTB_catch_event_info_t *event, FTB_tag_t tag, ch
 
     FTB_INFO("FTBC_Read_dynamic_tag In");
     memcpy(&tag_count, event->dynamic_data, sizeof(tag_count));
-    offset = 1;
+    offset = sizeof(tag_count);
     for (i=0;i<tag_count;i++) {
         FTB_tag_t temp_tag;
         FTB_tag_len_t temp_len;
@@ -1241,6 +1241,7 @@ int FTBC_Read_dynamic_tag(const FTB_catch_event_info_t *event, FTB_tag_t tag, ch
                 return FTB_SUCCESS;
             }
         }
+        offset += temp_len;
     }
 
     FTB_INFO("FTBC_Read_dynamic_tag Out");

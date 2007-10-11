@@ -27,7 +27,8 @@ int main (int argc, char *argv[])
     int ret = 0;
     FTB_event_data_t *publish_event_data = (FTB_event_data_t *)malloc(sizeof(FTB_event_data_t));
     struct watchdog_info send_info, recv_info;
-    char *tag_data = "sample_data";
+    char *tag_data1 = "sample_data";
+    char *tag_data2 = "sample_data_rinku";
     FTB_tag_len_t data_len = 30;
     char tag_data_recv[256];
 
@@ -37,6 +38,7 @@ int main (int argc, char *argv[])
     strcpy(cinfo.schema_ver, "0.5");
     strcpy(cinfo.inst_name, "watchdog");
     strcpy(cinfo.jobid,"watchdog-111");
+    strcpy(cinfo.catch_style,"FTB_POLLING_CATCH");
     ret = FTB_Init(&cinfo, &handle, err_msg);
     if (ret != FTB_SUCCESS) {
         printf("FTB_Init is not successful ret=%d\n", ret);
@@ -58,11 +60,20 @@ int main (int argc, char *argv[])
     /* Subscribe the created mask using the polling mechanism*/
     ret = FTB_Subscribe(handle, &mask, &shandle, err_msg, NULL, NULL);
     if (ret != FTB_SUCCESS) {
-        printf("FTB_Subscribe failed!\n"); exit(-1);
+        printf("FTB_Subscribe failed ret=%d!\n", ret); exit(-1);
     }
    
     /* Create a tag identified by "1" */ 
-    FTB_Add_tag(handle, 1, tag_data, strlen(tag_data)+1, err_msg);
+    ret = FTB_Add_tag(handle, 1, tag_data1, strlen(tag_data1)+1, err_msg);
+    if (ret != FTB_SUCCESS) {
+        printf("FTB_Add_tag with name 1 failed\n");
+        exit (-1);
+    }
+    FTB_Add_tag(handle, 2, tag_data2, strlen(tag_data2)+1, err_msg);
+    if (ret != FTB_SUCCESS) {
+        printf("FTB_Add_tag with name 2 failed\n");
+        exit (-1);
+    }
 
     /* Copy data to send to with event to be published */
     send_info.watchdog_id = 5;
@@ -91,9 +102,9 @@ int main (int argc, char *argv[])
         }
         
         memcpy(&recv_info, caught_event.event_data.data, sizeof(struct watchdog_info));
-        ret = FTB_Read_tag(&caught_event, 1, tag_data_recv, &data_len, err_msg);
+        ret = FTB_Read_tag(&caught_event, 2, tag_data_recv, &data_len, err_msg);
         if (ret != FTB_SUCCESS) {
-            printf("FTB_Read_tag failed\n");
+            printf("FTB_Read_tag failed %d\n", ret);
             exit(-1);
         }
         printf("Watchdog: Component name=%s Comp category=%s Severity=%s ",

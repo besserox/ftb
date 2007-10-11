@@ -54,6 +54,7 @@ int main (int argc, char *argv[])
     strcpy(cinfo.schema_ver, "0.5"); 
     strcpy(cinfo.inst_name,"notify");
     strcpy(cinfo.jobid,"");
+    strcpy(cinfo.catch_style,"FTB_NOTIFY_CATCH");
     
     ret = FTB_Init(&cinfo, &handle, err_msg);
     if (ret != FTB_SUCCESS) {

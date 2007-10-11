@@ -47,6 +47,8 @@ int Comp3_Init()
     strcpy(cinfo.schema_ver, "0.5");
     strcpy(cinfo.inst_name, "");
     strcpy(cinfo.jobid,"");
+    strcpy(cinfo.catch_style,"FTB_NOTIFY_CATCH");
+    
     ret = FTB_Init(&cinfo, &Comp3_ftb_handle, err_msg3);
     if (ret != FTB_SUCCESS) {
         printf("FTB_Init failed\n");
@@ -98,6 +100,7 @@ int Comp2_Init()
     strcpy(cinfo.schema_ver, "0.5");
     strcpy(cinfo.inst_name, "");
     strcpy(cinfo.jobid,"");
+    strcpy(cinfo.catch_style,"FTB_POLLING_CATCH");
     ret = FTB_Init(&cinfo, &Comp2_ftb_handle, err_msg2);
     if (ret != FTB_SUCCESS) {
         printf("FTB_Init failed\n");
@@ -190,6 +193,7 @@ int Comp1_Init()
     strcpy(cinfo.schema_ver, "0.5");
     strcpy(cinfo.inst_name, "");
     strcpy(cinfo.jobid,"");
+    strcpy(cinfo.catch_style,"FTB_NOTIFY_CATCH");
     ret = FTB_Init(&cinfo, &Comp1_ftb_handle, err_msg1);
     if (ret != FTB_SUCCESS) {
         printf("FTB_Init failed\n");
