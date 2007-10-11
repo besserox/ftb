@@ -32,11 +32,11 @@ LIBS_PTHREAD=@LIBS_PTHREAD@
 
 all: ${clients}
 
-linux: ftb_watchdog ftb_polling_logger ftb_simple_thrower ftb_simple_catcher ftb_notify_logger ftb_multi_comp
+linux: ftb_watchdog ftb_polling_logger ftb_simple_thrower ftb_simple_catcher ftb_notify_logger ftb_multi_comp ftb_pingpong
 
 bgl: ftb_simple_thrower_bgl ftb_simple_catcher_bgl
 
-CFLAGS_LINUX  = -Wall -g -I${INC_DIR}
+CFLAGS_LINUX  = -Wall -g -I${INC_DIR} -I${abs_top_srcdir}/components/examples/include
 LDFLAGS_LINUX = -L${FTB_LIB_PATH_SHARED}
 LIBS_LINUX    = -l${FTB_LIB_LINUX_NAME} ${LIBS_PTHREAD}
 
@@ -45,7 +45,7 @@ LDFLAGS_CN    = -L${FTB_LIB_PATH_STATIC} -L${ZOID_LIBC_PATH} -L${BGLSYS_LIB_PATH
 LIBS_CN       = -lftb_blrts -lc -lmsglayer.rts -ldevices.rts -lrts.rts
 
 clean:
-	rm -f ftb_watchdog ftb_polling_logger ftb_simple_thrower ftb_simple_catcher ftb_notify_logger ftb_multi_comp
+	rm -f ftb_watchdog ftb_polling_logger ftb_simple_thrower ftb_simple_catcher ftb_notify_logger ftb_multi_comp ftb_pingpong
 	rm -f ftb_simple_thrower_bgl ftb_simple_catcher_bgl .bgl_env_test
 
 .bgl_env_test:
@@ -73,5 +73,8 @@ ftb_notify_logger: ftb_notify_logger.c
 	${CC} ${CFLAGS_LINUX} ${LDFLAGS_LINUX} -o $@ $< ${LIBS_LINUX}
 
 ftb_multi_comp: ftb_multi_comp.c
+	${CC} ${CFLAGS_LINUX} ${LDFLAGS_LINUX} -o $@ $< ${LIBS_LINUX}
+	
+ftb_pingpong: ftb_pingpong.c
 	${CC} ${CFLAGS_LINUX} ${LDFLAGS_LINUX} -o $@ $< ${LIBS_LINUX}
 

@@ -1,11 +1,9 @@
-<?xml version="1.0"?>
 <ftb_component_details>
-<component_category>ftb_examples</component_category>
-<component>watchdog</component>
-<throw_event>
-	<event_severity>ftb_info</event_severity>
-	<event_category>General</event_category>
+<schema_ver>0.5</schema_ver>
+<namespace>ftb.ftb_examples.watchdog</namespace>
+<publish_event>
 	<event_name>WATCH_DOG_EVENT</event_name>
+	<event_severity>ftb_info</event_severity>
 	<event_desc>This event is used by watchdog</event_desc>
-</throw_event>
+</publish_event>
 </ftb_component_details>

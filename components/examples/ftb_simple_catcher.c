@@ -4,55 +4,68 @@
 #include <string.h>
 
 #include "libftb.h"
-#include "ftb_event_def.h"
-#include "ftb_throw_events.h"
+#include "ftb_ftb_examples_simple_publishevents.h"
 
 int main (int argc, char *argv[])
 {
-    FTB_component_properties_t properties;
     FTB_client_handle_t handle;
     int i;
-
-    printf("Begin\n");
-    properties.catching_type = FTB_EVENT_CATCHING_POLLING;
-    properties.err_handling = FTB_ERR_HANDLE_NONE;
-    properties.max_event_queue_size = FTB_DEFAULT_EVENT_POLLING_Q_LEN;
-
+    FTB_comp_info_t cinfo;
+    FTB_event_mask_t mask;
+    FTB_subscribe_handle_t shandle;
     char err_msg[1024];
+    int ret=0;
     
     printf("Begin\n");
-    properties.catching_type = FTB_EVENT_CATCHING_NONE;
-    properties.err_handling = FTB_ERR_HANDLE_NONE;
-    FTB_comp_info_t cinfo;
     strcpy(cinfo.comp_namespace,"FTB.FTB_EXAMPLES.SIMPLE");
     strcpy(cinfo.schema_ver, "0.5");
-    strcpy(cinfo.inst_name,"abc");
-    strcpy(cinfo.jobid,"1234");
+    strcpy(cinfo.inst_name,"");
+    strcpy(cinfo.jobid,"");
     
-    printf("cinfo.comp_namespace=%s cinfo.schema_ver=%s cinfo.inst_name=%s cinfo.jobid=%s\n",cinfo.comp_namespace,
-    cinfo.schema_ver,cinfo.inst_name,cinfo.jobid);
-    int ret=0;
-    ret=FTB_Init(&cinfo, &handle,err_msg);
+    ret = FTB_Init(&cinfo, &handle, err_msg);
+    if (ret != FTB_SUCCESS) {
+        printf("FTB_Init was not successful\n");
+        exit(-1);
+    }
+  
+    ret = FTB_Create_mask(&mask, "all", "init", err_msg);
+    if (ret != FTB_SUCCESS) {
+        printf("FTB_Create_mask was not successful\n");
+        exit(-1);
+    }
 
-    printf("FTB_Init\n");
-    //FTB_Init(FTB_EXAMPLES, SIMPLE, &properties, &handle);
-    printf("FTB_Reg_catch_polling_event\n");
-    FTB_Reg_catch_polling_event(handle, "SIMPLE_EVENT");
+    /* Create a subscription mask */
+    ret = FTB_Create_mask(&mask, "all", "init", err_msg);
+    if (ret != FTB_SUCCESS) {
+        printf("Mask creation failed for field_name=all and field value=init \n"); 
+        exit(-1);
+    }
+    ret = FTB_Create_mask(&mask, "event_name", "SIMPLE_EVENT", err_msg);
+    if (ret != FTB_SUCCESS) {
+        printf("Mask creation failed for field_name = event_name \n"); 
+        exit(-1);
+    }
+    
+    /* Register subscription mask */
+    ret = FTB_Subscribe(handle, &mask, &shandle, err_msg, NULL, NULL);
+    if (ret != FTB_SUCCESS) {
+        printf("FTB_Subscribe failed!\n"); 
+        exit(-1);
+    }
+        
     for(i=0;i<12;i++) {
         int ret;
-        FTB_event_t event;
-        FTB_id_t src;
+        FTB_catch_event_info_t event;
         printf("sleep(10)\n");
         sleep(10);
         while(1) {
-            printf("FTB_Catch\n");
-            ret = FTB_Catch(handle, &event, &src);
+            printf("FTB_Poll_for_event\n");
+            ret = FTB_Poll_for_event(shandle, &event, err_msg);
             if (ret == FTB_CAUGHT_EVENT) {
-                printf("Caught event: comp_cat: %d, comp %d, severity: %d, event_cat %d, event_name %d\n",
-                   event.comp_cat, event.comp, event.severity, event.event_cat, event.event_name);
-                printf("From host %s, pid %d, comp_cat: %d, comp %d, extension %d\n",
-                   src.location_id.hostname, src.location_id.pid, src.client_id.comp_cat,
-                   src.client_id.comp, src.client_id.ext);
+                printf("Caught event: comp_cat: %s, comp: %s, severity: %s, event_name: %s\n",
+                   event.comp_cat, event.comp, event.severity, event.event_name);
+                printf("From host: %s, pid: %d \n",
+                   event.incoming_src.hostname, event.incoming_src.pid);
             }
             else {
                 printf("No event\n");

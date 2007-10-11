@@ -140,25 +140,25 @@ int FTBM_get_string_by_id(int id, char *name, char *type)
 {
     if (strcmp(type, "comp_cat") == 0) {
         if (id > FTB_TOTAL_COMP_CAT) 
-            return FTB_INVALID_VALUE;
+            return FTB_ERR_INVALID_VALUE;
         else 
             strcpy(name, FTB_comp_cat_table_rev[id]);
     }
     else if (strcmp(type, "comp") == 0) { 
         if (id > FTB_TOTAL_COMP) 
-            return FTB_INVALID_VALUE;
+            return FTB_ERR_INVALID_VALUE;
         else 
             strcpy(name, FTB_comp_table_rev[id]);
     }
     else if (strcmp(type, "severity") == 0) { 
         if (id > FTB_TOTAL_SEVERITY) 
-            return FTB_INVALID_VALUE;
+            return FTB_ERR_INVALID_VALUE;
         else 
             strcpy(name, FTB_severity_table_rev[id]);
     }
     else if (strcmp(type, "event_name") == 0) { 
         if (id > FTB_EVENT_DEF_TOTAL_THROW_EVENTS) 
-            return FTB_INVALID_VALUE;
+            return FTB_ERR_INVALID_VALUE;
         else 
             strcpy(name, FTB_event_table_rev[id]);
     }

@@ -24,13 +24,12 @@ int FTB_Create_mask(FTB_event_mask_t *event_mask, char *field_name, char *field_
     return FTBC_Create_mask(event_mask, field_name, field_val);
 }
 
-/*
+
 int FTB_Register_publishable_events(FTB_client_handle_t handle, FTB_event_info_t  *einfo, int num_events, char *error_msg)
 {
     *error_msg = 0;
     return FTB_SUCCESS;
 }
-*/
 
 int FTB_Subscribe(FTB_client_handle_t handle, FTB_event_mask_t *event_mask, FTB_subscribe_handle_t *shandle, char *error_msg, 
         int (*callback)(FTB_catch_event_info_t *, void*), void *arg)
@@ -40,11 +39,10 @@ int FTB_Subscribe(FTB_client_handle_t handle, FTB_event_mask_t *event_mask, FTB_
         return FTB_ERR_NULL_POINTER;
     }
     else if (!event_mask->initialized) 
-        return FTB_MASK_NOT_INITIALIZED;
+        return FTB_ERR_MASK_NOT_INITIALIZED;
     memcpy(&shandle->chandle, &handle, sizeof(FTB_client_handle_t));
     memcpy(&shandle->cmask, event_mask, sizeof(FTB_event_mask_t));
     if (callback == NULL) { 
-        printf("In polling mode\n");
         return FTBC_Reg_catch_polling_mask(handle, &event_mask->event);
     }
     else {  
@@ -65,7 +63,7 @@ int FTB_Poll_for_event(FTB_subscribe_handle_t shandle, FTB_catch_event_info_t *e
         return FTB_ERR_NULL_POINTER;
     }
     else if (shandle.cmask.initialized == 0)
-        return FTB_MASK_NOT_INITIALIZED;
+        return FTB_ERR_MASK_NOT_INITIALIZED;
     return FTBC_Catch(shandle, event);
 }
 
@@ -74,19 +72,19 @@ int FTB_Finalize(FTB_client_handle_t handle)
     return FTBC_Finalize(handle);
 }
 
-int FTB_Add_dynamic_tag(FTB_client_handle_t handle, FTB_tag_t tag, const char *tag_data, FTB_dynamic_len_t data_len, char *error_msg)
+int FTB_Add_tag(FTB_client_handle_t handle, FTB_tag_t tag, const char *tag_data, FTB_tag_len_t data_len, char *error_msg)
 {
     *error_msg = 0;
     return FTBC_Add_dynamic_tag(handle, tag, tag_data, data_len);
 }
 
-int FTB_Remove_dynamic_tag(FTB_client_handle_t handle, FTB_tag_t tag, char *error_msg)
+int FTB_Remove_tag(FTB_client_handle_t handle, FTB_tag_t tag, char *error_msg)
 {
     *error_msg = 0;
     return FTBC_Remove_dynamic_tag(handle, tag);
 }
 
-int FTB_Read_dynamic_tag(const FTB_catch_event_info_t *event, FTB_tag_t tag, char *tag_data, FTB_dynamic_len_t *data_len, char *error_msg)
+int FTB_Read_tag(const FTB_catch_event_info_t *event, FTB_tag_t tag, char *tag_data, FTB_tag_len_t *data_len, char *error_msg)
 {
     *error_msg = 0;
     return FTBC_Read_dynamic_tag(event, tag, tag_data, data_len);

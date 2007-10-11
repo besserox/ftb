@@ -34,10 +34,10 @@ int FTBC_Finalize(FTB_client_handle_t handle);
 
 int FTBC_Abort(FTB_client_handle_t handle);
 
-int FTBC_Add_dynamic_tag(FTB_client_handle_t handle, FTB_tag_t tag, const char *tag_data, FTB_dynamic_len_t data_len);
+int FTBC_Add_dynamic_tag(FTB_client_handle_t handle, FTB_tag_t tag, const char *tag_data, FTB_tag_len_t data_len);
 
 int FTBC_Remove_dynamic_tag(FTB_client_handle_t handle, FTB_tag_t tag);
 
-int FTBC_Read_dynamic_tag(const FTB_catch_event_info_t *event, FTB_tag_t tag, char *tag_data, FTB_dynamic_len_t *data_len);
+int FTBC_Read_dynamic_tag(const FTB_catch_event_info_t *event, FTB_tag_t tag, char *tag_data, FTB_tag_len_t *data_len);
 
 #endif

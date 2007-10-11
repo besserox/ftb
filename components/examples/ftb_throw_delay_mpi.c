@@ -11,12 +11,13 @@ char err_msg[FTB_MAX_ERRMSG_LEN];
 
 int main (int argc, char *argv[])
 {
-    FTB_component_properties_t properties;
     FTB_client_handle_t handle;
+    FTB_comp_info_t cinfo;
     int i, count;
     int rank, size;
     double begin, end, delay;
     double min, max, avg;
+    char err_msg[128];
 
     if (argc >= 2) {
        count = atoi(argv[1]);
@@ -26,13 +27,21 @@ int main (int argc, char *argv[])
     }
 
     printf("Begin\n");
-    properties.catching_type = FTB_EVENT_CATCHING_NONE;
-    properties.err_handling = FTB_ERR_HANDLE_NONE;
 
+    /* Create namespace and other attributes before calling FTB_Init */
+    strcpy(cinfo.comp_namespace, "FTB.MPI.EXAMPLE_MPI");
+    strcpy(cinfo.schema_ver, "0.5"); 
+    strcpy(cinfo.inst_name, "");
+    strcpy(cinfo.jobid,"");
     printf("FTB_Init\n");
-    FTB_Init(MPI, EXAMPLE_MPI, &properties, &handle);
-    printf("FTB_Reg_throw\n");
-    FTB_Reg_throw(handle, "MPI_SIMPLE_EVENT");
+    ret = FTB_Init(&cinfo, &handle, err_msg);
+    if (ret != FTB_SUCCESS) {
+        printf("FTB_Init is not successful ret=%d\n", ret);
+        exit(-1);
+    }
+    
+    printf("FTB_Register_publishbale_events\n");
+    FTB_Register_publishable_events(handle, ftb_mpi_mpi_example_events, FTB_MPI_MPI_EXAMPLE_TOTAL_EVENTS, err_msg);
 
     MPI_Init(&argc, &argv);
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);

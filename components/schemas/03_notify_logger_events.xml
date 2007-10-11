@@ -1,4 +1,4 @@
 <ftb_component_details>
-<component_category>ftb_examples</component_category>
-<component>Notify_logger</component>
+<schema_ver>0.5</schema_ver>
+<namespace>ftb.ftb_examples.notify_logger</namespace>
 </ftb_component_details>

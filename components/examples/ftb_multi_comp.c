@@ -1,41 +1,66 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "libftb.h"
-#include "ftb_event_def.h"
-#include "ftb_throw_events.h"
+#include "ftb_ftb_examples_multicomp_comp1_publishevents.h"
+#include "ftb_ftb_examples_multicomp_comp2_publishevents.h"
+#include "ftb_ftb_examples_multicomp_comp3_publishevents.h"
 
-char err_msg[FTB_MAX_ERRMSG_LEN];
+char err_msg1[FTB_MAX_ERRMSG_LEN];
+char err_msg2[FTB_MAX_ERRMSG_LEN];
+char err_msg3[FTB_MAX_ERRMSG_LEN];
 /*************  Component 3  ******************/
 
 FTB_client_handle_t Comp3_ftb_handle;
+FTB_subscribe_handle_t shandle3;
 
-int Comp3_evt_handler(FTB_event_t *evt, FTB_id_t *src, void *arg)
+int Comp3_evt_handler(FTB_catch_event_info_t *evt, void *arg)
 {
-    printf("Comp3 caught event: comp_cat: %d, comp %d, severity: %d, event_cat %d, event_name %d, ",
-            evt->comp_cat, evt->comp, evt->severity, evt->event_cat, evt->event_name);
-    printf("from host %s, pid %d, comp_cat: %d, comp %d, extension %d\n",
-           src->location_id.hostname, src->location_id.pid, src->client_id.comp_cat,
-           src->client_id.comp, src->client_id.ext);
+    printf("Comp3 caught event: comp_cat: %s, comp %s, severity: %s, event_name %s, ",
+            evt->comp_cat, evt->comp, evt->severity, evt->event_name);
+    printf("from host %s, pid %d\n",
+           evt->incoming_src.hostname, evt->incoming_src.pid);
     return 0;
 }
 
 int Comp3_Init()
 {
-    FTB_component_properties_t properties;
-    FTB_event_t mask;
-
-    properties.catching_type = FTB_EVENT_CATCHING_NOTIFICATION;
-    properties.err_handling = FTB_ERR_HANDLE_NONE;
-
-    FTB_EVENT_SET_ALL(mask);
-    FTB_EVENT_CLR_SEVERITY(mask);
-    FTB_EVENT_SET_SEVERITY(mask,FTB_INFO);
+    FTB_event_mask_t mask;
+    int ret = 0;
+    FTB_comp_info_t cinfo;
+    
+    printf("Comp3: Create mask\n");
+    ret = FTB_Create_mask(&mask, "all", "init", err_msg3);
+    if (ret != FTB_SUCCESS) {
+        printf("Mask creation failed for field_name=all and field value=init \n");
+        exit(-1);
+    }
+    ret = FTB_Create_mask(&mask, "severity", "ftb_info", err_msg3);
+    if (ret != FTB_SUCCESS) {
+        printf("Mask creation failed for field val=ftb_info\n");
+        exit(-1);
+    }
 
     printf("Comp3: FTB_Init\n");
-    FTB_Init(FTB_EXAMPLES, MULTICOMP_COMP3, &properties, &Comp3_ftb_handle);
-    printf("Comp3: FTB_Reg_catch_notify_mask\n");
-    FTB_Reg_catch_notify_mask(Comp3_ftb_handle, &mask, Comp3_evt_handler, NULL);
+    strcpy(cinfo.comp_namespace, "FTB.FTB_EXAMPLES.MULTICOMP_COMP3");
+    strcpy(cinfo.schema_ver, "0.5");
+    strcpy(cinfo.inst_name, "");
+    strcpy(cinfo.jobid,"");
+    ret = FTB_Init(&cinfo, &Comp3_ftb_handle, err_msg3);
+    if (ret != FTB_SUCCESS) {
+        printf("FTB_Init failed\n");
+        exit(-1);
+    }
+
+    printf("Comp3: Register_publishable_events\n");
+    FTB_Register_publishable_events(Comp3_ftb_handle, ftb_ftb_examples_multicomp_comp3_events, FTB_FTB_EXAMPLES_MULTICOMP_COMP3_TOTAL_EVENTS, err_msg3);
+    
+    printf("Comp3: FTB_Subscribe \n");
+    ret = FTB_Subscribe(Comp3_ftb_handle, &mask, &shandle3, err_msg3, Comp3_evt_handler, NULL);
+    if (ret != FTB_SUCCESS) {
+         printf("FTB_Subscribe failed!\n"); exit(-1);
+    }
     
     return 0;
 }
@@ -60,19 +85,45 @@ int Comp3_Finalize()
 /*************  Component 2  ******************/
 
 FTB_client_handle_t Comp2_ftb_handle;
+FTB_subscribe_handle_t shandle2;
 
 int Comp2_Init()
 {
-    FTB_component_properties_t properties;
-
-    properties.catching_type = FTB_EVENT_CATCHING_POLLING;
-    properties.err_handling = FTB_ERR_HANDLE_NONE;
-    properties.max_event_queue_size = FTB_DEFAULT_EVENT_POLLING_Q_LEN;
+    FTB_comp_info_t cinfo;
+    FTB_event_mask_t mask;
+    int ret = 0;
 
     printf("Comp2: FTB_Init\n");
-    FTB_Init( FTB_EXAMPLES, MULTICOMP_COMP2, &properties, &Comp2_ftb_handle);
-    printf("Comp2: FTB_Reg_catch_polling_event\n");
-    FTB_Reg_catch_polling_event(Comp2_ftb_handle, "TEST_EVENT_1");
+    strcpy(cinfo.comp_namespace, "FTB.FTB_EXAMPLES.MULTICOMP_COMP2");
+    strcpy(cinfo.schema_ver, "0.5");
+    strcpy(cinfo.inst_name, "");
+    strcpy(cinfo.jobid,"");
+    ret = FTB_Init(&cinfo, &Comp2_ftb_handle, err_msg2);
+    if (ret != FTB_SUCCESS) {
+        printf("FTB_Init failed\n");
+        exit(-1);
+    }
+   
+    printf("Comp2: Register_publishable_events\n");
+    FTB_Register_publishable_events(Comp2_ftb_handle, ftb_ftb_examples_multicomp_comp2_events, FTB_FTB_EXAMPLES_MULTICOMP_COMP2_TOTAL_EVENTS, err_msg2);
+    
+    printf("Comp2: Create mask\n");
+    ret = FTB_Create_mask(&mask, "all", "init", err_msg2);
+    if (ret != FTB_SUCCESS) {
+        printf("Mask creation failed for field_name=all and field value=init \n");
+        exit(-1);
+    }
+    ret = FTB_Create_mask(&mask, "event_name", "TEST_EVENT_1", err_msg2);
+    if (ret != FTB_SUCCESS) {
+        printf("Mask creation failed \n");
+        exit(-1);
+    }
+    
+    printf("Comp2: FTB_Subscribe via polling\n");
+    ret = FTB_Subscribe(Comp2_ftb_handle, &mask, &shandle2, err_msg2, NULL, NULL);
+    if (ret != FTB_SUCCESS) {
+         printf("FTB_Subscribe failed!\n"); exit(-1);
+    }
 
     Comp3_Init();
 
@@ -81,24 +132,23 @@ int Comp2_Init()
 
 int Comp2_Func()
 {
-    FTB_event_t evt;
-    FTB_id_t src;
+    FTB_catch_event_info_t evt;
+    int ret = 0;
 
     Comp3_Func();
     while(1) {
-       int ret = FTB_Catch(Comp2_ftb_handle, &evt, &src);
+       ret = FTB_Poll_for_event(shandle2, &evt, err_msg2);
        if (ret == FTB_CAUGHT_NO_EVENT) {
            break;
        }
-       printf("Comp2 caught event: comp_cat: %d, comp %d, severity: %d, event_cat %d, event_name %d, ",
-            evt.comp_cat, evt.comp, evt.severity, evt.event_cat, evt.event_name);
-       printf("from host %s, pid %d, comp_cat: %d, comp %d, extension %d\n",
-           src.location_id.hostname, src.location_id.pid, src.client_id.comp_cat,
-           src.client_id.comp, src.client_id.ext);
+       printf("Comp2 caught event: comp_cat: %s, comp %s, severity: %s, event_name %s, ",
+            evt.comp_cat, evt.comp, evt.severity, evt.event_name);
+       printf("from host %s, pid %d \n",
+           evt.incoming_src.hostname, evt.incoming_src.pid);
     }
 
     printf("Comp2: FTB_Publish_event\n");
-    FTB_Publish_event(Comp2_ftb_handle, "TEST_EVENT_2",NULL,err_msg);
+    FTB_Publish_event(Comp2_ftb_handle, "TEST_EVENT_2", NULL, err_msg2);
 
     return 0;
 }
@@ -118,33 +168,54 @@ int Comp2_Finalize()
 
 /*************  Component 1  ******************/
 FTB_client_handle_t Comp1_ftb_handle;
+FTB_subscribe_handle_t shandle1;
 
-int Comp1_evt_handler(FTB_event_t *evt, FTB_id_t *src, void *arg)
+int Comp1_evt_handler(FTB_catch_event_info_t *evt, void *arg)
 {
-    printf("Comp1 caught event: comp_cat: %d, comp %d, severity: %d, event_cat %d, event_name %d, ",
-            evt->comp_cat, evt->comp, evt->severity, evt->event_cat, evt->event_name);
-    printf("from host %s, pid %d, comp_cat: %d, comp %d, extension %d\n",
-           src->location_id.hostname, src->location_id.pid, src->client_id.comp_cat,
-           src->client_id.comp, src->client_id.ext);
+    printf("Comp1 caught event: comp_cat: %s, comp %s, severity: %s, event_name %s, ",
+            evt->comp_cat, evt->comp, evt->severity, evt->event_name);
+    printf("from hostname %s, pid %d \n",
+           evt->incoming_src.hostname, evt->incoming_src.pid);
     return 0;
 }
 
 int Comp1_Init()
 {
-    FTB_component_properties_t properties;
-    FTB_event_t mask;
-
-    properties.catching_type = FTB_EVENT_CATCHING_NOTIFICATION;
-    properties.err_handling = FTB_ERR_HANDLE_NONE;
-
-    FTB_EVENT_SET_ALL(mask);
-    FTB_EVENT_CLR_SEVERITY(mask);
-    FTB_EVENT_SET_SEVERITY(mask, FTB_FATAL);
+    FTB_event_mask_t mask;
+    FTB_comp_info_t cinfo;
+    int ret = 0;
 
     printf("Comp1: FTB_Init\n");
-    FTB_Init(FTB_EXAMPLES, MULTICOMP_COMP1, &properties, &Comp1_ftb_handle);
-    printf("Comp1: FTB_Reg_catch_notify_mask\n");
-    FTB_Reg_catch_notify_mask(Comp1_ftb_handle, &mask, Comp1_evt_handler, NULL);
+    strcpy(cinfo.comp_namespace, "FTB.FTB_EXAMPLES.MULTICOMP_COMP1");
+    strcpy(cinfo.schema_ver, "0.5");
+    strcpy(cinfo.inst_name, "");
+    strcpy(cinfo.jobid,"");
+    ret = FTB_Init(&cinfo, &Comp1_ftb_handle, err_msg1);
+    if (ret != FTB_SUCCESS) {
+        printf("FTB_Init failed\n");
+        exit(-1);
+    }
+    
+    printf("Comp1: Register_publishable_events\n");
+    FTB_Register_publishable_events(Comp1_ftb_handle, ftb_ftb_examples_multicomp_comp1_events, FTB_FTB_EXAMPLES_MULTICOMP_COMP1_TOTAL_EVENTS, err_msg1);
+    
+    ret = FTB_Create_mask(&mask, "all", "init", err_msg1);
+    if (ret != FTB_SUCCESS) {
+        printf("Mask creation failed for field_name=all and field value=init \n");
+        exit(-1);
+    }
+    ret = FTB_Create_mask(&mask, "severity", "ftb_fatal", err_msg1);
+    if (ret != FTB_SUCCESS) {
+        printf("Mask creation failed for field val=ftb_fatal\n");
+        exit(-1);
+    }
+    
+    printf("Comp1: FTB_Subscribe \n");
+    ret = FTB_Subscribe(Comp1_ftb_handle, &mask, &shandle1, err_msg1, Comp1_evt_handler, NULL);
+    if (ret != FTB_SUCCESS) {
+         printf("FTB_Subscribe failed!\n"); 
+         exit(-1);
+    }
 
     Comp2_Init();    
 
@@ -157,7 +228,7 @@ int Comp1_Func()
     i++;
     if (i%5 == 0) {
         printf("Comp1: FTB_Publish_event\n");
-        FTB_Publish_event(Comp1_ftb_handle, "TEST_EVENT_1", NULL, err_msg);
+        FTB_Publish_event(Comp1_ftb_handle, "TEST_EVENT_1", NULL, err_msg1);
     }
 
     Comp2_Func();

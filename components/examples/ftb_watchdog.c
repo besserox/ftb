@@ -2,10 +2,8 @@
 #include <stdlib.h>
 #include <signal.h>
 #include <string.h>
-
 #include "libftb.h"
-#include "ftb_event_def.h"
-#include "ftb_throw_events.h"
+#include "ftb_ftb_examples_watchdog_publishevents.h"
 
 static volatile int done = 0;
 char err_msg[FTB_MAX_ERRMSG_LEN];
@@ -30,20 +28,23 @@ int main (int argc, char *argv[])
     FTB_event_data_t *publish_event_data = (FTB_event_data_t *)malloc(sizeof(FTB_event_data_t));
     struct watchdog_info send_info, recv_info;
     char *tag_data = "sample_data";
-    FTB_dynamic_len_t data_len = 30;
+    FTB_tag_len_t data_len = 30;
     char tag_data_recv[256];
 
 
     /* Create namespace and other attributes before calling FTB_Init */
-    strcpy(cinfo.comp_namespace, "FTB.FTB_EXAMPLES.FTB_WAtchdog");
+    strcpy(cinfo.comp_namespace, "FTB.FTB_EXAMPLES.Watchdog");
     strcpy(cinfo.schema_ver, "0.5");
     strcpy(cinfo.inst_name, "watchdog");
-    strcpy(cinfo.jobid,"1234");
-    if (FTB_Init(&cinfo, &handle, err_msg) != FTB_SUCCESS) {
-        printf("FTB_Init is not successful\n");
+    strcpy(cinfo.jobid,"watchdog-111");
+    ret = FTB_Init(&cinfo, &handle, err_msg);
+    if (ret != FTB_SUCCESS) {
+        printf("FTB_Init is not successful ret=%d\n", ret);
         exit(-1);
     }
-
+  
+    FTB_Register_publishable_events(handle, ftb_ftb_examples_watchdog_events, FTB_FTB_EXAMPLES_WATCHDOG_TOTAL_EVENTS, err_msg);
+    
      /* Create a subscription mask */
     ret = FTB_Create_mask(&mask, "all", "init", err_msg);
     if (ret != FTB_SUCCESS) { 
@@ -60,8 +61,8 @@ int main (int argc, char *argv[])
         printf("FTB_Subscribe failed!\n"); exit(-1);
     }
    
-    /* Create a dynamic identified by "1" */ 
-    FTB_Add_dynamic_tag(handle, 1, tag_data, strlen(tag_data)+1, err_msg);
+    /* Create a tag identified by "1" */ 
+    FTB_Add_tag(handle, 1, tag_data, strlen(tag_data)+1, err_msg);
 
     /* Copy data to send to with event to be published */
     send_info.watchdog_id = 5;
@@ -90,17 +91,20 @@ int main (int argc, char *argv[])
         }
         
         memcpy(&recv_info, caught_event.event_data.data, sizeof(struct watchdog_info));
-        ret = FTB_Read_dynamic_tag(&caught_event, 1, tag_data_recv, &data_len, err_msg);
+        ret = FTB_Read_tag(&caught_event, 1, tag_data_recv, &data_len, err_msg);
         if (ret != FTB_SUCCESS) {
-            printf("FTB_Read_dynamic failed\n");
+            printf("FTB_Read_tag failed\n");
             exit(-1);
         }
-        printf("Watchdog: Component name=%s Comp category=%s Severity=%s Event name=%s Region=%s Instance name=%s Hostname=%s, Jobid=%s, Seqnum=%d. User specified received data has watchdogid=%d and watchdog name=%s. Tag is %s\n", 
-                caught_event.comp, caught_event.comp_cat, caught_event.severity,
+        printf("Watchdog: Component name=%s Comp category=%s Severity=%s ",
+                caught_event.comp, caught_event.comp_cat, caught_event.severity);
+        printf("Event name=%s Region=%s Instance name=%s Hostname=%s, Jobid=%s, Seqnum=%d ",
                 caught_event.event_name, caught_event.region, caught_event.inst_name, 
-                caught_event.hostname, caught_event.jobid, caught_event.seqnum,
+                caught_event.hostname, caught_event.jobid, caught_event.seqnum);
+        printf("User specified received data has watchdogid=%d and watchdog name=%s. Watchdog Tag is %s\n", 
                 recv_info.watchdog_id, recv_info.watchdog_name, tag_data_recv);
-        printf("Watchdog: Location is hostname=%s pid=%d\n", caught_event.incoming_src.hostname, caught_event.incoming_src.pid);
+        printf("Watchdog: Location is hostname=%s pid=%d\n", caught_event.incoming_src.hostname, 
+                caught_event.incoming_src.pid);
         sleep(10);
         if (done)
             break;

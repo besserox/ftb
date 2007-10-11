@@ -8,7 +8,7 @@
 #ifdef __cplusplus
 extern "C" {
 #endif 
-#define FTB_DEBUG   1
+//#define FTB_DEBUG   0
 
 typedef uint8_t FTB_err_handling_t;
 /*
@@ -59,18 +59,18 @@ typedef uint16_t FTB_comp_cat_code_t;
 typedef uint8_t FTB_comp_code_t;
 typedef uint8_t FTB_event_cat_code_t;
 typedef uint16_t FTB_event_name_code_t;
-typedef uint8_t FTB_dynamic_len_t;
+typedef uint8_t FTB_tag_len_t;
 
 #define FTB_MAX_REGION               16
 #define FTB_MAX_COMP_CAT             32
 #define FTB_MAX_COMP                 32
 #define FTB_MAX_EVENT_NAME           32
 #define FTB_MAX_SEVERITY             32
-#define FTB_MAX_DESC               1024
+#define FTB_MAX_EVENT_DESC               1024
 #define FTB_MAX_EVENT_DATA           64
 #define FTB_MAX_JOBID                16
 #define FTB_MAX_INST_NAME            16
-#define FTB_MAX_NAMESPACE            82  /* FTB_MAX_REGION + FTB_MAX_COMP_CAT + FTB_MAX_COMP + 2 */
+#define FTB_MAX_NAMESPACE            78  /* FTB_MAX_REGION - 1 + FTB_MAX_COMP_CAT - 1 + FTB_MAX_COMP -1  + 2 */
 #define FTB_MAX_SCHEMA_VER           16
 #define FTB_MAX_HOST_NAME              64
 #define FTB_MAX_ERRMSG_LEN           1024
@@ -86,12 +86,14 @@ typedef char FTB_comp_t[FTB_MAX_COMP];
 typedef char FTB_severity_t[FTB_MAX_SEVERITY];
 typedef char FTB_event_name_t[FTB_MAX_EVENT_NAME];
 typedef char FTB_hostname_t[FTB_MAX_HOST_NAME];
+typedef char FTB_event_desc_t[FTB_MAX_EVENT_DESC];
 
 #define FTB_MAX_DYNAMIC_DATA_SIZE   ((FTB_EVENT_SIZE)-sizeof(FTB_severity_code_t)\
     -sizeof(FTB_comp_cat_code_t)-sizeof(FTB_comp_code_t)-sizeof(FTB_event_cat_code_t)\
     -sizeof(FTB_event_name_code_t)-sizeof(FTB_region_t)-sizeof(FTB_jobid_t)\
-    -sizeof(FTB_inst_name_t)-sizeof(FTB_hostname_t)-sizeof(int)-sizeof(FTB_dynamic_len_t)\
+    -sizeof(FTB_inst_name_t)-sizeof(FTB_hostname_t)-sizeof(int)-sizeof(FTB_tag_len_t)\
     -sizeof(FTB_event_data_t))
+
 
 typedef struct FTB_comp_info {
     FTB_schema_ver_t schema_ver;
@@ -148,12 +150,13 @@ typedef struct FTB_component_properties {
 #define FTB_ERR_TAG_NO_SPACE                    (-7)
 #define FTB_ERR_TAG_CONFLICT                    (-8)
 #define FTB_ERR_TAG_NOT_FOUND                   (-9)
-#define FTB_ERR_NOT_INITIALIZED                 (-10)
-#define FTB_INVALID_FIELD_SIZE                  (-11)
-#define FTB_MASK_NOT_INITIALIZED                (-12)
-#define FTB_INVALID_VALUE                       (-13)
-#define FTB_ERR_HASHKEY_NOT_FOUND               (-16)
-#define FTB_ERR_NAMESPACE_FORMAT                (-20)
+//#define FTB_ERR_NOT_INITIALIZED                 (-10)
+#define FTB_ERR_MASK_NOT_INITIALIZED            (-12)
+#define FTB_ERR_INVALID_VALUE                   (-13)
+#define FTB_ERR_HASHKEY_NOT_FOUND               (-14)
+#define FTB_ERR_NAMESPACE_FORMAT                (-15)
+#define FTB_ERR_VALUE_NOT_FOUND                 (-16)
+#define FTB_ERR_INVALID_FIELD                   (-17)
 
 
 #define FTB_CAUGHT_NO_EVENT                     -31
@@ -173,7 +176,7 @@ typedef struct FTB_event{
     FTB_inst_name_t inst_name;
     FTB_hostname_t hostname;
     int seqnum;
-    FTB_dynamic_len_t len;
+    FTB_tag_len_t len;
     FTB_event_data_t event_data;
     char dynamic_data[FTB_MAX_DYNAMIC_DATA_SIZE];
 }FTB_event_t;
@@ -190,7 +193,7 @@ typedef struct FTB_catch_event_info{
     FTB_inst_name_t inst_name;
     FTB_hostname_t hostname;
     int seqnum;
-    FTB_dynamic_len_t len;
+    FTB_tag_len_t len;
     FTB_event_data_t event_data;
     FTB_location_id_t incoming_src;
     char dynamic_data[FTB_MAX_DYNAMIC_DATA_SIZE];
@@ -205,6 +208,13 @@ typedef struct FTB_subscribe_handle {
     FTB_client_handle_t chandle;
     FTB_event_mask_t cmask;
 }FTB_subscribe_handle_t;
+
+typedef struct FTB_event_info {
+    FTB_namespace_t comp_namespace;
+    FTB_event_name_t event_name;
+    FTB_severity_t severity;
+    FTB_event_desc_t event_desc;    
+}FTB_event_info_t;
 
 #ifdef __cplusplus
 } /*extern "C"*/

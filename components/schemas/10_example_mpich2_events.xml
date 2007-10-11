@@ -1,17 +1,14 @@
-<?xml version="1.0"?>
 <ftb_component_details>
-<component_category>mpi</component_category>
-<component>mpich2</component>
-<throw_event>
-	<event_severity>FTB_Error</event_severity>
-	<event_category>MPI_Resources</event_category>
-	<event_desc>MPI is out of resources</event_desc>
+<schema_ver>0.5</schema_ver>
+<namespace>ftb.mpi.mpich</namespace>
+<publish_event>
 	<event_name>   MPI_OUT_OF_RESOURCES</event_name>
-</throw_event>
-<throw_event>
-	<event_category>MPI_Resources</event_category>
+	<event_severity>FTB_Error</event_severity>
+	<event_desc>MPI is out of resources</event_desc>
+</publish_event>
+<publish_event>
 	<event_name>MEM_REGISTER_FAIL</event_name>
-	<event_desc>Memory Registration failed</event_desc>
 	<event_severity>FTB_fatal</event_severity>
-</throw_event>
+	<event_desc>Memory Registration failed</event_desc>
+</publish_event>
 </ftb_component_details>

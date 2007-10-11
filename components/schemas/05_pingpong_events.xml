@@ -1,16 +1,14 @@
 <ftb_component_details>
-<component_category>ftb_examples</component_category>
-<component>Pingpong</component>
-<throw_event>
-<event_severity>ftb_info</event_severity>
-<event_category>General</event_category>
+<schema_ver>0.5</schema_ver>
+<namespace>ftb.ftb_examples.pingpong</namespace>
+<publish_event>
 <event_name>PINPONG_EVENT_SRV</event_name>
-<event_desc>This event is used by pingpong server</event_desc>
-</throw_event>
-<throw_event>
 <event_severity>ftb_info</event_severity>
-<event_category>General</event_category>
+<event_desc>This event is used by pingpong server</event_desc>
+</publish_event>
+<publish_event>
 <event_name>PINPONG_EVENT_CLI</event_name>
+<event_severity>ftb_info</event_severity>
 <event_desc>This event is used by pingpong client</event_desc>
-</throw_event>
+</publish_event>
 </ftb_component_details>
