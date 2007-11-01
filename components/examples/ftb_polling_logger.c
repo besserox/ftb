@@ -27,7 +27,10 @@ int main (int argc, char *argv[])
     char err_msg[8];
     
     if (argc >= 2) {
-        log_fp = fopen(argv[1],"w");
+        if (!strcmp("-", argv[1]))
+            log_fp = stdout;
+        else
+            log_fp = fopen(argv[1],"w");
     }
     else {
         printf("use %s as log file",LOG_FILE);
