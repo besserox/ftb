@@ -8,7 +8,7 @@
 #ifdef __cplusplus
 extern "C" {
 #endif 
-//#define FTB_DEBUG   0
+#define FTB_DEBUG   0
 
 typedef uint8_t FTB_err_handling_t;
 /*

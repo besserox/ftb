@@ -321,7 +321,7 @@ int FTBM_Init(int leaf)
     return FTB_SUCCESS;
 }
 
-/*Called when the ftb node get finalized*/
+/*Called when the ftb node get disconnected*/
 int FTBM_Finalize()
 {
     FTB_INFO("FTBM_Finalize In");

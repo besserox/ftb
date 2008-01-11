@@ -56,9 +56,9 @@ int main (int argc, char *argv[])
     strcpy(cinfo.jobid,"");
     strcpy(cinfo.catch_style,"FTB_NOTIFY_CATCH");
     
-    ret = FTB_Init(&cinfo, &handle, err_msg);
+    ret = FTB_Connect(&cinfo, &handle, err_msg);
     if (ret != FTB_SUCCESS) {
-        printf("FTB_Init failed \n");
+        printf("FTB_Connect failed \n");
         exit(-1);
     }
     
@@ -81,7 +81,7 @@ int main (int argc, char *argv[])
     while(!done) {
         sleep(5);
     }
-    FTB_Finalize(handle);
+    FTB_Disconnect(handle);
     fclose(log_fp);
     
     return 0;

@@ -7,7 +7,7 @@ FILE* FTBU_log_file_fp;
 /*Linux wrapper for client_lib*/
 
 
-int FTB_Init(FTB_comp_info_t *comp_info, FTB_client_handle_t *client_handle, char *error_msg)
+int FTB_Connect(FTB_comp_info_t *comp_info, FTB_client_handle_t *client_handle, char *error_msg)
 {
     FTB_component_properties_t properties;
     FTBU_log_file_fp = stderr;
@@ -29,7 +29,7 @@ int FTB_Init(FTB_comp_info_t *comp_info, FTB_client_handle_t *client_handle, cha
         properties.max_event_queue_size = FTB_DEFAULT_EVENT_POLLING_Q_LEN;
     }
     *error_msg=0;
-    return FTBC_Init(comp_info, 0, &properties, client_handle); /*Set extention to 0*/
+    return FTBC_Connect(comp_info, 0, &properties, client_handle); /*Set extention to 0*/
 }
 
 int FTB_Create_mask(FTB_event_mask_t *event_mask, char *field_name, char *field_val, char *error_msg)
@@ -70,7 +70,7 @@ int FTB_Publish_event(FTB_client_handle_t handle, const char *event, FTB_event_d
     return FTBC_Throw(handle, event, datadetails);
 }
 
-int FTB_Poll_for_event(FTB_subscribe_handle_t shandle, FTB_catch_event_info_t *event, char *error_msg)
+int FTB_Poll_event(FTB_subscribe_handle_t shandle, FTB_catch_event_info_t *event, char *error_msg)
 {
     *error_msg=0;
     if (event == NULL) {
@@ -78,12 +78,12 @@ int FTB_Poll_for_event(FTB_subscribe_handle_t shandle, FTB_catch_event_info_t *e
     }
     else if (shandle.cmask.initialized == 0)
         return FTB_ERR_MASK_NOT_INITIALIZED;
-    return FTBC_Catch(shandle, event);
+    return FTBC_Poll_event(shandle, event);
 }
 
-int FTB_Finalize(FTB_client_handle_t handle)
+int FTB_Disconnect(FTB_client_handle_t handle)
 {
-    return FTBC_Finalize(handle);
+    return FTBC_Disconnect(handle);
 }
 
 int FTB_Add_tag(FTB_client_handle_t handle, FTB_tag_t tag, const char *tag_data, FTB_tag_len_t data_len, char *error_msg)
@@ -147,7 +147,7 @@ int FTB_Reg_all_predefined_catch(FTB_client_handle_t handle)
 /*
 int FTB_Catch(FTB_client_handle_t handle, FTB_event_t *event, FTB_id_t *src)
 {
-    return FTBC_Catch(handle, event, src);
+    return FTBC_Poll_event(handle, event, src);
 }
 */
 /*

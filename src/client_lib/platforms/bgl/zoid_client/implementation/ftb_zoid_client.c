@@ -36,14 +36,14 @@ void ftb_zoid_client_fini()
 #endif
 }
 
-int ZOID_FTB_Init( FTB_comp_info_t *comp_info /* in:ptr */,
+int ZOID_FTB_Connect( FTB_comp_info_t *comp_info /* in:ptr */,
                    FTB_client_handle_t *client_handle /* out:ptr */,
                    char *error_msg /* out:str */)
 {
     FTB_component_properties_t *properties=NULL;
     *error_msg=0;
     int proc_id = __zoid_calling_process_id();
-    return FTBC_Init(comp_info, proc_id, properties, client_handle);
+    return FTBC_Connect(comp_info, proc_id, properties, client_handle);
 }
 
 int ZOID_FTB_Reg_throw( FTB_client_handle_t handle /* in:obj */,
@@ -81,12 +81,12 @@ int ZOID_FTB_Catch ( FTB_client_handle_t handle /* in:obj */,
                      FTB_event_t *event /* out:ptr */,
                      FTB_id_t *src /* out:ptr:nullok */)
 {
-    return FTBC_Catch(handle, event, src);
+    return FTBC_Poll_event(handle, event, src);
 }
 
-int ZOID_FTB_Finalize (FTB_client_handle_t handle /* in:obj */)
+int ZOID_FTB_Disconnect (FTB_client_handle_t handle /* in:obj */)
 {
-    return FTBC_Finalize(handle);
+    return FTBC_Disconnect(handle);
 }
 
 int ZOID_FTB_Abort (FTB_client_handle_t handle /* in:obj */)

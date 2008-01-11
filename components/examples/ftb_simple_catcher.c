@@ -23,9 +23,9 @@ int main (int argc, char *argv[])
     strcpy(cinfo.jobid,"");
     strcpy(cinfo.catch_style,"FTB_POLLING_CATCH");
     
-    ret = FTB_Init(&cinfo, &handle, err_msg);
+    ret = FTB_Connect(&cinfo, &handle, err_msg);
     if (ret != FTB_SUCCESS) {
-        printf("FTB_Init was not successful\n");
+        printf("FTB_Connect was not successful\n");
         exit(-1);
     }
   
@@ -60,8 +60,8 @@ int main (int argc, char *argv[])
         printf("sleep(10)\n");
         sleep(10);
         while(1) {
-            printf("FTB_Poll_for_event\n");
-            ret = FTB_Poll_for_event(shandle, &event, err_msg);
+            printf("FTB_Poll_event\n");
+            ret = FTB_Poll_event(shandle, &event, err_msg);
             if (ret == FTB_CAUGHT_EVENT) {
                 printf("Caught event: comp_cat: %s, comp: %s, severity: %s, event_name: %s\n",
                    event.comp_cat, event.comp, event.severity, event.event_name);
@@ -74,8 +74,8 @@ int main (int argc, char *argv[])
             }
         }
     }
-    printf("FTB_Finalize\n");
-    FTB_Finalize(handle);
+    printf("FTB_Disconnect\n");
+    FTB_Disconnect(handle);
 
     printf("End\n");
     return 0;

@@ -42,16 +42,16 @@ int Comp3_Init()
         exit(-1);
     }
 
-    printf("Comp3: FTB_Init\n");
+    printf("Comp3: FTB_Connect\n");
     strcpy(cinfo.comp_namespace, "FTB.FTB_EXAMPLES.MULTICOMP_COMP3");
     strcpy(cinfo.schema_ver, "0.5");
     strcpy(cinfo.inst_name, "");
     strcpy(cinfo.jobid,"");
     strcpy(cinfo.catch_style,"FTB_NOTIFY_CATCH");
     
-    ret = FTB_Init(&cinfo, &Comp3_ftb_handle, err_msg3);
+    ret = FTB_Connect(&cinfo, &Comp3_ftb_handle, err_msg3);
     if (ret != FTB_SUCCESS) {
-        printf("FTB_Init failed\n");
+        printf("FTB_Connect failed\n");
         exit(-1);
     }
 
@@ -75,8 +75,8 @@ int Comp3_Func()
 
 int Comp3_Finalize()
 {
-    printf("Comp3: FTB_Finalize\n");
-    FTB_Finalize(Comp3_ftb_handle);
+    printf("Comp3: FTB_Disconnect\n");
+    FTB_Disconnect(Comp3_ftb_handle);
 
     return 0;
 }
@@ -95,15 +95,15 @@ int Comp2_Init()
     FTB_event_mask_t mask;
     int ret = 0;
 
-    printf("Comp2: FTB_Init\n");
+    printf("Comp2: FTB_Connect\n");
     strcpy(cinfo.comp_namespace, "FTB.FTB_EXAMPLES.MULTICOMP_COMP2");
     strcpy(cinfo.schema_ver, "0.5");
     strcpy(cinfo.inst_name, "");
     strcpy(cinfo.jobid,"");
     strcpy(cinfo.catch_style,"FTB_POLLING_CATCH");
-    ret = FTB_Init(&cinfo, &Comp2_ftb_handle, err_msg2);
+    ret = FTB_Connect(&cinfo, &Comp2_ftb_handle, err_msg2);
     if (ret != FTB_SUCCESS) {
-        printf("FTB_Init failed\n");
+        printf("FTB_Connect failed\n");
         exit(-1);
     }
    
@@ -140,7 +140,7 @@ int Comp2_Func()
 
     Comp3_Func();
     while(1) {
-       ret = FTB_Poll_for_event(shandle2, &evt, err_msg2);
+       ret = FTB_Poll_event(shandle2, &evt, err_msg2);
        if (ret == FTB_CAUGHT_NO_EVENT) {
            break;
        }
@@ -160,8 +160,8 @@ int Comp2_Finalize()
 {
     Comp3_Finalize();
 
-    printf("Comp2: FTB_Finalize\n");
-    FTB_Finalize(Comp2_ftb_handle);
+    printf("Comp2: FTB_Disconnect\n");
+    FTB_Disconnect(Comp2_ftb_handle);
     
     return 0;
 }
@@ -188,15 +188,15 @@ int Comp1_Init()
     FTB_comp_info_t cinfo;
     int ret = 0;
 
-    printf("Comp1: FTB_Init\n");
+    printf("Comp1: FTB_Connect\n");
     strcpy(cinfo.comp_namespace, "FTB.FTB_EXAMPLES.MULTICOMP_COMP1");
     strcpy(cinfo.schema_ver, "0.5");
     strcpy(cinfo.inst_name, "");
     strcpy(cinfo.jobid,"");
     strcpy(cinfo.catch_style,"FTB_NOTIFY_CATCH");
-    ret = FTB_Init(&cinfo, &Comp1_ftb_handle, err_msg1);
+    ret = FTB_Connect(&cinfo, &Comp1_ftb_handle, err_msg1);
     if (ret != FTB_SUCCESS) {
-        printf("FTB_Init failed\n");
+        printf("FTB_Connect failed\n");
         exit(-1);
     }
     
@@ -244,8 +244,8 @@ int Comp1_Finalize()
 {
     Comp2_Finalize();
 
-    printf("Comp1: FTB_Finalize\n");
-    FTB_Finalize(Comp1_ftb_handle);
+    printf("Comp1: FTB_Disconnect\n");
+    FTB_Disconnect(Comp1_ftb_handle);
 
     return 0;
 }

@@ -27,17 +27,17 @@ int main (int argc, char *argv[])
 
     printf("Begin\n");
 
-    /* Create namespace and other attributes before calling FTB_Init */
+    /* Create namespace and other attributes before calling FTB_Connect */
     strcpy(cinfo.comp_namespace, "FTB.MPI.EXAMPLE_MPI");
     strcpy(cinfo.schema_ver, "0.5"); 
     strcpy(cinfo.inst_name, "");
     strcpy(cinfo.jobid,"");
     strcpy(cinfo.catch_style, "FTB_NO_CATCH");
     
-    printf("FTB_Init\n");
-    ret = FTB_Init(&cinfo, &handle, err_msg);
+    printf("FTB_Connect\n");
+    ret = FTB_Connect(&cinfo, &handle, err_msg);
     if (ret != FTB_SUCCESS) {
-        printf("FTB_Init is not successful ret=%d\n", ret);
+        printf("FTB_Connect is not successful ret=%d\n", ret);
         exit(-1);
     }
     
@@ -67,8 +67,8 @@ int main (int argc, char *argv[])
     }
 
     MPI_Finalize();
-    printf("FTB_Finalize\n");
-    FTB_Finalize(handle);
+    printf("FTB_Disconnect\n");
+    FTB_Disconnect(handle);
 
     printf("End\n");
     return 0;

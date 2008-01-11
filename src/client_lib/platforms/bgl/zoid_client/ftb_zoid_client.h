@@ -9,7 +9,7 @@
 
 /* START-ZOID-SCANNER ID=10 INIT=ftb_zoid_client_init FINI=ftb_zoid_client_fini */
 
-int ZOID_FTB_Init( FTB_comp_info_t *comp_info /* in:ptr */,
+int ZOID_FTB_Connect( FTB_comp_info_t *comp_info /* in:ptr */,
                    FTB_client_handle_t *client_handle /* out:ptr */, 
                    char *error_msg /* out:str */);
 
@@ -33,7 +33,7 @@ int ZOID_FTB_Catch ( FTB_client_handle_t handle /* in:obj */,
                      FTB_event_t *event /* out:ptr */,
                      FTB_id_t *src /* out:ptr:nullok */);
 
-int ZOID_FTB_Finalize (FTB_client_handle_t handle /* in:obj */);
+int ZOID_FTB_Disconnect (FTB_client_handle_t handle /* in:obj */);
 
 int ZOID_FTB_Abort (FTB_client_handle_t handle /* in:obj */);
 

@@ -43,16 +43,16 @@ int main (int argc, char *argv[])
     }
 
     /* Create the namespace string, jobid and inst_name before calling
-     * FTB_Init
+     * FTB_Connect
      */
     strcpy(cinfo.comp_namespace,"FTB.FTB_EXAMPLES.POLLING_LOGGER");
     strcpy(cinfo.schema_ver, "0.5");
     strcpy(cinfo.inst_name,"abc");
     strcpy(cinfo.jobid,"1234");
     strcpy(cinfo.catch_style,"FTB_POLLING_CATCH");
-    ret = FTB_Init(&cinfo, &handle, err_msg);
+    ret = FTB_Connect(&cinfo, &handle, err_msg);
     if (ret != FTB_SUCCESS) {
-        printf("FTB_Init failed \n");
+        printf("FTB_Connect failed \n");
         exit(-1);
     }
 
@@ -78,7 +78,7 @@ int main (int argc, char *argv[])
     while(1) {
         FTB_catch_event_info_t event;
         int ret = 0;
-        ret = FTB_Poll_for_event(shandle, &event, err_msg);
+        ret = FTB_Poll_event(shandle, &event, err_msg);
         if (ret == FTB_CAUGHT_NO_EVENT) {
             time_t current = time(NULL);
             fprintf(log_fp,"%s\t",asctime(localtime(&current)));
@@ -100,7 +100,7 @@ int main (int argc, char *argv[])
         if (done)
             break;
     }
-    FTB_Finalize(handle);
+    FTB_Disconnect(handle);
     fclose(log_fp);
     
     return 0;

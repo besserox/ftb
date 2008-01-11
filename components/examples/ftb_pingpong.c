@@ -66,9 +66,9 @@ int main (int argc, char *argv[])
     strcpy(cinfo.inst_name, "");
     strcpy(cinfo.jobid,"");
     strcpy(cinfo.catch_style,"FTB_NOTIFY_CATCH");
-    ret = FTB_Init(&cinfo, &handle, err_msg);
+    ret = FTB_Connect(&cinfo, &handle, err_msg);
     if (ret != FTB_SUCCESS) {
-        printf("FTB_Init is not successful ret=%d\n", ret);
+        printf("FTB_Connect is not successful ret=%d\n", ret);
         exit(-1);
     }
     
@@ -120,7 +120,7 @@ int main (int argc, char *argv[])
         printf("Latency: %.3f\n",event_latency);
     }
 
-    FTB_Finalize(handle);
+    FTB_Disconnect(handle);
     
     return 0;
 }

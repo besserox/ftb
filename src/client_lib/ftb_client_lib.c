@@ -303,7 +303,7 @@ static void *callback_component(void *arg)
     return NULL;
 }
 
-int FTBC_Init(FTB_comp_info_t *cinfo, uint8_t extension, const FTB_component_properties_t *properties, FTB_client_handle_t *client_handle)
+int FTBC_Connect(FTB_comp_info_t *cinfo, uint8_t extension, const FTB_component_properties_t *properties, FTB_client_handle_t *client_handle)
 {
     FTBC_comp_info_t *comp_info;
 
@@ -315,10 +315,10 @@ int FTBC_Init(FTB_comp_info_t *cinfo, uint8_t extension, const FTB_component_pro
     
     if (util_split_namespace(cinfo->comp_namespace, region_name, category_name, component_name)) {
         FTB_WARNING("Invalid namespace format");
-        FTB_INFO("FTBC_Init Out");
+        FTB_INFO("FTBC_Connect Out");
         return FTB_ERR_NAMESPACE_FORMAT;
     }
-    FTB_INFO("FTBC_Init In");
+    FTB_INFO("FTBC_Connect In");
     comp_info = (FTBC_comp_info_t*)malloc(sizeof(FTBC_comp_info_t));
     if (properties != NULL) {
         memcpy((void*)&comp_info->properties, (void*)properties,sizeof(FTB_component_properties_t));
@@ -405,7 +405,7 @@ int FTBC_Init(FTB_comp_info_t *cinfo, uint8_t extension, const FTB_component_pro
     lock_client();
     if (FTBU_map_insert(FTBC_comp_info_map,FTBU_MAP_UINT_KEY(comp_info->client_handle), (void *)comp_info)==FTBU_EXIST) {
         FTB_WARNING("This component has already been registered");
-        FTB_INFO("FTBC_Init Out");
+        FTB_INFO("FTBC_Connect Out");
         return FTB_ERR_INVALID_PARAMETER;
     }
     unlock_client();
@@ -419,12 +419,12 @@ int FTBC_Init(FTB_comp_info_t *cinfo, uint8_t extension, const FTB_component_pro
         FTB_INFO("parent: %s pid %d",msg.dst.location_id.hostname, msg.dst.location_id.pid);
         ret = FTBM_Send(&msg);
         if (ret != FTB_SUCCESS) {
-            FTB_INFO("FTBC_Init Out");
+            FTB_INFO("FTBC_Connect Out");
             return ret;
         }
     }
     
-    FTB_INFO("FTBC_Init Out");
+    FTB_INFO("FTBC_Connect Out");
     return FTB_SUCCESS;
 }
 
@@ -583,11 +583,11 @@ static void util_finalize_component(FTBC_comp_info_t * comp_info)
     FTB_INFO("in util_finalize_component -- done\n");
 }
 
-int FTBC_Finalize(FTB_client_handle_t handle)
+int FTBC_Disconnect(FTB_client_handle_t handle)
 {
     FTBC_comp_info_t *comp_info;
     LOOKUP_COMP_INFO(handle,comp_info);
-    FTB_INFO("FTBC_Finalize In");
+    FTB_INFO("FTBC_Disconnect In");
     
     {
         int ret;
@@ -625,7 +625,7 @@ int FTBC_Finalize(FTB_client_handle_t handle)
     }
     unlock_client();
     
-    FTB_INFO("FTBC_Finalize Out");
+    FTB_INFO("FTBC_Disconnect Out");
     return FTB_SUCCESS;
 }
 
@@ -879,20 +879,20 @@ int FTBC_Throw(FTB_client_handle_t handle, const char *event_name,  FTB_event_da
 }
 
 //int FTBC_Catch(FTB_client_handle_t handle, FTB_event_t *event, FTB_id_t *src)
-int FTBC_Catch(FTB_subscribe_handle_t shandle, FTB_catch_event_info_t *ce_event)
+int FTBC_Poll_event(FTB_subscribe_handle_t shandle, FTB_catch_event_info_t *ce_event)
 {
     FTBM_msg_t msg;
     FTB_location_id_t incoming_src;
     FTBC_comp_info_t *comp_info;
     FTBC_event_inst_list_t *entry;
-    FTB_INFO("FTBC_Catch In");
+    FTB_INFO("FTBC_Poll_event In");
     FTB_client_handle_t handle;
     handle = shandle.chandle;
     LOOKUP_COMP_INFO(handle,comp_info);
 
     //*error_msg = 0;
     if (!(comp_info->properties.catching_type & FTB_EVENT_CATCHING_POLLING)){
-        FTB_INFO("FTBC_Catch Out");
+        FTB_INFO("FTBC_Poll_event Out");
         return FTB_ERR_NOT_SUPPORTED;
     }
 
@@ -957,7 +957,7 @@ int FTBC_Catch(FTB_subscribe_handle_t shandle, FTB_catch_event_info_t *ce_event)
         }
         free(entry);
         if (event_found) {
-            FTB_INFO("FTBC_Catch Out");
+            FTB_INFO("FTBC_Poll_event Out");
             return FTB_CAUGHT_EVENT;
         }
     }
@@ -1034,13 +1034,13 @@ int FTBC_Catch(FTB_subscribe_handle_t shandle, FTB_catch_event_info_t *ce_event)
                     memcpy(ce_event->dynamic_data, msg.event.dynamic_data,  FTB_MAX_DYNAMIC_DATA_SIZE);
                     //memcpy(temp_src, &entry->src, sizeof(FTB_id_t));
                     unlock_component(comp_info);
-                    FTB_INFO("FTBC_Catch Out");
+                    FTB_INFO("FTBC_Poll_event Out");
                     return FTB_CAUGHT_EVENT;
                 }
                 else {
                     unlock_component(comp_info);
                     util_handle_FTBM_msg(&msg);
-                    FTB_INFO("FTBC_Catch Out");
+                    FTB_INFO("FTBC_Poll_event Out");
                     return FTB_CAUGHT_NO_EVENT;
                 }
             }
@@ -1109,7 +1109,7 @@ int FTBC_Catch(FTB_subscribe_handle_t shandle, FTB_catch_event_info_t *ce_event)
                 free(entry);
                 unlock_component(comp_info);
                 if (event_found) {
-                    FTB_INFO("FTBC_Catch Out");
+                    FTB_INFO("FTBC_Poll_event Out");
                  return FTB_CAUGHT_EVENT;
                 }
             }
@@ -1117,7 +1117,7 @@ int FTBC_Catch(FTB_subscribe_handle_t shandle, FTB_catch_event_info_t *ce_event)
         }
     }
     unlock_component(comp_info);
-    FTB_INFO("FTBC_Catch Out");
+    FTB_INFO("FTBC_Poll_event Out");
     return FTB_CAUGHT_NO_EVENT;
 }
 

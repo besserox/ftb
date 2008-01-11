@@ -33,15 +33,15 @@ int main (int argc, char *argv[])
     char tag_data_recv[256];
 
 
-    /* Create namespace and other attributes before calling FTB_Init */
+    /* Create namespace and other attributes before calling FTB_Connect */
     strcpy(cinfo.comp_namespace, "FTB.FTB_EXAMPLES.Watchdog");
     strcpy(cinfo.schema_ver, "0.5");
     strcpy(cinfo.inst_name, "watchdog");
     strcpy(cinfo.jobid,"watchdog-111");
     strcpy(cinfo.catch_style,"FTB_POLLING_CATCH");
-    ret = FTB_Init(&cinfo, &handle, err_msg);
+    ret = FTB_Connect(&cinfo, &handle, err_msg);
     if (ret != FTB_SUCCESS) {
-        printf("FTB_Init is not successful ret=%d\n", ret);
+        printf("FTB_Connect is not successful ret=%d\n", ret);
         exit(-1);
     }
   
@@ -95,7 +95,7 @@ int main (int argc, char *argv[])
         sleep(1);
         
         /* Poll for a event which matches mask registered via shandle */
-        ret = FTB_Poll_for_event(shandle, &caught_event, err_msg);
+        ret = FTB_Poll_event(shandle, &caught_event, err_msg);
         if (ret == FTB_CAUGHT_NO_EVENT) {
             fprintf(stderr,"Watchdog: No event caught!\n");
             break;
@@ -120,7 +120,7 @@ int main (int argc, char *argv[])
         if (done)
             break;
     }
-    FTB_Finalize(handle);
+    FTB_Disconnect(handle);
     return 0;
 }
 

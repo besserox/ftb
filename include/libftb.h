@@ -8,7 +8,7 @@
 extern "C" {
 #endif 
 
-int FTB_Init(FTB_comp_info_t *comp_info, FTB_client_handle_t *client_handle, char *error_msg);
+int FTB_Connect(FTB_comp_info_t *comp_info, FTB_client_handle_t *client_handle, char *error_msg);
 
 int FTB_Create_mask(FTB_event_mask_t *event_mask, char *field_name, char *field_val, char *error_msg);
 
@@ -18,9 +18,9 @@ int FTB_Subscribe(FTB_client_handle_t handle, FTB_event_mask_t *event_mask, FTB_
 
 int FTB_Publish_event(FTB_client_handle_t handle, const char *event, FTB_event_data_t *datadetails, char *error_msg);
 
-int FTB_Poll_for_event(FTB_subscribe_handle_t shandle, FTB_catch_event_info_t *event, char *error_msg);
+int FTB_Poll_event(FTB_subscribe_handle_t shandle, FTB_catch_event_info_t *event, char *error_msg);
 
-int FTB_Finalize(FTB_client_handle_t handle);
+int FTB_Disconnect(FTB_client_handle_t handle);
 
 /*
  *    FTB_Add_dynamic_tag, FTB_Remove_dynamic_tag, & FTB_Read_dynamic_tag

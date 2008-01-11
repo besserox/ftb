@@ -3,9 +3,9 @@
 #include "libftb.h"
 #include "ftb_zoid_client.h"
 
-int FTB_Init(FTB_comp_info_t *comp_info, FTB_client_handle_t *client_handle, char *error_msg)
+int FTB_Connect(FTB_comp_info_t *comp_info, FTB_client_handle_t *client_handle, char *error_msg)
 {
-    return ZOID_FTB_Init(comp_info, client_handle, error_msg); 
+    return ZOID_FTB_Connect(comp_info, client_handle, error_msg); 
 }
 
 int FTB_Reg_throw(FTB_client_handle_t handle, const char *event)
@@ -60,9 +60,9 @@ int FTB_Catch(FTB_client_handle_t handle, FTB_event_t *event, FTB_id_t *src)
     return ZOID_FTB_Catch(handle, event, src);
 }
 
-int FTB_Finalize(FTB_client_handle_t handle)
+int FTB_Disconnect(FTB_client_handle_t handle)
 {
-    return ZOID_FTB_Finalize(handle);
+    return ZOID_FTB_Disconnect(handle);
 }
 
 int FTB_Abort(FTB_client_handle_t handle)
