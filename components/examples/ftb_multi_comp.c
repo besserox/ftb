@@ -28,7 +28,7 @@ int Comp3_Init()
 {
     FTB_event_mask_t mask;
     int ret = 0;
-    FTB_comp_info_t cinfo;
+    FTB_client_t cinfo;
     
     printf("Comp3: Create mask\n");
     ret = FTB_Create_mask(&mask, "all", "init", err_msg3);
@@ -43,13 +43,13 @@ int Comp3_Init()
     }
 
     printf("Comp3: FTB_Connect\n");
-    strcpy(cinfo.comp_namespace, "FTB.FTB_EXAMPLES.MULTICOMP_COMP3");
-    strcpy(cinfo.schema_ver, "0.5");
-    strcpy(cinfo.inst_name, "");
-    strcpy(cinfo.jobid,"");
-    strcpy(cinfo.catch_style,"FTB_NOTIFY_CATCH");
+    strcpy(cinfo.event_space, "FTB.FTB_EXAMPLES.MULTICOMP_COMP3");
+    strcpy(cinfo.client_schema_ver, "0.5");
+    strcpy(cinfo.client_name, "");
+    strcpy(cinfo.client_jobid,"");
+    strcpy(cinfo.client_subscription_style,"FTB_SUBSCRIPTION_NOTIFY");
     
-    ret = FTB_Connect(&cinfo, &Comp3_ftb_handle, err_msg3);
+    ret = FTB_Connect(&cinfo, &Comp3_ftb_handle);
     if (ret != FTB_SUCCESS) {
         printf("FTB_Connect failed\n");
         exit(-1);
@@ -91,17 +91,17 @@ FTB_subscribe_handle_t shandle2;
 
 int Comp2_Init()
 {
-    FTB_comp_info_t cinfo;
+    FTB_client_t cinfo;
     FTB_event_mask_t mask;
     int ret = 0;
 
     printf("Comp2: FTB_Connect\n");
-    strcpy(cinfo.comp_namespace, "FTB.FTB_EXAMPLES.MULTICOMP_COMP2");
-    strcpy(cinfo.schema_ver, "0.5");
-    strcpy(cinfo.inst_name, "");
-    strcpy(cinfo.jobid,"");
-    strcpy(cinfo.catch_style,"FTB_POLLING_CATCH");
-    ret = FTB_Connect(&cinfo, &Comp2_ftb_handle, err_msg2);
+    strcpy(cinfo.event_space, "FTB.FTB_EXAMPLES.MULTICOMP_COMP2");
+    strcpy(cinfo.client_schema_ver, "0.5");
+    strcpy(cinfo.client_name, "");
+    strcpy(cinfo.client_jobid,"");
+    strcpy(cinfo.client_subscription_style,"FTB_SUBSCRIPTION_POLLING");
+    ret = FTB_Connect(&cinfo, &Comp2_ftb_handle);
     if (ret != FTB_SUCCESS) {
         printf("FTB_Connect failed\n");
         exit(-1);
@@ -185,16 +185,16 @@ int Comp1_evt_handler(FTB_catch_event_info_t *evt, void *arg)
 int Comp1_Init()
 {
     FTB_event_mask_t mask;
-    FTB_comp_info_t cinfo;
+    FTB_client_t cinfo;
     int ret = 0;
 
     printf("Comp1: FTB_Connect\n");
-    strcpy(cinfo.comp_namespace, "FTB.FTB_EXAMPLES.MULTICOMP_COMP1");
-    strcpy(cinfo.schema_ver, "0.5");
-    strcpy(cinfo.inst_name, "");
-    strcpy(cinfo.jobid,"");
-    strcpy(cinfo.catch_style,"FTB_NOTIFY_CATCH");
-    ret = FTB_Connect(&cinfo, &Comp1_ftb_handle, err_msg1);
+    strcpy(cinfo.event_space, "FTB.FTB_EXAMPLES.MULTICOMP_COMP1");
+    strcpy(cinfo.client_schema_ver, "0.5");
+    strcpy(cinfo.client_name, "");
+    strcpy(cinfo.client_jobid,"");
+    strcpy(cinfo.client_subscription_style,"FTB_SUBSCRIPTION_NOTIFY");
+    ret = FTB_Connect(&cinfo, &Comp1_ftb_handle);
     if (ret != FTB_SUCCESS) {
         printf("FTB_Connect failed\n");
         exit(-1);

@@ -10,7 +10,6 @@ extern "C" {
 #endif 
 #define FTB_DEBUG   0
 
-typedef uint8_t FTB_err_handling_t;
 /*
 The behavior in case therer is an internal FTB error,
 defined as FTB_ERR_HANDLE_NONE, or | of the others
@@ -34,26 +33,18 @@ will cause more resource usage and an additional thread in client
 process.
 */
 
-typedef uint8_t FTB_event_catching_t;
-typedef char FTB_catching_style_t[32];
-/*
-The mechanism to catch events required by component, 
-defined as FTB_EVENT_CATCHING_NONE, or | of the others.
-*/
-#define FTB_EVENT_CATCHING_NONE                  0x0
-/*
-This component will not catch any events.
-*/
-#define FTB_EVENT_CATCHING_POLLING               0x1
-/*
-This component will catch events by polling, if specified 
-a polling queue is constructed
-*/
-#define FTB_EVENT_CATCHING_NOTIFICATION          0x2
-/*
-This component will catch event by notification callback functions.
-If specified, an additional thread is generated.
-*/
+#define FTB_MAX_SUBSCRIPTION_STYLE          32
+typedef char FTB_subscription_style_t[FTB_MAX_SUBSCRIPTION_STYLE];      //UPDATED
+
+/* If client will subscribe to any events */
+#define FTB_SUBSCRIPTION_NONE               0x0                         //UPDATED
+/* If client plans to poll - a polling queue is created */
+#define FTB_SUBSCRIPTION_POLLING            0x1                         //UPDATED
+/* If client plans to use callback handlers */
+#define FTB_SUBSCRIPTION_NOTIFY             0x2                         //UPDATED
+
+
+
 
 typedef uint8_t FTB_severity_code_t;
 typedef uint16_t FTB_comp_cat_code_t;
@@ -62,25 +53,25 @@ typedef uint8_t FTB_event_cat_code_t;
 typedef uint16_t FTB_event_name_code_t;
 typedef uint8_t FTB_tag_len_t;
 
-#define FTB_MAX_REGION               16
-#define FTB_MAX_COMP_CAT             32
-#define FTB_MAX_COMP                 32
+#define FTB_MAX_REGION               64
+#define FTB_MAX_COMP_CAT             64
+#define FTB_MAX_COMP                 64
 #define FTB_MAX_EVENT_NAME           32
 #define FTB_MAX_SEVERITY             32
 #define FTB_MAX_EVENT_DESC               1024
 #define FTB_MAX_EVENT_DATA           64
-#define FTB_MAX_JOBID                16
-#define FTB_MAX_INST_NAME            16
-#define FTB_MAX_NAMESPACE            78  /* FTB_MAX_REGION - 1 + FTB_MAX_COMP_CAT - 1 + FTB_MAX_COMP -1  + 2 */
-#define FTB_MAX_SCHEMA_VER           16
+#define FTB_MAX_CLIENT_JOBID                16
+#define FTB_MAX_CLIENT_NAME            16
+#define FTB_MAX_EVENTSPACE            195  /* FTB_MAX_REGION - 1 + FTB_MAX_COMP_CAT - 1 + FTB_MAX_COMP -1  + 2 */
+#define FTB_MAX_CLIENTSCHEMA_VER           16
 #define FTB_MAX_HOST_NAME              64
 #define FTB_MAX_ERRMSG_LEN           1024
-#define FTB_EVENT_SIZE               256
+#define FTB_EVENT_SIZE               512
 
-typedef char FTB_schema_ver_t[FTB_MAX_SCHEMA_VER];
-typedef char FTB_namespace_t[FTB_MAX_NAMESPACE];
-typedef char FTB_inst_name_t[FTB_MAX_INST_NAME];
-typedef char FTB_jobid_t[FTB_MAX_JOBID];
+typedef char FTB_client_schema_ver_t[FTB_MAX_CLIENTSCHEMA_VER];
+typedef char FTB_eventspace_t[FTB_MAX_EVENTSPACE];
+typedef char FTB_client_name_t[FTB_MAX_CLIENT_NAME];
+typedef char FTB_client_jobid_t[FTB_MAX_CLIENT_JOBID];
 typedef char FTB_region_t[FTB_MAX_REGION];
 typedef char FTB_comp_cat_t[FTB_MAX_COMP_CAT];
 typedef char FTB_comp_t[FTB_MAX_COMP];
@@ -91,18 +82,19 @@ typedef char FTB_event_desc_t[FTB_MAX_EVENT_DESC];
 
 #define FTB_MAX_DYNAMIC_DATA_SIZE   ((FTB_EVENT_SIZE)-sizeof(FTB_severity_code_t)\
     -sizeof(FTB_comp_cat_code_t)-sizeof(FTB_comp_code_t)-sizeof(FTB_event_cat_code_t)\
-    -sizeof(FTB_event_name_code_t)-sizeof(FTB_region_t)-sizeof(FTB_jobid_t)\
-    -sizeof(FTB_inst_name_t)-sizeof(FTB_hostname_t)-sizeof(int)-sizeof(FTB_tag_len_t)\
+    -sizeof(FTB_event_name_code_t)-sizeof(FTB_region_t)-sizeof(FTB_client_jobid_t)\
+    -sizeof(FTB_client_name_t)-sizeof(FTB_hostname_t)-sizeof(int)-sizeof(FTB_tag_len_t)\
     -sizeof(FTB_event_data_t))
 
 
-typedef struct FTB_comp_info {
-    FTB_schema_ver_t schema_ver;
-    FTB_namespace_t comp_namespace;
-    FTB_inst_name_t inst_name;
-    FTB_jobid_t jobid;
-    FTB_catching_style_t catch_style; 
-}FTB_comp_info_t;
+typedef struct FTB_client {
+    FTB_client_schema_ver_t client_schema_ver;
+    FTB_eventspace_t event_space;
+    FTB_client_name_t client_name;
+    FTB_client_jobid_t client_jobid;
+    FTB_subscription_style_t client_subscription_style; 
+    unsigned int client_polling_queue_len;
+}FTB_client_t;
 
 typedef struct FTB_location_id {
     char hostname[FTB_MAX_HOST_NAME];
@@ -134,14 +126,7 @@ typedef struct FTB_id {
     FTB_client_id_t client_id;
 }FTB_id_t;
 
-#define FTB_DEFAULT_EVENT_POLLING_Q_LEN          64
-
-typedef struct FTB_component_properties {
-    FTB_event_catching_t catching_type; 
-    FTB_err_handling_t err_handling;
-    unsigned int max_event_queue_size;
-}FTB_component_properties_t;
-
+#define FTB_DEFAULT_POLLING_Q_LEN               64
 #define FTB_SUCCESS                             0
 #define FTB_ERR_GENERAL                         (-1)
 #define FTB_ERR_NULL_POINTER                    (-2)
@@ -156,10 +141,11 @@ typedef struct FTB_component_properties {
 #define FTB_ERR_MASK_NOT_INITIALIZED            (-12)
 #define FTB_ERR_INVALID_VALUE                   (-13)
 #define FTB_ERR_HASHKEY_NOT_FOUND               (-14)
-#define FTB_ERR_NAMESPACE_FORMAT                (-15)
+#define FTB_ERR_EVENTSPACE_FORMAT                (-15)
 #define FTB_ERR_VALUE_NOT_FOUND                 (-16)
 #define FTB_ERR_INVALID_FIELD                   (-17)
 
+#define FTB_ERR_SUBSCRIPTION_STYLE              (-18)  //UPDATED
 
 #define FTB_CAUGHT_NO_EVENT                     -31
 #define FTB_CAUGHT_EVENT                        1
@@ -174,8 +160,8 @@ typedef struct FTB_event{
     FTB_event_cat_code_t event_cat;
     FTB_event_name_code_t event_name;
     FTB_region_t region;
-    FTB_jobid_t jobid;
-    FTB_inst_name_t inst_name;
+    FTB_client_jobid_t client_jobid;
+    FTB_client_name_t client_name;
     FTB_hostname_t hostname;
     int seqnum;
     FTB_tag_len_t len;
@@ -191,8 +177,8 @@ typedef struct FTB_catch_event_info{
     //FTB_event_cat_t event_cat;
     FTB_event_name_t event_name;
     FTB_region_t region;
-    FTB_jobid_t jobid;
-    FTB_inst_name_t inst_name;
+    FTB_client_jobid_t client_jobid;
+    FTB_client_name_t client_name;
     FTB_hostname_t hostname;
     int seqnum;
     FTB_tag_len_t len;
@@ -212,7 +198,7 @@ typedef struct FTB_subscribe_handle {
 }FTB_subscribe_handle_t;
 
 typedef struct FTB_event_info {
-    FTB_namespace_t comp_namespace;
+    FTB_eventspace_t event_space;
     FTB_event_name_t event_name;
     FTB_severity_t severity;
     FTB_event_desc_t event_desc;    

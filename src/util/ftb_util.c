@@ -10,8 +10,8 @@ int FTBU_match_mask(const FTB_event_t *event, const FTB_event_t *mask)
 {   
     /*
     printf("For Maskregion=%s Eventregion=%s\n", mask->region, event->region);
-    printf("For Maskjobid=%s Eventjobid=%s\n", mask->jobid, event->jobid);
-    printf("For Mask inst_name=%s Event inst_name=%s\n", mask->inst_name, event->inst_name);
+    printf("For Maskclient_jobid=%s Eventclient_jobid=%s\n", mask->client_jobid, event->client_jobid);
+    printf("For Mask client_name=%s Event client_name=%s\n", mask->client_name, event->client_name);
     printf("For Mask hostname=%s Event hostname=%s\n", mask->hostname, event->hostname);
     printf("Severity mask=%d and event=%d\n", mask->severity, event->severity);
     printf("Comp cat mask=%d and event=%d\n", mask->comp_cat, event->comp_cat);
@@ -22,10 +22,10 @@ int FTBU_match_mask(const FTB_event_t *event, const FTB_event_t *mask)
 
     if (((strcasecmp(event->region, mask->region) == 0) ||
             (strcasecmp(mask->region, "ALL") == 0)) &&
-            ((strcasecmp(event->jobid, mask->jobid) == 0) ||
-             (strcasecmp(mask->jobid, "ALL") ==0)) &&
-            ((strcasecmp(event->inst_name, mask->inst_name) == 0) ||
-             (strcasecmp(mask->inst_name, "ALL") == 0)) &&
+            ((strcasecmp(event->client_jobid, mask->client_jobid) == 0) ||
+             (strcasecmp(mask->client_jobid, "ALL") ==0)) &&
+            ((strcasecmp(event->client_name, mask->client_name) == 0) ||
+             (strcasecmp(mask->client_name, "ALL") == 0)) &&
             ((strcasecmp(event->hostname, mask->hostname) == 0) ||
              (strcasecmp(mask->hostname, "ALL") == 0))) {
         FTB_event_name_code_t temp = mask->event_name+1;

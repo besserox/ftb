@@ -11,20 +11,20 @@ char err_msg[FTB_MAX_ERRMSG_LEN];
 
 int main (int argc, char *argv[])
 {
-    FTB_comp_info_t cinfo;
+    FTB_client_t cinfo;
     FTB_client_handle_t handle;
     int ret=0;
     int i;
 
     printf("Begin\n");
     
-    strcpy(cinfo.comp_namespace,"FTB.FTB_EXAMPLES.SIMPLE");
-    strcpy(cinfo.schema_ver, "0.5");
-    strcpy(cinfo.inst_name,"");
-    strcpy(cinfo.jobid,"");
-    strcpy(cinfo.catch_style, "FTB_NO_CATCH");
+    strcpy(cinfo.event_space,"FTB.FTB_EXAMPLES.SIMPLE");
+    strcpy(cinfo.client_schema_ver, "0.5");
+    strcpy(cinfo.client_name,"");
+    strcpy(cinfo.client_jobid,"");
+    strcpy(cinfo.client_subscription_style, "FTB_SUBSCRIPTION_NONE");
 
-    ret = FTB_Connect(&cinfo, &handle, err_msg);
+    ret = FTB_Connect(&cinfo, &handle);
     if (ret != FTB_SUCCESS) {
         printf("FTB_Connect did not return a success\n");
             exit(-1);

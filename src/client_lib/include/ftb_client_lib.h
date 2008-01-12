@@ -7,7 +7,7 @@
 
 */
 
-int FTBC_Connect(const FTB_comp_info_t *comp_info, uint8_t extension, const FTB_component_properties_t *properties, FTB_client_handle_t *client_handle);
+int FTBC_Connect(const FTB_client_t *comp_info, uint8_t extension, FTB_client_handle_t *client_handle);
 
 int FTBC_Create_mask(FTB_event_mask_t* event_mask, char *field_name, char *field_val);
 

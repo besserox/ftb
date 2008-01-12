@@ -3,7 +3,7 @@
 #include <signal.h>
 #include <string.h>
 #include "libftb.h"
-#include "ftb_ftb_examples_watchdog_publishevents.h"
+#include "ftb_ftb_examples1234567890123456789_watchdog_publishevents.h"
 
 static volatile int done = 0;
 char err_msg[FTB_MAX_ERRMSG_LEN];
@@ -20,7 +20,7 @@ struct watchdog_info {
 
 int main (int argc, char *argv[])
 {
-    FTB_comp_info_t cinfo;
+    FTB_client_t cinfo;
     FTB_client_handle_t handle;
     FTB_event_mask_t mask;
     FTB_subscribe_handle_t shandle;
@@ -34,17 +34,16 @@ int main (int argc, char *argv[])
 
 
     /* Create namespace and other attributes before calling FTB_Connect */
-    strcpy(cinfo.comp_namespace, "FTB.FTB_EXAMPLES.Watchdog");
-    strcpy(cinfo.schema_ver, "0.5");
-    strcpy(cinfo.inst_name, "watchdog");
-    strcpy(cinfo.jobid,"watchdog-111");
-    strcpy(cinfo.catch_style,"FTB_POLLING_CATCH");
-    ret = FTB_Connect(&cinfo, &handle, err_msg);
+    strcpy(cinfo.event_space, "FTB.FTB_EXAMPLES1234567890123456789.Watchdog");
+    strcpy(cinfo.client_schema_ver, "0.5");
+    strcpy(cinfo.client_name, "watchdog");
+    strcpy(cinfo.client_jobid,"watchdog-111");
+    strcpy(cinfo.client_subscription_style,"FTB_SUBSCRIPTION_POLLING");
+    ret = FTB_Connect(&cinfo, &handle);
     if (ret != FTB_SUCCESS) {
         printf("FTB_Connect is not successful ret=%d\n", ret);
         exit(-1);
     }
-  
     FTB_Register_publishable_events(handle, ftb_ftb_examples_watchdog_events, FTB_FTB_EXAMPLES_WATCHDOG_TOTAL_EVENTS, err_msg);
     
      /* Create a subscription mask */
@@ -110,8 +109,8 @@ int main (int argc, char *argv[])
         printf("Watchdog: Component name=%s Comp category=%s Severity=%s ",
                 caught_event.comp, caught_event.comp_cat, caught_event.severity);
         printf("Event name=%s Region=%s Instance name=%s Hostname=%s, Jobid=%s, Seqnum=%d ",
-                caught_event.event_name, caught_event.region, caught_event.inst_name, 
-                caught_event.hostname, caught_event.jobid, caught_event.seqnum);
+                caught_event.event_name, caught_event.region, caught_event.client_name, 
+                caught_event.hostname, caught_event.client_jobid, caught_event.seqnum);
         printf("User specified received data has watchdogid=%d and watchdog name=%s. Watchdog Tag is %s\n", 
                 recv_info.watchdog_id, recv_info.watchdog_name, tag_data_recv);
         printf("Watchdog: Location is hostname=%s pid=%d\n", caught_event.incoming_src.hostname, 

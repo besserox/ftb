@@ -9,9 +9,8 @@
 
 /* START-ZOID-SCANNER ID=10 INIT=ftb_zoid_client_init FINI=ftb_zoid_client_fini */
 
-int ZOID_FTB_Connect( FTB_comp_info_t *comp_info /* in:ptr */,
-                   FTB_client_handle_t *client_handle /* out:ptr */, 
-                   char *error_msg /* out:str */);
+int ZOID_FTB_Connect( FTB_client_t *comp_info /* in:ptr */,
+                   FTB_client_handle_t *client_handle /* out:ptr */);
 
 int ZOID_FTB_Reg_throw( FTB_client_handle_t handle /* in:obj */,
                         const char *event /* in:str */);

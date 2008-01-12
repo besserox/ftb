@@ -6,31 +6,12 @@
 FILE* FTBU_log_file_fp;
 /*Linux wrapper for client_lib*/
 
-
-int FTB_Connect(FTB_comp_info_t *comp_info, FTB_client_handle_t *client_handle, char *error_msg)
+int FTB_Connect(FTB_client_t *client_info, FTB_client_handle_t *client_handle)
 {
-    FTB_component_properties_t properties;
     FTBU_log_file_fp = stderr;
-    properties.err_handling = FTB_ERR_HANDLE_NONE;
-    if (strcasecmp(comp_info->catch_style, "FTB_POLLING_CATCH") == 0) {
-        properties.catching_type= FTB_EVENT_CATCHING_POLLING;
-        properties.max_event_queue_size = FTB_DEFAULT_EVENT_POLLING_Q_LEN;
-    }
-    else if (strcasecmp(comp_info->catch_style, "FTB_NOTIFY_CATCH") == 0) {
-        properties.catching_type= FTB_EVENT_CATCHING_NOTIFICATION;
-        properties.max_event_queue_size = 0;
-    }
-    else if (strcasecmp(comp_info->catch_style, "FTB_NO_CATCH") == 0) {
-        properties.catching_type= FTB_EVENT_CATCHING_NONE;
-        properties.max_event_queue_size = 0;
-    }
-    else { /* user can also sepecify FTB_POLLING_NOTIFY_CATCH */
-        properties.catching_type= FTB_EVENT_CATCHING_POLLING+FTB_EVENT_CATCHING_NOTIFICATION;
-        properties.max_event_queue_size = FTB_DEFAULT_EVENT_POLLING_Q_LEN;
-    }
-    *error_msg=0;
-    return FTBC_Connect(comp_info, 0, &properties, client_handle); /*Set extention to 0*/
+    return FTBC_Connect(client_info, 0, client_handle); //Set extention to 0
 }
+
 
 int FTB_Create_mask(FTB_event_mask_t *event_mask, char *field_name, char *field_val, char *error_msg)
 {

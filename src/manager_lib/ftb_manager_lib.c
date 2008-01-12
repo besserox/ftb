@@ -32,7 +32,7 @@ typedef FTBU_map_node_t FTBM_map_event_mask_2_comp_info_map_t; /*event_mask as k
 typedef struct FTBM_node_info{
     FTB_location_id_t parent; /*NULL if root*/
     FTB_id_t self;
-    FTB_err_handling_t err_handling;
+    uint8_t err_handling;
     int leaf;
     volatile int waiting;
     FTBM_map_ftb_id_2_comp_info_t *peers; /*the map of peers includes parent*/

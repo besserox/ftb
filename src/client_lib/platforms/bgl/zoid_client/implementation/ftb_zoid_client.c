@@ -36,11 +36,10 @@ void ftb_zoid_client_fini()
 #endif
 }
 
-int ZOID_FTB_Connect( FTB_comp_info_t *comp_info /* in:ptr */,
-                   FTB_client_handle_t *client_handle /* out:ptr */,
-                   char *error_msg /* out:str */)
+int ZOID_FTB_Connect( FTB_client_t *comp_info /* in:ptr */,
+                   FTB_client_handle_t *client_handle /* out:ptr */)
 {
-    FTB_component_properties_t *properties=NULL;
+    FTB_client_properties_t *properties=NULL;
     *error_msg=0;
     int proc_id = __zoid_calling_process_id();
     return FTBC_Connect(comp_info, proc_id, properties, client_handle);

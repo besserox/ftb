@@ -30,7 +30,7 @@ int event_logger(FTB_catch_event_info_t *evt, void *arg)
 int main (int argc, char *argv[])
 {
     FILE *log_fp = NULL;
-    FTB_comp_info_t cinfo;
+    FTB_client_t cinfo;
     FTB_client_handle_t handle;
     FTB_event_mask_t mask;
     FTB_subscribe_handle_t *shandle=(FTB_subscribe_handle_t *)malloc(sizeof(FTB_subscribe_handle_t));
@@ -50,13 +50,13 @@ int main (int argc, char *argv[])
         return -1;
     }
     
-    strcpy(cinfo.comp_namespace,"FTB.FTB_EXAMPLES.NOTIFY_LOGGER");
-    strcpy(cinfo.schema_ver, "0.5"); 
-    strcpy(cinfo.inst_name,"notify");
-    strcpy(cinfo.jobid,"");
-    strcpy(cinfo.catch_style,"FTB_NOTIFY_CATCH");
+    strcpy(cinfo.event_space,"FTB.FTB_EXAMPLES.NOTIFY_LOGGER");
+    strcpy(cinfo.client_schema_ver, "0.5"); 
+    strcpy(cinfo.client_name,"notify");
+    strcpy(cinfo.client_jobid,"");
+    strcpy(cinfo.client_subscription_style,"FTB_SUBSCRIPTION_NOTIFY");
     
-    ret = FTB_Connect(&cinfo, &handle, err_msg);
+    ret = FTB_Connect(&cinfo, &handle);
     if (ret != FTB_SUCCESS) {
         printf("FTB_Connect failed \n");
         exit(-1);

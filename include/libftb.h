@@ -8,7 +8,7 @@
 extern "C" {
 #endif 
 
-int FTB_Connect(FTB_comp_info_t *comp_info, FTB_client_handle_t *client_handle, char *error_msg);
+int FTB_Connect(FTB_client_t *client_info, FTB_client_handle_t *client_handle);
 
 int FTB_Create_mask(FTB_event_mask_t *event_mask, char *field_name, char *field_val, char *error_msg);
 
