@@ -8,18 +8,6 @@ extern FILE* FTBU_log_file_fp;
 
 int FTBU_match_mask(const FTB_event_t *event, const FTB_event_t *mask)
 {   
-    /*
-    printf("For Maskregion=%s Eventregion=%s\n", mask->region, event->region);
-    printf("For Maskclient_jobid=%s Eventclient_jobid=%s\n", mask->client_jobid, event->client_jobid);
-    printf("For Mask client_name=%s Event client_name=%s\n", mask->client_name, event->client_name);
-    printf("For Mask hostname=%s Event hostname=%s\n", mask->hostname, event->hostname);
-    printf("Severity mask=%d and event=%d\n", mask->severity, event->severity);
-    printf("Comp cat mask=%d and event=%d\n", mask->comp_cat, event->comp_cat);
-    printf("comp mask=%d and event=%d\n", mask->comp, event->comp);
-    printf("event cat mask=%d and event=%d\n", mask->event_cat, event->event_cat);
-    printf("event name mask=%d and event=%d\n", mask->event_name, event->event_name);
-    */
-
     if (((strcasecmp(event->region, mask->region) == 0) ||
             (strcasecmp(mask->region, "ALL") == 0)) &&
             ((strcasecmp(event->client_jobid, mask->client_jobid) == 0) ||
@@ -28,24 +16,20 @@ int FTBU_match_mask(const FTB_event_t *event, const FTB_event_t *mask)
              (strcasecmp(mask->client_name, "ALL") == 0)) &&
             ((strcasecmp(event->hostname, mask->hostname) == 0) ||
              (strcasecmp(mask->hostname, "ALL") == 0))) {
-        FTB_event_name_code_t temp = mask->event_name+1;
-        if (temp != 0) {
-            /* event name is not masked to match all */
-            return (mask->event_name == event->event_name);
-        }
-        if ((event->severity & mask->severity) != 0
-                && (event->severity & ~mask->severity) == 0
-                && (event->comp_cat & mask->comp_cat) != 0
-                && (event->comp_cat & ~mask->comp_cat) == 0
-                && (event->comp & mask->comp) != 0 
-                && (event->comp & ~mask->comp) == 0
-                && (event->event_cat & mask->event_cat) != 0
-                && (event->event_cat & ~mask->event_cat) == 0) {
-            return 1;
-        }
-        else {
-            return 0;
-        }
+                if (strcasecmp(mask->event_name, "ALL") != 0) {
+                    if (strcasecmp(event->event_name, mask->event_name) == 0) 
+                        return 1;
+                }
+                else {
+                    if (((strcasecmp(event->severity, mask->severity) == 0) || 
+                        (strcasecmp(mask->severity, "ALL") == 0)) &&
+                        ((strcasecmp(event->comp_cat, mask->comp_cat) == 0) || 
+                        (strcasecmp(mask->comp_cat, "ALL") == 0)) &&
+                        ((strcasecmp(event->comp, mask->comp) == 0) || 
+                        (strcasecmp(mask->comp, "ALL") == 0))) {
+                            return 1;
+                    }
+                }
     }
     return 0;
 }
@@ -61,23 +45,35 @@ int FTBU_is_equal_location_id(const FTB_location_id_t *lhs, const FTB_location_i
 
 int FTBU_is_equal_ftb_id(const FTB_id_t *lhs, const FTB_id_t *rhs)
 {
-    if (lhs->client_id.comp == rhs->client_id.comp
-   && lhs->client_id.comp_cat == rhs->client_id.comp_cat
-   && lhs->client_id.ext == rhs->client_id.ext) {
+//   if (lhs->client_id.comp == rhs->client_id.comp
+//   && lhs->client_id.comp_cat == rhs->client_id.comp_cat
+//   && lhs->client_id.ext == rhs->client_id.ext) {
+//        return FTBU_is_equal_location_id(&lhs->location_id, &rhs->location_id);
+//   }
+    if ((strcasecmp(lhs->client_id.comp_cat, rhs->client_id.comp_cat) == 0)
+            && (strcasecmp(lhs->client_id.comp, rhs->client_id.comp) == 0)
+            && (strcasecmp(lhs->client_id.client_name, rhs->client_id.client_name) == 0)
+            && (lhs->client_id.ext == rhs->client_id.ext)) {
         return FTBU_is_equal_location_id(&lhs->location_id, &rhs->location_id);
-   }
-   return 0;     
+    }
+    else
+        return 0;     
 }
 
 int FTBU_is_equal_event(const FTB_event_t *lhs, const FTB_event_t *rhs)
 {
-    if ( (lhs->severity == rhs->severity)
-     && (lhs->comp_cat == rhs->comp_cat) 
-     && (lhs->comp == rhs->comp) 
-     && (lhs->event_cat == rhs->event_cat)
-     && (lhs->event_name == rhs->event_name) )
+//    if ( (lhs->severity == rhs->severity)
+//     && (lhs->comp_cat == rhs->comp_cat) 
+//     && (lhs->comp == rhs->comp) 
+//     && (lhs->event_cat == rhs->event_cat)
+//     && (lhs->event_name == rhs->event_name) )
+    if ((strcasecmp(lhs->severity, rhs->severity) == 0)
+                && (strcasecmp(lhs->comp_cat, rhs->comp_cat) == 0)
+                && (strcasecmp(lhs->comp, rhs->comp) == 0)
+                && (strcasecmp(lhs->event_name, rhs->event_name) == 0)) {
         return 1;
-    else 
+    }
+    else
         return 0;
 }
 

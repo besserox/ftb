@@ -130,7 +130,6 @@ int FTBU_map_is_empty(const FTBU_map_node_t * headnode);
 /*Finalize the map, will free all map node. Note: the data will not be freed*/
 int FTBU_map_finalize(FTBU_map_node_t * headnode);
 
-
 int FTBU_match_mask(const FTB_event_t *event, const FTB_event_t *mask);
 
 int FTBU_is_equal_location_id(const FTB_location_id_t *lhs, const FTB_location_id_t *rhs);

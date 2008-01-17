@@ -105,8 +105,10 @@ static void util_reg_propagation(int msg_type, const FTB_event_t *event, const F
     {
         FTB_id_t *id = (FTB_id_t *)FTBU_map_get_key(iter_comp).key_ptr;
         /*Propagation to other FTB agents but not the source*/
-        if (!(id->client_id.comp_cat == FTB_COMP_CAT_BACKPLANE && id->client_id.comp == FTB_COMP_MANAGER && id->client_id.ext == 0)
-          || FTBU_is_equal_location_id(&id->location_id,incoming))
+        if (!((strcasecmp(id->client_id.comp_cat, "FTB_COMP_CAT_BACKPLANE") == 0) 
+                    && (strcasecmp(id->client_id.comp, "FTB_COMP_MANAGER") == 0) 
+                    && (id->client_id.ext == 0))
+                || FTBU_is_equal_location_id(&id->location_id,incoming))
             continue;
         memcpy(&msg.dst,id,sizeof(FTB_id_t));
         ret = FTBN_Send_msg(&msg);
@@ -283,8 +285,11 @@ int FTBM_Init(int leaf)
     config.leaf = leaf;
     util_get_system_id(&config.FTB_system_id);
     util_get_location_id(&FTBM_info.self.location_id);
-    FTBM_info.self.client_id.comp = FTB_COMP_MANAGER;
-    FTBM_info.self.client_id.comp_cat = FTB_COMP_CAT_BACKPLANE;
+    //FTBM_info.self.client_id.comp = FTB_COMP_MANAGER;
+    //FTBM_info.self.client_id.comp_cat = FTB_COMP_CAT_BACKPLANE;
+    strcpy(FTBM_info.self.client_id.comp, "FTB_COMP_MANAGER");
+    strcpy(FTBM_info.self.client_id.comp_cat, "FTB_COMP_CAT_BACKPLANE");
+    //strcpy(FTBM_info.self.client_id.client_name, "");
     FTBM_info.self.client_id.ext = leaf;
     FTBN_Init(&FTBM_info.self.location_id, &config);
     memcpy(&msg.src, &FTBM_info.self, sizeof(FTB_id_t));
@@ -301,8 +306,10 @@ int FTBM_Init(int leaf)
         FTB_INFO("Adding parent to peers");
         comp = (FTBM_comp_info_t *)malloc(sizeof(FTBM_comp_info_t));
         memcpy(&comp->id.location_id, &FTBM_info.parent, sizeof(FTB_location_id_t));
-        comp->id.client_id.comp_cat = FTB_COMP_CAT_BACKPLANE;
-        comp->id.client_id.comp = FTB_COMP_MANAGER;
+        //comp->id.client_id.comp_cat = FTB_COMP_CAT_BACKPLANE;
+        //comp->id.client_id.comp = FTB_COMP_MANAGER;
+        strcpy(comp->id.client_id.comp_cat, "FTB_COMP_CAT_BACKPLANE");
+        strcpy(comp->id.client_id.comp, "FTB_COMP_MANAGER");
         comp->id.client_id.ext = 0;
         pthread_mutex_init(&comp->lock, NULL);
         comp->catch_event_set = (FTBM_set_event_mask_t*)FTBU_map_init(FTBM_util_is_equal_event);
@@ -338,9 +345,9 @@ int FTBM_Finalize()
         for (;iter!=FTBU_map_end(FTBM_info.peers);iter=FTBU_map_next_iterator(iter)) {
             FTBM_comp_info_t* comp = (FTBM_comp_info_t*)FTBU_map_get_data(iter);
             util_clean_component(comp);
-            if (comp->id.client_id.comp_cat == FTB_COMP_CAT_BACKPLANE
-            &&  comp->id.client_id.comp == FTB_COMP_MANAGER
-            &&  comp->id.client_id.ext == 0) {
+            if ((strcasecmp(comp->id.client_id.comp_cat, "FTB_COMP_CAT_BACKPLANE") == 0)
+            &&  (strcasecmp(comp->id.client_id.comp, "FTB_COMP_MANAGER") == 0)
+            &&  (comp->id.client_id.ext == 0)) {
                 int ret;
                 FTBM_msg_t msg;
                 FTB_INFO("deregister from peer");
@@ -429,9 +436,9 @@ int FTBM_Component_reg(const FTB_id_t *id)
     unlock_manager();
 
     /*propagate catch info to the new component if it is an agent*/
-    if (id->client_id.comp_cat == FTB_COMP_CAT_BACKPLANE 
-     && id->client_id.comp == FTB_COMP_MANAGER
-     && id->client_id.ext == 0)
+    if ((strcasecmp(id->client_id.comp_cat, "FTB_COMP_CAT_BACKPLANE") == 0)
+            && (strcasecmp(id->client_id.comp, "FTB_COMP_MANAGER") == 0)
+            && id->client_id.ext == 0)
     {
         FTBM_msg_t msg;
         memcpy((void*)&msg.src, (void*)&FTBM_info.self,sizeof(FTB_id_t));
@@ -450,8 +457,8 @@ int FTBM_Component_reg(const FTB_id_t *id)
             }
         }
     }
-    FTB_INFO("new client comp:%d comp_cat:%d ext:%d registered, from host %s, pid %d",
-        comp->id.client_id.comp, comp->id.client_id.comp_cat, comp->id.client_id.ext, 
+    FTB_INFO("new client comp:%s comp_cat:%s client_name:%s ext:%d registered, from host %s, pid %d",
+        comp->id.client_id.comp, comp->id.client_id.comp_cat, comp->id.client_id.client_name, comp->id.client_id.ext, 
         comp->id.location_id.hostname, comp->id.location_id.pid);
 
     FTB_INFO("FTBM_Component_reg Out");
@@ -477,8 +484,8 @@ static void util_reconnect()
         FTB_INFO("Adding parent to peers");
         comp = (FTBM_comp_info_t *)malloc(sizeof(FTBM_comp_info_t));
         memcpy(&comp->id.location_id, &FTBM_info.parent, sizeof(FTB_location_id_t));
-        comp->id.client_id.comp_cat = FTB_COMP_CAT_BACKPLANE;
-        comp->id.client_id.comp = FTB_COMP_MANAGER;
+        strcpy(comp->id.client_id.comp_cat, "FTB_COMP_CAT_BACKPLANE");
+        strcpy(comp->id.client_id.comp, "FTB_COMP_MANAGER");
         comp->id.client_id.ext = 0;
         pthread_mutex_init(&comp->lock, NULL);
         comp->catch_event_set = (FTBM_set_event_mask_t*)FTBU_map_init(FTBM_util_is_equal_event);
@@ -523,14 +530,14 @@ int FTBM_Component_dereg(const FTB_id_t *id)
         FTB_INFO("FTBM_Component_dereg Out");
         return FTB_ERR_INVALID_PARAMETER;
     }
-    FTB_INFO("client comp:%d comp_cat:%d ext:%d from host %s pid %d, deregistering", 
-        comp->id.client_id.comp, comp->id.client_id.comp_cat, comp->id.client_id.ext,
+    FTB_INFO("client comp:%s comp_cat:%s client_name=%s  ext:%d from host %s pid %d, deregistering", 
+        comp->id.client_id.comp, comp->id.client_id.comp_cat, comp->id.client_id.client_name, comp->id.client_id.ext,
         comp->id.location_id.hostname, comp->id.location_id.pid);
     lock_comp(comp);
     lock_manager();
     util_clean_component(comp);
-    if (comp->id.client_id.comp_cat == FTB_COMP_CAT_BACKPLANE 
-     && comp->id.client_id.comp == FTB_COMP_MANAGER) {
+    if ((strcmp(comp->id.client_id.comp_cat, "FTB_COMP_CAT_BACKPLANE") == 0) 
+     && (strcmp(comp->id.client_id.comp, "FTB_COMP_MANAGER"))) {
         FTB_INFO("Disconnect component");
         FTBN_Disconnect_peer(&comp->id.location_id);
         if (FTBU_is_equal_location_id(&FTBM_info.parent, &comp->id.location_id))
@@ -705,17 +712,17 @@ int FTBM_Send(const FTBM_msg_t *msg)
     FTB_INFO("FTBM_Send In");
     ret = FTBN_Send_msg(msg);
     if (ret != FTB_SUCCESS) {
-        if (!FTBM_info.leaf) {
+        if (!FTBM_info.leaf) { //For an agent
             FTBM_comp_info_t *comp;
             comp = lookup_component(&msg->dst);
-            FTB_INFO("client %d:%d:%d from host %s pid %d, clean up", 
+            FTB_INFO("client %s:%s:%d from host %s pid %d, clean up", 
                 comp->id.client_id.comp, comp->id.client_id.comp_cat, comp->id.client_id.ext,
                 comp->id.location_id.hostname, comp->id.location_id.pid);
             lock_comp(comp);
             lock_manager();
             util_clean_component(comp);
-            if (comp->id.client_id.comp_cat == FTB_COMP_CAT_BACKPLANE 
-             && comp->id.client_id.comp == FTB_COMP_MANAGER) {
+            if ((strcasecmp(comp->id.client_id.comp_cat, "FTB_COMP_CAT_BACKPLANE") == 0) 
+                    && (strcasecmp(comp->id.client_id.comp, "FTB_COMP_MANAGER") == 0)){
                 FTB_INFO("Disconnect component");
                 FTBN_Disconnect_peer(&comp->id.location_id);
             }

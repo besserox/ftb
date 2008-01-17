@@ -23,7 +23,7 @@ int ZOID_FTB_Reg_catch_polling_mask( FTB_client_handle_t handle /* in:obj */,
 
 int ZOID_FTB_Reg_all_predefined_catch ( FTB_client_handle_t handle /* in:obj */);
 
-int ZOID_FTB_Throw ( FTB_client_handle_t handle /* in:obj */,
+int ZOID_FTB_Publish ( FTB_client_handle_t handle /* in:obj */,
                      const char *event /* in:str */,
                      FTB_event_data_t *datadetails /* in:ptr */,
                      char *error_msg /* out:str */);

@@ -68,12 +68,12 @@ int ZOID_FTB_Reg_all_predefined_catch ( FTB_client_handle_t handle /* in:obj */)
     return FTBC_Reg_all_predefined_catch(handle);
 }
 
-int ZOID_FTB_Throw ( FTB_client_handle_t handle /* in:obj */,
+int ZOID_FTB_Publish ( FTB_client_handle_t handle /* in:obj */,
                      const char *event /* in:str */,
                      FTB_event_data_t *datadetails /* in:obj */,
                      char *error_msg /* out:str */)
 {
-    return FTBC_Throw(handle, event, datadetails, error_msg);
+    //return FTBC_Publish(handle, event, datadetails, error_msg);
 }
 
 int ZOID_FTB_Catch ( FTB_client_handle_t handle /* in:obj */,

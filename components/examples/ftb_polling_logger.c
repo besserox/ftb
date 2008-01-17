@@ -5,7 +5,6 @@
 #include <string.h>
 
 #include "libftb.h"
-#include "ftb_ftb_examples_polling_logger_publishevents.h"
 
 #define LOG_FILE "/tmp/ftb_log"
 
@@ -56,19 +55,16 @@ int main (int argc, char *argv[])
         exit(-1);
     }
 
-    FTB_Register_publishable_events(handle, ftb_ftb_examples_polling_logger_events, 
-            FTB_FTB_EXAMPLES_POLLING_LOGGER_TOTAL_EVENTS, err_msg);
-    
-    ret = FTB_Create_mask(&mask, "all", "init", err_msg);
+    ret = FTB_Create_mask(&mask, "all", "init");
     if (ret != FTB_SUCCESS) { 
         printf("FTB_Create_mask failed - 1\n"); 
         exit(-1);
     }
-    printf("Mask fields are event_name=%d severity=%d comp=%d comp_cat=%d hostname=%s client_name=%s client_jobid=%s region=%s\n", 
+    printf("Catch Mask fields are event_name=%s severity=%s comp=%s comp_cat=%s hostname=%s client_name=%s client_jobid=%s region=%s\n", 
             mask.event.event_name, mask.event.severity, mask.event.comp, mask.event.comp_cat, 
             mask.event.hostname, mask.event.client_name, mask.event.client_jobid, mask.event.region);
     
-    ret = FTB_Subscribe(handle, &mask, &shandle, err_msg, NULL, NULL);
+    ret = FTB_Subscribe(handle, &mask, &shandle, NULL, NULL);
     if (ret != FTB_SUCCESS) {
         printf("FTB_Subscribe failed\n");
         exit(-1);
@@ -78,7 +74,7 @@ int main (int argc, char *argv[])
     while(1) {
         FTB_catch_event_info_t event;
         int ret = 0;
-        ret = FTB_Poll_event(shandle, &event, err_msg);
+        ret = FTB_Poll_event(shandle, &event);
         if (ret == FTB_CAUGHT_NO_EVENT) {
             time_t current = time(NULL);
             fprintf(log_fp,"%s\t",asctime(localtime(&current)));

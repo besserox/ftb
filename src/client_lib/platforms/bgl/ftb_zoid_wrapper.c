@@ -49,7 +49,7 @@ int FTB_Reg_all_predefined_catch(FTB_client_handle_t handle)
 
 int FTB_Publish_event(FTB_client_handle_t handle, const char *event, FTB_event_data_t *datadetails, char *error_msg)
 {
-    return ZOID_FTB_Throw(handle, event, datadetails, error_msg);
+    return ZOID_FTB_Publish(handle, event, datadetails, error_msg);
 }
 
 int FTB_Catch(FTB_client_handle_t handle, FTB_event_t *event, FTB_id_t *src)

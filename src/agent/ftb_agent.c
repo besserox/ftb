@@ -44,8 +44,8 @@ void *progress_loop(void *arg)
                 continue;
             }
             for (i=0;i<ids_len;i++) {
-                if (ids[i].client_id.comp == FTB_COMP_MANAGER 
-               && ids[i].client_id.comp_cat == FTB_COMP_CAT_BACKPLANE
+                if ((strcasecmp(ids[i].client_id.comp, "FTB_COMP_MANAGER") == 0) 
+               && (strcasecmp(ids[i].client_id.comp_cat, "FTB_COMP_CAT_BACKPLANE") == 0)
                && FTBU_is_equal_location_id(&ids[i].location_id,&incoming_src))  {
                 /*not send same msg back in case incoming source is another agent*/
                     continue;

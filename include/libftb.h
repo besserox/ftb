@@ -8,17 +8,17 @@
 extern "C" {
 #endif 
 
-int FTB_Connect(FTB_client_t *client_info, FTB_client_handle_t *client_handle);
+int FTB_Connect(FTB_client_t *cinfo,  FTB_client_handle_t *client_handle);
 
-int FTB_Create_mask(FTB_event_mask_t *event_mask, char *field_name, char *field_val, char *error_msg);
+int FTB_Create_mask(FTB_event_mask_t *event_mask, char *field_name, char *field_val);
 
-int FTB_Register_publishable_events(FTB_client_handle_t handle, FTB_event_info_t  *einfo, int num_events, char *error_msg);
+int FTB_Register_publishable_events(FTB_client_handle_t handle, FTB_event_info_t  *einfo, int num_events);
 
-int FTB_Subscribe(FTB_client_handle_t handle, FTB_event_mask_t *event_mask, FTB_subscribe_handle_t *shandle, char *error_msg, int (*callback)(FTB_catch_event_info_t *, void*), void *arg);
+int FTB_Subscribe(FTB_client_handle_t handle, FTB_event_mask_t *event_mask, FTB_subscribe_handle_t *shandle,int (*callback)(FTB_catch_event_info_t *, void*), void *arg);
 
-int FTB_Publish_event(FTB_client_handle_t handle, const char *event, FTB_event_data_t *datadetails, char *error_msg);
+int FTB_Publish(FTB_client_handle_t handle, const char *event_name,  const FTB_event_properties_t *event_properties, FTB_event_handle_t *event_handle);
 
-int FTB_Poll_event(FTB_subscribe_handle_t shandle, FTB_catch_event_info_t *event, char *error_msg);
+int FTB_Poll_event(FTB_subscribe_handle_t shandle, FTB_catch_event_info_t *event);
 
 int FTB_Disconnect(FTB_client_handle_t handle);
 
@@ -43,11 +43,14 @@ int FTB_Disconnect(FTB_client_handle_t handle);
  *    If there is no such tag with the event, FTB_ERR_TAG_NOT_FOUND is returned.
  *    If the data_len passed in is smaller than the actual data, FTB_ERR_TAG_NO_SPACE is returned.
  */
+/*
 int FTB_Add_tag(FTB_client_handle_t handle, FTB_tag_t tag, const char *tag_data, FTB_tag_len_t data_len, char *error_msg);
 
 int FTB_Remove_tag(FTB_client_handle_t handle, FTB_tag_t tag, char *error_msg);
 
 int FTB_Read_tag(const FTB_catch_event_info_t *event, FTB_tag_t tag, char *tag_data, FTB_tag_len_t *data_len, char *error_msg);
+*/
+
 
 #ifdef __cplusplus
 } /*extern "C"*/
