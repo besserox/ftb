@@ -4,19 +4,17 @@
 #include "mpi.h"
 
 #include "libftb.h"
-#include "ftb_mpi_mpi_example_events.h"
 
-char err_msg[FTB_MAX_ERRMSG_LEN];
 
 int main (int argc, char *argv[])
 {
     FTB_client_handle_t handle;
     FTB_client_t cinfo;
+    FTB_event_handle_t ehandle;
     int i, count;
     int rank, size;
     double begin, end, delay;
     double min, max, avg;
-    char err_msg[128];
 
     if (argc >= 2) {
        count = atoi(argv[1]);
@@ -41,8 +39,8 @@ int main (int argc, char *argv[])
         exit(-1);
     }
     
-    printf("FTB_Register_publishbale_events\n");
-    FTB_Register_publishable_events(handle, ftb_mpi_mpi_example_events, FTB_MPI_MPI_EXAMPLE_TOTAL_EVENTS, err_msg);
+    //printf("FTB_Register_publishbale_events\n");
+    //FTB_Register_publishable_events(handle, ftb_mpi_mpi_example_events, FTB_MPI_MPI_EXAMPLE_TOTAL_EVENTS);
 
     MPI_Init(&argc, &argv);
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
@@ -50,7 +48,7 @@ int main (int argc, char *argv[])
     MPI_Barrier(MPI_COMM_WORLD);
     begin = MPI_Wtime();
     for (i=0;i<count;i++) {
-        FTB_Publish_event(handle, "MPI_SIMPLE_EVENT", NULL, err_msg);
+        FTB_Publish(handle, "MPI_SIMPLE_EVENT", NULL, &ehandle);
     }
     end = MPI_Wtime();
     delay = end-begin;

@@ -45,11 +45,6 @@ int FTBU_is_equal_location_id(const FTB_location_id_t *lhs, const FTB_location_i
 
 int FTBU_is_equal_ftb_id(const FTB_id_t *lhs, const FTB_id_t *rhs)
 {
-//   if (lhs->client_id.comp == rhs->client_id.comp
-//   && lhs->client_id.comp_cat == rhs->client_id.comp_cat
-//   && lhs->client_id.ext == rhs->client_id.ext) {
-//        return FTBU_is_equal_location_id(&lhs->location_id, &rhs->location_id);
-//   }
     if ((strcasecmp(lhs->client_id.comp_cat, rhs->client_id.comp_cat) == 0)
             && (strcasecmp(lhs->client_id.comp, rhs->client_id.comp) == 0)
             && (strcasecmp(lhs->client_id.client_name, rhs->client_id.client_name) == 0)
@@ -62,11 +57,6 @@ int FTBU_is_equal_ftb_id(const FTB_id_t *lhs, const FTB_id_t *rhs)
 
 int FTBU_is_equal_event(const FTB_event_t *lhs, const FTB_event_t *rhs)
 {
-//    if ( (lhs->severity == rhs->severity)
-//     && (lhs->comp_cat == rhs->comp_cat) 
-//     && (lhs->comp == rhs->comp) 
-//     && (lhs->event_cat == rhs->event_cat)
-//     && (lhs->event_name == rhs->event_name) )
     if ((strcasecmp(lhs->severity, rhs->severity) == 0)
                 && (strcasecmp(lhs->comp_cat, rhs->comp_cat) == 0)
                 && (strcasecmp(lhs->comp, rhs->comp) == 0)
@@ -74,6 +64,18 @@ int FTBU_is_equal_event(const FTB_event_t *lhs, const FTB_event_t *rhs)
         return 1;
     }
     else
+        return 0;
+}
+
+int FTBU_is_equal_clienthandle(const FTB_client_handle_t *lhs, const FTB_client_handle_t *rhs)
+{
+    if ((strcasecmp(lhs->comp_cat, rhs->comp_cat) == 0)
+            && (strcasecmp(lhs->comp, rhs->comp) == 0)
+            && (strcasecmp(lhs->client_name, rhs->client_name) == 0)
+            && (lhs->ext == rhs->ext)) {
+        return 1;
+    }
+    else 
         return 0;
 }
 

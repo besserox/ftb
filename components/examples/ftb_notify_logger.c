@@ -5,7 +5,6 @@
 #include <string.h>
 
 #include "libftb.h"
-#include "ftb_ftb_examples_notify_logger_publishevents.h"
 
 #define LOG_FILE "/tmp/ftb_log"
 
@@ -34,7 +33,6 @@ int main (int argc, char *argv[])
     FTB_client_handle_t handle;
     FTB_event_mask_t mask;
     FTB_subscribe_handle_t *shandle=(FTB_subscribe_handle_t *)malloc(sizeof(FTB_subscribe_handle_t));
-    char err_msg[128];
     int ret = 0 ;
 
     if (argc >= 2) {
@@ -62,16 +60,13 @@ int main (int argc, char *argv[])
         exit(-1);
     }
     
-    FTB_Register_publishable_events(handle, ftb_ftb_examples_notify_logger_events, 
-                              FTB_FTB_EXAMPLES_NOTIFY_LOGGER_TOTAL_EVENTS, err_msg);
-    
-    ret = FTB_Create_mask(&mask, "all", "init", err_msg);
+    ret = FTB_Create_mask(&mask, "all", "init");
     if (ret != FTB_SUCCESS) { 
         printf("FTB_Create_mask failed - 1\n"); 
         exit(-1);
     }
 
-    ret = FTB_Subscribe(handle, &mask, shandle, err_msg, event_logger, (void*)log_fp);
+    ret = FTB_Subscribe(handle, &mask, shandle, event_logger, (void*)log_fp);
     if (ret != FTB_SUCCESS) {
         printf("FTB_Subscribe failed\n");
         exit(-1);

@@ -4,7 +4,6 @@
 #include <string.h>
 
 #include "libftb.h"
-#include "ftb_ftb_examples_simple_publishevents.h"
 
 int main (int argc, char *argv[])
 {
@@ -13,7 +12,6 @@ int main (int argc, char *argv[])
     FTB_client_t cinfo;
     FTB_event_mask_t mask;
     FTB_subscribe_handle_t shandle;
-    char err_msg[1024];
     int ret=0;
     
     printf("Begin\n");
@@ -29,26 +27,26 @@ int main (int argc, char *argv[])
         exit(-1);
     }
   
-    ret = FTB_Create_mask(&mask, "all", "init", err_msg);
+    ret = FTB_Create_mask(&mask, "all", "init");
     if (ret != FTB_SUCCESS) {
         printf("FTB_Create_mask was not successful\n");
         exit(-1);
     }
 
     /* Create a subscription mask */
-    ret = FTB_Create_mask(&mask, "all", "init", err_msg);
+    ret = FTB_Create_mask(&mask, "all", "init");
     if (ret != FTB_SUCCESS) {
         printf("Mask creation failed for field_name=all and field value=init \n"); 
         exit(-1);
     }
-    ret = FTB_Create_mask(&mask, "event_name", "SIMPLE_EVENT", err_msg);
+    ret = FTB_Create_mask(&mask, "event_name", "SIMPLE_EVENT");
     if (ret != FTB_SUCCESS) {
         printf("Mask creation failed for field_name = event_name \n"); 
         exit(-1);
     }
     
     /* Register subscription mask */
-    ret = FTB_Subscribe(handle, &mask, &shandle, err_msg, NULL, NULL);
+    ret = FTB_Subscribe(handle, &mask, &shandle, NULL, NULL);
     if (ret != FTB_SUCCESS) {
         printf("FTB_Subscribe failed!\n"); 
         exit(-1);
@@ -61,7 +59,7 @@ int main (int argc, char *argv[])
         sleep(10);
         while(1) {
             printf("FTB_Poll_event\n");
-            ret = FTB_Poll_event(shandle, &event, err_msg);
+            ret = FTB_Poll_event(shandle, &event);
             if (ret == FTB_CAUGHT_EVENT) {
                 printf("Caught event: comp_cat: %s, comp: %s, severity: %s, event_name: %s\n",
                    event.comp_cat, event.comp, event.severity, event.event_name);

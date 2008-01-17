@@ -138,6 +138,8 @@ int FTBU_is_equal_ftb_id(const FTB_id_t *lhs, const FTB_id_t *rhs);
 
 int FTBU_is_equal_event(const FTB_event_t *lhs, const FTB_event_t *rhs);
 
+int FTBU_is_equal_clienthandle(const FTB_client_handle_t *lhs, const FTB_client_handle_t *rhs);
+
 void FTBU_get_output_of_cmd(const char *cmd, char *output, size_t len);
 
 #ifdef __cplusplus

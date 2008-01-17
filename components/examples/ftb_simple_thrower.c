@@ -4,15 +4,14 @@
 #include <string.h>
 
 #include "libftb.h"
-#include "ftb_ftb_examples_simple_publishevents.h"
 
 
-char err_msg[FTB_MAX_ERRMSG_LEN];
 
 int main (int argc, char *argv[])
 {
     FTB_client_t cinfo;
     FTB_client_handle_t handle;
+    FTB_event_handle_t ehandle;
     int ret=0;
     int i;
 
@@ -30,14 +29,11 @@ int main (int argc, char *argv[])
             exit(-1);
     }
 
-    ret = FTB_Register_publishable_events(handle, ftb_ftb_examples_simple_events,
-                    FTB_FTB_EXAMPLES_SIMPLE_TOTAL_EVENTS, err_msg);
-    
     for (i=0;i<12;i++) {
-        printf("FTB_Publish_event\n");
-        ret = FTB_Publish_event(handle, "SIMPLE_EVENT", NULL, err_msg);
+        printf("FTB_Publish\n");
+        ret = FTB_Publish(handle, "SIMPLE_EVENT", NULL, &ehandle);
         if (ret != FTB_SUCCESS) {
-            printf("FTB_Publish_event did not return a success\n");
+            printf("FTB_Publish did not return a success\n");
             exit(-1);
         }
         printf("sleep(10)\n");

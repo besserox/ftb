@@ -106,19 +106,11 @@ int FTBC_util_is_equal_tag(const void *lhs_void, const void* rhs_void)
     return (*lhs == *rhs);
 }
 
-int FTBC_util_is_equal_clientid(const void *lhs_void, const void* rhs_void)
+int FTBC_util_is_equal_clienthandle(const void *lhs_void, const void* rhs_void)
 {
     FTB_client_handle_t *lhs = (FTB_client_handle_t *)lhs_void;
     FTB_client_handle_t *rhs = (FTB_client_handle_t *)rhs_void;
-
-    if ((strcasecmp(lhs->comp_cat, rhs->comp_cat) == 0)
-        && (strcasecmp(lhs->comp, rhs->comp) == 0)
-        && (strcasecmp(lhs->client_name, rhs->client_name) == 0)
-        && (lhs->ext == rhs->ext)) {
-        return 1;
-    }    
-    else
-        return 0;
+    return FTBU_is_equal_clienthandle(lhs, rhs);
 }
 
 
@@ -362,7 +354,7 @@ int FTBC_Connect(const FTB_client_t *cinfo, uint8_t extension, FTB_client_handle
     lock_client();
     if (num_components == 0) {
         //FTBC_comp_info_map = FTBU_map_init(NULL); /*Since the key: client_handle is uint32_t*/
-        FTBC_comp_info_map = FTBU_map_init(FTBC_util_is_equal_clientid);
+        FTBC_comp_info_map = FTBU_map_init(FTBC_util_is_equal_clienthandle);
         FTBC_tag_map = FTBU_map_init(FTBC_util_is_equal_tag);
         memset(tag_string,0,FTB_MAX_DYNAMIC_DATA_SIZE);
         FTBM_hash_init();
@@ -893,7 +885,7 @@ int FTBC_Poll_event(FTB_subscribe_handle_t shandle, FTB_catch_event_info_t *ce_e
         FTB_client_handle_t temp_handle;
         convert_clientid_to_clienthandle(msg.dst.client_id, &temp_handle);
         //if (FTB_CLIENT_ID_TO_HANDLE(msg.dst.client_id)==handle) {
-        if (FTBC_util_is_equal_clientid(&temp_handle, &handle)) { //FTB_CLIENT_ID_TO_HANDLE(msg.dst.client_id)==handle) {
+        if (FTBC_util_is_equal_clienthandle(&temp_handle, &handle)) { //FTB_CLIENT_ID_TO_HANDLE(msg.dst.client_id)==handle) {
             FTB_INFO("Polled event for myself");
             int is_for_callback = 0;
             if (msg.msg_type != FTBM_MSG_TYPE_NOTIFY) {

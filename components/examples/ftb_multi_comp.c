@@ -3,13 +3,7 @@
 #include <string.h>
 
 #include "libftb.h"
-#include "ftb_ftb_examples_multicomp_comp1_publishevents.h"
-#include "ftb_ftb_examples_multicomp_comp2_publishevents.h"
-#include "ftb_ftb_examples_multicomp_comp3_publishevents.h"
 
-char err_msg1[FTB_MAX_ERRMSG_LEN];
-char err_msg2[FTB_MAX_ERRMSG_LEN];
-char err_msg3[FTB_MAX_ERRMSG_LEN];
 /*************  Component 3  ******************/
 
 FTB_client_handle_t Comp3_ftb_handle;
@@ -31,12 +25,12 @@ int Comp3_Init()
     FTB_client_t cinfo;
     
     printf("Comp3: Create mask\n");
-    ret = FTB_Create_mask(&mask, "all", "init", err_msg3);
+    ret = FTB_Create_mask(&mask, "all", "init");
     if (ret != FTB_SUCCESS) {
         printf("Mask creation failed for field_name=all and field value=init \n");
         exit(-1);
     }
-    ret = FTB_Create_mask(&mask, "severity", "ftb_info", err_msg3);
+    ret = FTB_Create_mask(&mask, "severity", "ftb_info");
     if (ret != FTB_SUCCESS) {
         printf("Mask creation failed for field val=ftb_info\n");
         exit(-1);
@@ -55,11 +49,11 @@ int Comp3_Init()
         exit(-1);
     }
 
-    printf("Comp3: Register_publishable_events\n");
-    FTB_Register_publishable_events(Comp3_ftb_handle, ftb_ftb_examples_multicomp_comp3_events, FTB_FTB_EXAMPLES_MULTICOMP_COMP3_TOTAL_EVENTS, err_msg3);
+    //printf("Comp3: Register_publishable_events\n");
+    //FTB_Register_publishable_events(Comp3_ftb_handle, ftb_ftb_examples_multicomp_comp3_events, FTB_FTB_EXAMPLES_MULTICOMP_COMP3_TOTAL_EVENTS);
     
     printf("Comp3: FTB_Subscribe \n");
-    ret = FTB_Subscribe(Comp3_ftb_handle, &mask, &shandle3, err_msg3, Comp3_evt_handler, NULL);
+    ret = FTB_Subscribe(Comp3_ftb_handle, &mask, &shandle3, Comp3_evt_handler, NULL);
     if (ret != FTB_SUCCESS) {
          printf("FTB_Subscribe failed!\n"); exit(-1);
     }
@@ -107,23 +101,23 @@ int Comp2_Init()
         exit(-1);
     }
    
-    printf("Comp2: Register_publishable_events\n");
-    FTB_Register_publishable_events(Comp2_ftb_handle, ftb_ftb_examples_multicomp_comp2_events, FTB_FTB_EXAMPLES_MULTICOMP_COMP2_TOTAL_EVENTS, err_msg2);
+    //printf("Comp2: Register_publishable_events\n");
+    //FTB_Register_publishable_events(Comp2_ftb_handle, ftb_ftb_examples_multicomp_comp2_events, FTB_FTB_EXAMPLES_MULTICOMP_COMP2_TOTAL_EVENTS);
     
     printf("Comp2: Create mask\n");
-    ret = FTB_Create_mask(&mask, "all", "init", err_msg2);
+    ret = FTB_Create_mask(&mask, "all", "init");
     if (ret != FTB_SUCCESS) {
         printf("Mask creation failed for field_name=all and field value=init \n");
         exit(-1);
     }
-    ret = FTB_Create_mask(&mask, "event_name", "TEST_EVENT_1", err_msg2);
+    ret = FTB_Create_mask(&mask, "event_name", "TEST_EVENT_1");
     if (ret != FTB_SUCCESS) {
         printf("Mask creation failed \n");
         exit(-1);
     }
     
     printf("Comp2: FTB_Subscribe via polling\n");
-    ret = FTB_Subscribe(Comp2_ftb_handle, &mask, &shandle2, err_msg2, NULL, NULL);
+    ret = FTB_Subscribe(Comp2_ftb_handle, &mask, &shandle2, NULL, NULL);
     if (ret != FTB_SUCCESS) {
          printf("FTB_Subscribe failed!\n"); exit(-1);
     }
@@ -136,11 +130,12 @@ int Comp2_Init()
 int Comp2_Func()
 {
     FTB_catch_event_info_t evt;
+    FTB_event_handle_t ehandle;
     int ret = 0;
 
     Comp3_Func();
     while(1) {
-       ret = FTB_Poll_event(shandle2, &evt, err_msg2);
+       ret = FTB_Poll_event(shandle2, &evt);
        if (ret == FTB_CAUGHT_NO_EVENT) {
            break;
        }
@@ -150,8 +145,8 @@ int Comp2_Func()
            evt.incoming_src.hostname, evt.incoming_src.pid);
     }
 
-    printf("Comp2: FTB_Publish_event\n");
-    FTB_Publish_event(Comp2_ftb_handle, "TEST_EVENT_2", NULL, err_msg2);
+    printf("Comp2: FTB_Publish\n");
+    FTB_Publish(Comp2_ftb_handle, "TEST_EVENT_2", NULL, &ehandle);
 
     return 0;
 }
@@ -200,22 +195,22 @@ int Comp1_Init()
         exit(-1);
     }
     
-    printf("Comp1: Register_publishable_events\n");
-    FTB_Register_publishable_events(Comp1_ftb_handle, ftb_ftb_examples_multicomp_comp1_events, FTB_FTB_EXAMPLES_MULTICOMP_COMP1_TOTAL_EVENTS, err_msg1);
+    //printf("Comp1: Register_publishable_events\n");
+    //FTB_Register_publishable_events(Comp1_ftb_handle, ftb_ftb_examples_multicomp_comp1_events, FTB_FTB_EXAMPLES_MULTICOMP_COMP1_TOTAL_EVENTS);
     
-    ret = FTB_Create_mask(&mask, "all", "init", err_msg1);
+    ret = FTB_Create_mask(&mask, "all", "init");
     if (ret != FTB_SUCCESS) {
         printf("Mask creation failed for field_name=all and field value=init \n");
         exit(-1);
     }
-    ret = FTB_Create_mask(&mask, "severity", "ftb_fatal", err_msg1);
+    ret = FTB_Create_mask(&mask, "severity", "ftb_fatal");
     if (ret != FTB_SUCCESS) {
         printf("Mask creation failed for field val=ftb_fatal\n");
         exit(-1);
     }
     
     printf("Comp1: FTB_Subscribe \n");
-    ret = FTB_Subscribe(Comp1_ftb_handle, &mask, &shandle1, err_msg1, Comp1_evt_handler, NULL);
+    ret = FTB_Subscribe(Comp1_ftb_handle, &mask, &shandle1, Comp1_evt_handler, NULL);
     if (ret != FTB_SUCCESS) {
          printf("FTB_Subscribe failed!\n"); 
          exit(-1);
@@ -229,10 +224,11 @@ int Comp1_Init()
 int Comp1_Func()
 {
     static int i=0;
+    FTB_event_handle_t ehandle;
     i++;
     if (i%5 == 0) {
-        printf("Comp1: FTB_Publish_event\n");
-        FTB_Publish_event(Comp1_ftb_handle, "TEST_EVENT_1", NULL, err_msg1);
+        printf("Comp1: FTB_Publish\n");
+        FTB_Publish(Comp1_ftb_handle, "TEST_EVENT_1", NULL, &ehandle);
     }
 
     Comp2_Func();

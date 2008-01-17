@@ -23,7 +23,6 @@ int main (int argc, char *argv[])
     FTB_client_t cinfo;
     FTB_event_mask_t mask;
     int ret;
-    char err_msg[8];
     
     if (argc >= 2) {
         if (!strcmp("-", argv[1]))

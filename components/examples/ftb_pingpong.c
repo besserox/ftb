@@ -4,14 +4,12 @@
 #include <sys/time.h>
 #include <string.h>
 #include "libftb.h"
-#include "ftb_ftb_examples_pingpong_publishevents.h"
 
 static volatile int done = 0;
 static struct timeval begin, end;
 static int is_server = 0;
 static int count = 0; 
 static int iter = 0;
-char err_msg[FTB_MAX_ERRMSG_LEN];
 
 void Sig_handler(int sig){
     if (sig == SIGINT || sig == SIGTERM)
@@ -21,13 +19,15 @@ void Sig_handler(int sig){
 int pingpong_server(FTB_catch_event_info_t *evt, void *arg)
 {
     count++;
+    FTB_event_handle_t ehandle;
     FTB_client_handle_t *handle = (FTB_client_handle_t *)arg;
-    FTB_Publish_event(*handle, "PINGPONG_EVENT_SRV", NULL, err_msg);
+    FTB_Publish(*handle, "PINGPONG_EVENT_SRV", NULL, &ehandle);
     return 0;
 }
 
 int pingpong_client(FTB_catch_event_info_t *evt, void *arg)
 {
+    FTB_event_handle_t ehandle;
     count++;
     if (count >= iter) {
         gettimeofday(&end,NULL);
@@ -35,7 +35,7 @@ int pingpong_client(FTB_catch_event_info_t *evt, void *arg)
         return 0;
     }
     FTB_client_handle_t *handle = (FTB_client_handle_t *)arg;
-    FTB_Publish_event(*handle, "PINGPONG_EVENT_CLI", NULL, err_msg);
+    FTB_Publish(*handle, "PINGPONG_EVENT_CLI", NULL, &ehandle);
     return 0;
 }
 
@@ -45,6 +45,7 @@ int main (int argc, char *argv[])
     FTB_event_mask_t mask;
     FTB_client_t cinfo;
     FTB_subscribe_handle_t shandle;
+    FTB_event_handle_t ehandle;
     double event_latency;
     int ret = 0;
 
@@ -72,22 +73,22 @@ int main (int argc, char *argv[])
         exit(-1);
     }
     
-    FTB_Register_publishable_events(handle, ftb_ftb_examples_pingpong_events, FTB_FTB_EXAMPLES_PINGPONG_TOTAL_EVENTS, err_msg);
+    //FTB_Register_publishable_events(handle, ftb_ftb_examples_pingpong_events, FTB_FTB_EXAMPLES_PINGPONG_TOTAL_EVENTS);
 
     /* Create a subscription mask */
-    ret = FTB_Create_mask(&mask, "all", "init", err_msg);
+    ret = FTB_Create_mask(&mask, "all", "init");
     if (ret != FTB_SUCCESS) {
         printf("Mask creation failed for field_name=all and field value=init \n");
         exit(-1);
     }
     
     if (is_server) {
-        ret = FTB_Create_mask(&mask, "event_name", "PINGPONG_EVENT_CLI", err_msg);
+        ret = FTB_Create_mask(&mask, "event_name", "PINGPONG_EVENT_CLI");
         if (ret != FTB_SUCCESS) {
             printf("Create mask failure - 1\n");
             exit(-1);
         }
-        ret = FTB_Subscribe(handle, &mask, &shandle, err_msg, pingpong_server, (void*)&handle);
+        ret = FTB_Subscribe(handle, &mask, &shandle, pingpong_server, (void*)&handle);
         if (ret != FTB_SUCCESS) {
             printf("FTB_Subscribe failed!\n"); 
             exit(-1);
@@ -96,18 +97,18 @@ int main (int argc, char *argv[])
         signal(SIGTERM, Sig_handler);
     }
     else {
-        ret = FTB_Create_mask(&mask, "event_name", "PINGPONG_EVENT_SRV", err_msg);
+        ret = FTB_Create_mask(&mask, "event_name", "PINGPONG_EVENT_SRV");
         if (ret != FTB_SUCCESS) {
             printf("Create mask failure - 2\n");
             exit(-1);
         }
-        ret = FTB_Subscribe(handle, &mask, &shandle, err_msg, pingpong_client, (void*)&handle);
+        ret = FTB_Subscribe(handle, &mask, &shandle, pingpong_client, (void*)&handle);
         if (ret != FTB_SUCCESS) {
             printf("FTB_Subscribe failed!\n"); 
             exit(-1);
         }
         gettimeofday(&begin,NULL);
-        FTB_Publish_event(handle, "PINGPONG_EVENT_CLI",NULL,err_msg);
+        FTB_Publish(handle, "PINGPONG_EVENT_CLI",NULL, &ehandle);
     }
 
     while(!done) {

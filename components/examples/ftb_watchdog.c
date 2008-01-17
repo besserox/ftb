@@ -61,7 +61,7 @@ int main (int argc, char *argv[])
         /* Publish event with specified event name */
         ret = FTB_Publish(handle, "WATCH_DOG_EVENT", NULL, &ehandle);
         if (ret != FTB_SUCCESS) {
-            printf("FTB_Publish_event failed\n");
+            printf("FTB_Publish failed\n");
             exit(-1);
         }
         sleep(1);
