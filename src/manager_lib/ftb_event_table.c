@@ -44,7 +44,7 @@ int FTBM_get_event_by_name(const char *name, FTB_event_t *e)
             strcpy(e->comp, ((FTBM_throw_event_entry_t *)found_event->data)->comp);
     } 
     else {
-            return FTB_ERR_HASHKEY_NOT_FOUND;
+            return FTB_ERR_FILTER_VALUE;
     }
     return FTB_SUCCESS;
 }

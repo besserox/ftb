@@ -30,12 +30,15 @@ CC=@CC@
 RANLIB=@RANLIB@
 LIBS_PTHREAD=@LIBS_PTHREAD@
 
-all: ftb_util.o
+all:  ftb_util.o ftb_auxil.o
 
 CFLAGS = $(CFLAGS_SRC)
 
 clean:
-	rm -f ftb_util.o
+	rm -f ftb_util.o ftb_auxil.o
 
 ftb_util.o: ftb_util.c
+	$(CC) $(CFLAGS) -c $<
+
+ftb_auxil.o: ftb_auxil.c
 	$(CC) $(CFLAGS) -c $<

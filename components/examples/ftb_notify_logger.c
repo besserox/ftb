@@ -15,7 +15,7 @@ void Int_handler(int sig){
         done = 1;
 }
 
-int event_logger(FTB_catch_event_info_t *evt, void *arg)
+int event_logger(FTB_receive_event_t *evt, void *arg)
 {
     FILE* log_fp = (FILE*)arg;
     time_t current = time(NULL);
@@ -31,7 +31,6 @@ int main (int argc, char *argv[])
     FILE *log_fp = NULL;
     FTB_client_t cinfo;
     FTB_client_handle_t handle;
-    FTB_event_mask_t mask;
     FTB_subscribe_handle_t *shandle=(FTB_subscribe_handle_t *)malloc(sizeof(FTB_subscribe_handle_t));
     int ret = 0 ;
 
@@ -60,13 +59,7 @@ int main (int argc, char *argv[])
         exit(-1);
     }
     
-    ret = FTB_Create_mask(&mask, "all", "init");
-    if (ret != FTB_SUCCESS) { 
-        printf("FTB_Create_mask failed - 1\n"); 
-        exit(-1);
-    }
-
-    ret = FTB_Subscribe(handle, &mask, shandle, event_logger, (void*)log_fp);
+    ret = FTB_Subscribe(shandle, handle, "", event_logger, (void*)log_fp);
     if (ret != FTB_SUCCESS) {
         printf("FTB_Subscribe failed\n");
         exit(-1);

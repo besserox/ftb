@@ -125,13 +125,13 @@ echo "Converting throw event schema files"
 for i in `ls $SCHEMA_FILES_PATH`; do
    temp=$temp"$i ";
  done
-perl $PARSER_PATH/ftb_event_parser.pl $temp
-if test ! -e `pwd`/ftb_throw_events.h; then
-	echo "ftb_throw_events.h could not be created.";
- 	echo "configure script aborting...correct errors first" >&2;
- 	exit 1;
-fi
-/bin/mv `pwd`/ftb_throw_events.h `pwd`/include/;
+dnl perl $PARSER_PATH/ftb_event_parser.pl $temp
+dnl if test ! -e `pwd`/ftb_throw_events.h; then
+dnl	echo "ftb_throw_events.h could not be created.";
+dnl 	echo "configure script aborting...correct errors first" >&2;
+dnl 	exit 1;
+dnl fi
+dnl /bin/mv `pwd`/ftb_throw_events.h `pwd`/include/;
 
 dnl Create include/ftb_conf file
 FTB_CONF_FILE=`pwd`/include/ftb_conf.h
@@ -156,6 +156,7 @@ MAKE='make'
 CFLAGS_FTB='-Wall -g -fPIC -I${INC_DIR}';
 CFLAGS_SRC='${CFLAGS_FTB} -I${abs_top_srcdir}/src/include -I${abs_top_srcdir}/src/manager_lib/include'
 UTIL_OBJ='${abs_top_srcdir}/src/util/ftb_util.o'
+AUXIL_OBJ='${abs_top_srcdir}/src/util/ftb_auxil.o'
 MANAGER_LIB_PATH_SHARED='${abs_top_srcdir}/src/manager_lib/lib/shared'
 MANAGER_LIB_PATH_STATIC='${abs_top_srcdir}/src/manager_lib/lib/static'
 MANAGER_LIB_NAME=ftbm

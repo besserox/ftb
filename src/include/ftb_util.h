@@ -34,10 +34,43 @@ extern "C" {
 #define FTB_INFO(...)
 #endif
 
+/*Simple list-based implementation of map, set is just map with data as key*/
+#define FTBU_SUCCESS       0
+#define FTBU_EXIST         2
+#define FTBU_NOT_EXIST     3
+    
+//#define FTBU_MAP_UINT_KEY(x)        ((FTBU_map_key_t)(uint32_t)(x))
+#define FTBU_MAP_PTR_KEY(x)        ((FTBU_map_key_t)(void*)(x))
+
+typedef union FTBU_map_key {
+    void* key_ptr;
+    //uint32_t key_int;
+}FTBU_map_key_t;
+
+/*
+typedef struct FTBU_map_node {
+    struct FTBU_list_node *next;
+    struct FTBU_list_node *prev;
+    FTBU_map_key_t key;
+    void* data; //For head node, data will be pointing to the is_equal function
+}FTBU_map_node_t;
+
 typedef struct FTBU_list_node {
     struct FTBU_list_node *next;
     struct FTBU_list_node *prev;
 }FTBU_list_node_t;
+*/
+
+typedef struct FTBU_map_node {
+    struct FTBU_map_node *next;
+    struct FTBU_map_node *prev;
+    FTBU_map_key_t key;
+    void* data; /*For head node, data will be pointing to the is_equal function*/
+}FTBU_map_node_t;
+
+typedef FTBU_map_node_t FTBU_list_node_t;
+
+typedef FTBU_map_node_t* FTBU_map_iterator_t;
 
 static inline void FTBU_list_init(FTBU_list_node_t *list)
 {
@@ -71,28 +104,6 @@ static inline void FTBU_list_remove_entry(FTBU_list_node_t *entry)
     
 #define FTBU_list_for_each(pos, head, temp) \
     for (pos=head->next, temp=pos->next; pos!=head; pos=temp, temp=temp->next)
-
-/*Simple list-based implementation of map, set is just map with data as key*/
-#define FTBU_SUCCESS       0
-#define FTBU_EXIST            2
-#define FTBU_NOT_EXIST    3
-    
-typedef union FTBU_map_key{
-    void* key_ptr;
-    uint32_t key_int;
-}FTBU_map_key_t;
-
-typedef struct FTBU_map_node{
-    struct FTBU_list_node *next;
-    struct FTBU_list_node *prev;
-    FTBU_map_key_t key;
-    void* data; /*For head node, data will be pointing to the is_equal function*/
-}FTBU_map_node_t;
-
-typedef FTBU_map_node_t* FTBU_map_iterator_t;
-
-#define FTBU_MAP_UINT_KEY(x)        ((FTBU_map_key_t)(uint32_t)(x))
-#define FTBU_MAP_PTR_KEY(x)        ((FTBU_map_key_t)(void*)(x))
     
 /*Initialize the map, if is_equal == NULL, use the integ*/
 FTBU_map_node_t *FTBU_map_init(int (*is_equal)(const void *, const void *));

@@ -34,24 +34,15 @@ process.
 */
 
 #define FTB_MAX_SUBSCRIPTION_STYLE          32
-typedef char FTB_subscription_style_t[FTB_MAX_SUBSCRIPTION_STYLE];      //UPDATED
+typedef char FTB_subscription_style_t[FTB_MAX_SUBSCRIPTION_STYLE];     
 
 /* If client will subscribe to any events */
-#define FTB_SUBSCRIPTION_NONE               0x0                         //UPDATED
+#define FTB_SUBSCRIPTION_NONE               0x0                        
 /* If client plans to poll - a polling queue is created */
-#define FTB_SUBSCRIPTION_POLLING            0x1                         //UPDATED
+#define FTB_SUBSCRIPTION_POLLING            0x1                        
 /* If client plans to use callback handlers */
-#define FTB_SUBSCRIPTION_NOTIFY             0x2                         //UPDATED
+#define FTB_SUBSCRIPTION_NOTIFY             0x2           
 
-
-
-
-/*typedef uint8_t FTB_severity_code_t;
-typedef uint16_t FTB_comp_cat_code_t;
-typedef uint8_t FTB_comp_code_t;
-typedef uint8_t FTB_event_cat_code_t;
-typedef uint16_t FTB_event_name_code_t;
-*/
 typedef uint8_t FTB_tag_len_t;
 
 #define FTB_MAX_REGION               16
@@ -100,6 +91,7 @@ typedef struct FTB_location_id {
 }FTB_location_id_t;
 
 typedef struct FTB_client_id {
+    FTB_region_t region;
     FTB_comp_cat_t comp_cat;
     FTB_comp_t comp;
     FTB_client_name_t client_name;
@@ -128,10 +120,23 @@ typedef struct FTB_id {
 }FTB_id_t;
 
 #define FTB_DEFAULT_POLLING_Q_LEN               64
+
 #define FTB_SUCCESS                             0
-#define FTB_ERR_GENERAL                         (-1)
+#define FTB_ERR_EVENTSPACE_FORMAT               (-15)
+#define FTB_ERR_SUBSCRIPTION_STYLE              (-18)
+#define FTB_ERR_DUP_CALL                        (-19)
 #define FTB_ERR_NULL_POINTER                    (-2)
+
+#define FTB_ERR_INVALID_HANDLE                  (-20)
+#define FTB_ERR_GENERAL                         (-1)
+#define FTB_ERR_INVALID_EVENT_NAME              (-21)
+
 #define FTB_ERR_NOT_SUPPORTED                   (-3)
+#define FTB_ERR_SUBSCRIPTION_STR                (-22)
+#define FTB_ERR_FILTER_ATTR                     (-23)
+#define FTB_ERR_FILTER_VALUE                    (-24)
+
+
 #define FTB_ERR_INVALID_PARAMETER               (-4)
 #define FTB_ERR_NETWORK_GENERAL                 (-5)
 #define FTB_ERR_NETWORK_NO_ROUTE                (-6)
@@ -142,24 +147,23 @@ typedef struct FTB_id {
 #define FTB_ERR_MASK_NOT_INITIALIZED            (-12)
 #define FTB_ERR_INVALID_VALUE                   (-13)
 #define FTB_ERR_HASHKEY_NOT_FOUND               (-14)
-#define FTB_ERR_EVENTSPACE_FORMAT                (-15)
 #define FTB_ERR_VALUE_NOT_FOUND                 (-16)
 #define FTB_ERR_INVALID_FIELD                   (-17)
 
-#define FTB_ERR_SUBSCRIPTION_STYLE              (-18)  //UPDATED
 
-#define FTB_CAUGHT_NO_EVENT                     -31
-#define FTB_CAUGHT_EVENT                        1
+#define FTB_GOT_NO_EVENT                     -31
+#define FTB_GOT_EVENT                        1
 
 typedef uint8_t FTB_tag_t;
 
 /*event and event_mask using same structure*/
 typedef struct FTB_event{
-    FTB_severity_t  severity;
+    //FTB_eventspace_t event_space;
+    FTB_region_t region;
     FTB_comp_cat_t comp_cat;
     FTB_comp_t comp;
-    FTB_region_t region;
     FTB_event_name_t event_name;
+    FTB_severity_t  severity;
     FTB_client_jobid_t client_jobid;
     FTB_client_name_t client_name;
     FTB_hostname_t hostname;
@@ -169,7 +173,7 @@ typedef struct FTB_event{
     char dynamic_data[FTB_MAX_DYNAMIC_DATA_SIZE];
 }FTB_event_t;
 
-//typedef FTB_event_t  FTB_catch_event_info_t;
+//typedef FTB_event_t  FTB_receive_event_t;
 typedef struct FTB_catch_event_info{
     FTB_severity_t  severity;
     FTB_comp_cat_t comp_cat;
@@ -184,7 +188,7 @@ typedef struct FTB_catch_event_info{
     FTB_event_properties_t event_properties;
     FTB_location_id_t incoming_src;
     char dynamic_data[FTB_MAX_DYNAMIC_DATA_SIZE];
-}FTB_catch_event_info_t;
+}FTB_receive_event_t;
 
 typedef struct FTB_event_mask {
     FTB_event_t event;
@@ -192,8 +196,8 @@ typedef struct FTB_event_mask {
 }FTB_event_mask_t;
 
 typedef struct FTB_subscribe_handle {
-    FTB_client_handle_t chandle;
-    FTB_event_mask_t cmask;
+    FTB_client_handle_t client_handle;
+    FTB_event_t subscription_event;
 }FTB_subscribe_handle_t;
 
 typedef struct FTB_event_info {

@@ -60,7 +60,7 @@ int ZOID_FTB_Reg_catch_polling_event( FTB_client_handle_t handle /* in:obj */,
 int ZOID_FTB_Reg_catch_polling_mask( FTB_client_handle_t handle /* in:obj */,
                                      const FTB_event_t *event /* in:ptr */)
 {
-    return FTBC_Reg_catch_polling_mask(handle, event);
+    return FTBC_Subscribe_with_polling(handle, event);
 }
 
 int ZOID_FTB_Reg_all_predefined_catch ( FTB_client_handle_t handle /* in:obj */)

@@ -7,13 +7,24 @@
 extern FILE* FTBU_log_file_fp;
 
 int FTBU_match_mask(const FTB_event_t *event, const FTB_event_t *mask)
-{   
+{  
+    FTB_INFO("In FTBU_match_mask\n"); 
+
+    printf ("event->region=%s and mask->region=%s\n", event->region, mask->region);
+    printf ("event->client_jobid=%s and mask->client_jobid=%s\n", event->client_jobid, mask->client_jobid);
+    //printf ("event->client_name=%s and mask->client_name=%s\n", event->client_name, mask->client_name);
+    printf ("event->hostname=%s and mask->hostname=%s\n", event->hostname, mask->hostname);
+    printf ("event->event_name=%s and mask->event_name=%s\n", event->event_name, mask->event_name);
+    printf ("event->severity=%s and mask->severity=%s\n", event->severity, mask->severity);
+    printf ("event->comp_cat=%s and mask->comp_cat=%s\n", event->comp_cat, mask->comp_cat);
+    printf ("event->comp=%s and mask->comp=%s\n", event->comp, mask->comp);
+
     if (((strcasecmp(event->region, mask->region) == 0) ||
             (strcasecmp(mask->region, "ALL") == 0)) &&
             ((strcasecmp(event->client_jobid, mask->client_jobid) == 0) ||
              (strcasecmp(mask->client_jobid, "ALL") ==0)) &&
-            ((strcasecmp(event->client_name, mask->client_name) == 0) ||
-             (strcasecmp(mask->client_name, "ALL") == 0)) &&
+            //((strcasecmp(event->client_name, mask->client_name) == 0) ||
+            // (strcasecmp(mask->client_name, "ALL") == 0)) &&
             ((strcasecmp(event->hostname, mask->hostname) == 0) ||
              (strcasecmp(mask->hostname, "ALL") == 0))) {
                 if (strcasecmp(mask->event_name, "ALL") != 0) {
@@ -27,6 +38,7 @@ int FTBU_match_mask(const FTB_event_t *event, const FTB_event_t *mask)
                         (strcasecmp(mask->comp_cat, "ALL") == 0)) &&
                         ((strcasecmp(event->comp, mask->comp) == 0) || 
                         (strcasecmp(mask->comp, "ALL") == 0))) {
+                            printf ("Its a match\n");
                             return 1;
                     }
                 }
@@ -103,21 +115,28 @@ void FTBU_get_output_of_cmd(const char *cmd, char *output, size_t len)
    
 static inline int util_key_match(const FTBU_map_node_t * headnode, FTBU_map_key_t key1, FTBU_map_key_t key2)
 {
-    if (headnode->key.key_int == 1)
+    /*if (headnode->key.key_int == 1)
         return (key1.key_int == key2.key_int);
     else {
         int (*is_equal)(const void *, const void *) = (int (*)(const void*, const void *)) headnode->data;
         assert(is_equal!= NULL);
         return (*is_equal)(key1.key_ptr, key2.key_ptr);
     }
+    */
+        int (*is_equal)(const void *, const void *) = (int (*)(const void*, const void *)) headnode->data;
+        assert(is_equal!= NULL);
+        return (*is_equal)(key1.key_ptr, key2.key_ptr);
 }
 
 FTBU_map_node_t *FTBU_map_init(int (*is_equal)(const void *, const void *))
 {
     FTBU_map_node_t *node = (FTBU_map_node_t *)malloc(sizeof(FTBU_map_node_t));
+    /*
     if (is_equal == NULL)
         node->key.key_int = 1;
     else
+        node->data = (void*)is_equal;
+    */
         node->data = (void*)is_equal;
     FTBU_list_init((FTBU_list_node_t*)node);
     return node;

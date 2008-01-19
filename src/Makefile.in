@@ -33,7 +33,7 @@ LIBS_PTHREAD=@LIBS_PTHREAD@
 SUBDIRS = util manager_lib client_lib agent
 #SUBDIRS = agent util manager_lib client_lib
 
-all: ftb_agent ftb_manager_lib ftb_client_lib ftb_util
+all: ftb_agent ftb_manager_lib ftb_client_lib ftb_util ftb_auxil
 
 clean:
 	for i in ${SUBDIRS}; do ${MAKE} -C $$i $@; done
@@ -48,4 +48,7 @@ ftb_client_lib: ftb_manager_lib
 	${MAKE} -C client_lib all
 
 ftb_util: 
+	${MAKE} -C util all
+
+ftb_auxil: 
 	${MAKE} -C util all

@@ -15,12 +15,9 @@ int main (int argc, char *argv[])
 {
     FTB_client_t cinfo;
     FTB_client_handle_t handle;
-    FTB_event_handle_t ehandle;
-    FTB_event_mask_t mask;
     FTB_subscribe_handle_t shandle;
-
+    FTB_event_handle_t ehandle;
     int ret = 0;
-
 
     /* Create namespace and other attributes before calling FTB_Connect */
     strcpy(cinfo.event_space, "FTB.FTB_EXAMPLES.Watchdog");
@@ -35,28 +32,16 @@ int main (int argc, char *argv[])
         exit(-1);
     }
 
-     /* Create a subscription mask */
-    ret = FTB_Create_mask(&mask, "all", "init");
-    if (ret != FTB_SUCCESS) { 
-        printf("Mask creation failed for field_name=all and field value=init \n"); exit(-1);
-    }
-    ret = FTB_Create_mask(&mask, "event_name", "WATCH_DOG_EVENT");
-    if (ret != FTB_SUCCESS) { 
-        printf("Setting Event name in mask failed\n"); exit(-1);
-    }
-    
-    /* Subscribe the created mask using the polling mechanism*/
-    ret = FTB_Subscribe(handle, &mask, &shandle, NULL, NULL);
+    ret = FTB_Subscribe(&shandle, handle, "", NULL, NULL);
     if (ret != FTB_SUCCESS) {
         printf("FTB_Subscribe failed ret=%d!\n", ret); exit(-1);
     }
    
     signal(SIGINT, Int_handler);
 
-    
     while(1) {
         ret = 0;
-        FTB_catch_event_info_t caught_event;
+        FTB_receive_event_t caught_event;
 
         /* Publish event with specified event name */
         ret = FTB_Publish(handle, "WATCH_DOG_EVENT", NULL, &ehandle);
@@ -66,9 +51,8 @@ int main (int argc, char *argv[])
         }
         sleep(1);
         
-        /* Poll for a event which matches mask registered via shandle */
         ret = FTB_Poll_event(shandle, &caught_event);
-        if (ret == FTB_CAUGHT_NO_EVENT) {
+        if (ret == FTB_GOT_NO_EVENT) {
             fprintf(stderr,"Watchdog: No event caught!\n");
             break;
         }
