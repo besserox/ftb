@@ -22,6 +22,10 @@ int FTB_Subscribe(FTB_subscribe_handle_t *subscribe_handle, FTB_client_handle_t 
         return FTBC_Subscribe_with_callback(subscribe_handle, client_handle, subscription_str, callback, arg);
 }
 
+int FTB_Unsubscribe(FTB_subscribe_handle_t *subscribe_handle) {
+    return FTBC_Unsubscribe(subscribe_handle);
+}
+
 int FTB_Register_publishable_events(FTB_client_handle_t handle, FTB_event_info_t  *einfo, int num_events)
 {
     return FTB_SUCCESS;
@@ -37,8 +41,8 @@ int FTB_Poll_event(FTB_subscribe_handle_t subscribe_handle, FTB_receive_event_t 
     return FTBC_Poll_event(subscribe_handle, receive_event);
 }
 
-int FTB_Disconnect(FTB_client_handle_t handle) {
-    return FTBC_Disconnect(handle);
+int FTB_Disconnect(FTB_client_handle_t client_handle) {
+    return FTBC_Disconnect(client_handle);
 }
 /*
 int FTB_Add_tag(FTB_client_handle_t handle, FTB_tag_t tag, const char *tag_data, FTB_tag_len_t data_len, char *error_msg)

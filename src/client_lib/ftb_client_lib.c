@@ -159,6 +159,7 @@ int util_split_namespace(const char *event_space, char *region_name, char *categ
     str=strsep(&tempstr,"."); strcpy(region_name,str);
     str=strsep(&tempstr,"."); strcpy(category_name,str);
     str=strsep(&tempstr,"."); strcpy(component_name,str);
+    printf("region = %s, category=%s and component = %s\n", region_name, category_name, component_name);
     if ((strcmp(region_name,"\0")==0) || (strcmp(category_name,"\0")==0) 
             || (strcmp(component_name,"\0")==0)  || (tempstr != NULL) 
             || (!check_alphanumeric_underscore_format(region_name)) 
@@ -335,12 +336,28 @@ static void util_add_to_callback_map(FTBC_comp_info_t *comp_info, const FTB_even
 {
     FTBC_callback_entry_t *entry = (FTBC_callback_entry_t *)malloc(sizeof(FTBC_callback_entry_t));
     entry->mask = (FTB_event_t *)malloc(sizeof(FTB_event_t));
+
     memcpy(entry->mask, event, sizeof(FTB_event_t));
     entry->callback = callback;
     entry->arg = arg;
     lock_component(comp_info);
     FTBU_map_insert(comp_info->callback_map, FTBU_MAP_PTR_KEY(entry->mask), (void *)entry);
     unlock_component(comp_info);
+}
+
+static void util_remove_from_callback_map(FTBC_comp_info_t *comp_info, const FTB_event_t *event)
+{
+    FTBC_callback_entry_t *entry = (FTBC_callback_entry_t *)malloc(sizeof(FTBC_callback_entry_t));
+    entry->mask = (FTB_event_t *)malloc(sizeof(FTB_event_t));
+    int ret = 0;
+
+    memcpy(entry->mask, event, sizeof(FTB_event_t));
+    lock_component(comp_info);
+    ret = FTBU_map_remove_key(comp_info->callback_map, FTBU_MAP_PTR_KEY(entry->mask));
+    unlock_component(comp_info);
+    // The key should be found! If the subscribe handle's subscription_event
+    // was invalid, it should have been caught before
+    //if (ret == FTBU_NOT_EXIST) return FTB_ERR_INVALID_HANDLE;
 }
 
 static void util_handle_FTBM_msg(FTBM_msg_t* msg)
@@ -656,7 +673,7 @@ int FTBC_Subscribe_with_polling(FTB_subscribe_handle_t *subscribe_handle, FTB_cl
 
     if (subscribe_handle == NULL) 
         return FTB_ERR_NULL_POINTER;
-    
+
     FTB_INFO("FTBC_Subscribe_with_polling In");
 
     LOOKUP_COMP_INFO(client_handle, comp_info);
@@ -674,6 +691,8 @@ int FTBC_Subscribe_with_polling(FTB_subscribe_handle_t *subscribe_handle, FTB_cl
     FTBM_Get_parent_location_id(&msg.dst.location_id);
     memcpy(&subscribe_handle->client_handle, &client_handle, sizeof(FTB_client_handle_t));
     memcpy(&subscribe_handle->subscription_event, subscription_event, sizeof(FTB_event_t));
+    subscribe_handle->subscription_type = FTB_SUBSCRIPTION_POLLING;
+    subscribe_handle->valid = 1;
     ret = FTBM_Send(&msg);
 
     FTB_INFO("FTBC_Subscribe_with_polling Out");
@@ -708,6 +727,8 @@ int FTBC_Subscribe_with_callback(FTB_subscribe_handle_t *subscribe_handle, FTB_c
     FTBM_Get_parent_location_id(&msg.dst.location_id);
     memcpy(&subscribe_handle->client_handle, &client_handle, sizeof(FTB_client_handle_t));
     memcpy(&subscribe_handle->subscription_event, subscription_event, sizeof(FTB_event_t));
+    subscribe_handle->subscription_type = FTB_SUBSCRIPTION_NOTIFY;
+    subscribe_handle->valid = 1;
     ret = FTBM_Send(&msg);
     FTB_INFO("FTBC_Subscribe_with_callback Out");
     return ret;
@@ -772,6 +793,9 @@ int FTBC_Poll_event(FTB_subscribe_handle_t subscribe_handle, FTB_receive_event_t
 
     if (receive_event == NULL) 
         return FTB_ERR_NULL_POINTER;
+
+    if (subscribe_handle.valid == 0) 
+        return FTB_ERR_INVALID_HANDLE;
     
     memcpy(&client_handle, &subscribe_handle.client_handle, sizeof(FTB_client_handle_t));
     LOOKUP_COMP_INFO(client_handle,comp_info);
@@ -817,7 +841,7 @@ int FTBC_Poll_event(FTB_subscribe_handle_t subscribe_handle, FTB_receive_event_t
         free(entry);
         if (event_found) {
             FTB_INFO("FTBC_Poll_event Out");
-            return FTB_GOT_EVENT;
+            return FTB_SUCCESS;
         }
     }
     
@@ -873,7 +897,7 @@ int FTBC_Poll_event(FTB_subscribe_handle_t subscribe_handle, FTB_receive_event_t
                     //memcpy(temp_src, &entry->src, sizeof(FTB_id_t));
                     unlock_component(comp_info);
                     FTB_INFO("FTBC_Poll_event Out");
-                    return FTB_GOT_EVENT;
+                    return FTB_SUCCESS;
                 }
                 else {
                     unlock_component(comp_info);
@@ -923,7 +947,7 @@ int FTBC_Poll_event(FTB_subscribe_handle_t subscribe_handle, FTB_receive_event_t
                 unlock_component(comp_info);
                 if (event_found) {
                     FTB_INFO("FTBC_Poll_event Out");
-                 return FTB_GOT_EVENT;
+                 return FTB_SUCCESS;
                 }
             }
             FTB_INFO("No events put in my queue, keep polling");
@@ -932,6 +956,36 @@ int FTBC_Poll_event(FTB_subscribe_handle_t subscribe_handle, FTB_receive_event_t
     unlock_component(comp_info);
     FTB_INFO("FTBC_Poll_event Out");
     return FTB_GOT_NO_EVENT;
+}
+
+int FTBC_Unsubscribe(FTB_subscribe_handle_t *subscribe_handle) {
+    FTBC_comp_info_t *comp_info;
+    FTBM_msg_t msg;
+    int ret;
+
+    FTB_INFO("FTBC_Unsubscribe In");
+    LOOKUP_COMP_INFO(subscribe_handle->client_handle, comp_info);
+
+    if ((subscribe_handle == NULL) || (subscribe_handle->valid == 0)) {
+        FTB_INFO("FTBC_Unsubscribe Out");
+        return FTB_ERR_INVALID_HANDLE;
+    }
+
+    if (subscribe_handle->subscription_type & FTB_SUBSCRIPTION_NOTIFY) {
+        //Subscription was registered for callback mechanism
+        util_remove_from_callback_map(comp_info, &subscribe_handle->subscription_event);    
+    }
+    //If Subscription was registered using polling mechanism, so do nothing
+    //for now. Just set the valid attribute for the handle  to 0;
+
+    memcpy(&msg.event, &subscribe_handle->subscription_event, sizeof(FTB_event_t));
+    memcpy(&msg.src, comp_info->id, sizeof(FTB_id_t));
+    msg.msg_type = FTBM_MSG_TYPE_REG_CATCH_CANCEL;
+    FTBM_Get_parent_location_id(&msg.dst.location_id);
+    subscribe_handle->valid = 0;
+    ret = FTBM_Send(&msg);
+    FTB_INFO("FTBC_Unsubscribe Out");
+    return ret;
 }
 
 

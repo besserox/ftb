@@ -38,8 +38,9 @@ int main (int argc, char *argv[])
     }
    
     signal(SIGINT, Int_handler);
-
+    int i =0;
     while(1) {
+        i++;
         ret = 0;
         FTB_receive_event_t caught_event;
 
@@ -52,8 +53,8 @@ int main (int argc, char *argv[])
         sleep(1);
         
         ret = FTB_Poll_event(shandle, &caught_event);
-        if (ret == FTB_GOT_NO_EVENT) {
-            fprintf(stderr,"Watchdog: No event caught!\n");
+        if (ret != FTB_SUCCESS) {
+            fprintf(stderr,"Watchdog: No event caught Error code is %d!\n", ret);
             break;
         }
         printf("Watchdog: Component name=%s Comp category=%s Severity=%s ",
@@ -66,6 +67,12 @@ int main (int argc, char *argv[])
         printf("Watchdog: Location is hostname=%s pid=%d\n", caught_event.incoming_src.hostname, 
                 caught_event.incoming_src.pid);
         sleep(10);
+        if (i == 100) {
+            ret = FTB_Unsubscribe(&shandle);
+            if (ret != FTB_SUCCESS) {
+                printf("Didnt get a success\n");
+            }
+        }
         if (done)
             break;
     }

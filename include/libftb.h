@@ -14,11 +14,16 @@ int FTB_Publish(FTB_client_handle_t client_handle, const char *event_name, const
 
 int FTB_Subscribe(FTB_subscribe_handle_t *subscribe_handle, FTB_client_handle_t client_handle, const char *subscription_str, int (*callback)(FTB_receive_event_t *, void*), void *arg);
 
+/* The subscribe_handle is set to NULL, if the function call returns
+ * successfully 
+ */
+int FTB_Unsubscribe(FTB_subscribe_handle_t *subscribe_handle);
+
 int FTB_Register_publishable_events(FTB_client_handle_t handle, FTB_event_info_t  *einfo, int num_events);
 
 int FTB_Poll_event(FTB_subscribe_handle_t shandle, FTB_receive_event_t *receive_event);
 
-int FTB_Disconnect(FTB_client_handle_t handle);
+int FTB_Disconnect(FTB_client_handle_t client_handle);
 
 /*
  *    FTB_Add_dynamic_tag, FTB_Remove_dynamic_tag, & FTB_Read_dynamic_tag

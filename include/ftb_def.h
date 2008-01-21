@@ -198,6 +198,8 @@ typedef struct FTB_event_mask {
 typedef struct FTB_subscribe_handle {
     FTB_client_handle_t client_handle;
     FTB_event_t subscription_event;
+    uint8_t subscription_type;
+    uint8_t valid;
 }FTB_subscribe_handle_t;
 
 typedef struct FTB_event_info {

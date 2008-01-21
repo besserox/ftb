@@ -103,6 +103,7 @@ int Comp2_Func()
     FTB_receive_event_t evt;
     FTB_event_handle_t ehandle;
     int ret = 0;
+    static int count=0;
 
     Comp3_Func();
     while(1) {
@@ -110,15 +111,23 @@ int Comp2_Func()
        if (ret == FTB_GOT_NO_EVENT) {
            break;
        }
-       printf("Comp2 caught event: comp_cat: %s, comp %s, severity: %s, event_name %s, ",
-            evt.comp_cat, evt.comp, evt.severity, evt.event_name);
+       count++;
+       printf("Comp2 caught event: comp_cat: %s, comp %s, severity: %s, event_name %s, count=%d ++++++++++++++ ",
+            evt.comp_cat, evt.comp, evt.severity, evt.event_name, count);
        printf("from host %s, pid %d \n",
            evt.incoming_src.hostname, evt.incoming_src.pid);
+        if (count == 2) {
+            ret = FTB_Unsubscribe(&shandle3);
+            if (ret != FTB_SUCCESS) {
+                printf("Return value is bnot success\n");
+                exit(-1);
+            }
+            else printf("************************\n");
+        }
     }
 
     printf("Comp2: FTB_Publish\n");
     FTB_Publish(Comp2_ftb_handle, "TEST_EVENT_2", NULL, &ehandle);
-
     return 0;
 }
 
@@ -212,7 +221,7 @@ int main (int argc, char *argv[])
 
     Comp1_Init();
 
-    for (i=0;i<20;i++) {
+    for (i=0;i<40;i++) {
         Comp1_Func();
     }
 
