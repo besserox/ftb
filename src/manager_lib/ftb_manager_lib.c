@@ -95,7 +95,7 @@ static void FTBMI_util_reg_propagation(int msg_type, const FTB_event_t *event, c
     FTBM_msg_t msg;
     int ret;
     FTBU_map_iterator_t iter_comp;
-
+    FTB_INFO("In FTBMI_util_reg_propagation with msg_type = %d\n", msg_type);
     msg.msg_type = msg_type;
     memcpy(&msg.src, &FTBMI_info.self, sizeof(FTB_id_t));
     memcpy(&msg.event,event,sizeof(FTB_event_t));
@@ -113,9 +113,11 @@ static void FTBMI_util_reg_propagation(int msg_type, const FTB_event_t *event, c
         memcpy(&msg.dst,id,sizeof(FTB_id_t));
         ret = FTBN_Send_msg(&msg);
         if (ret != FTB_SUCCESS) {
+            FTB_INFO("Out FTBMI_util_reg_propagation\n");
             FTB_WARNING("FTBN_Send_msg failed");
         }
     }
+    FTB_INFO("Out FTBMI_util_reg_propagation\n");
 }
 
 static void FTBMI_util_remove_com_from_catch_map(const FTBMI_comp_info_t *comp, const FTB_event_t *mask)

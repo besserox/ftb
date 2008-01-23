@@ -29,7 +29,6 @@ int FTBU_match_mask(const FTB_event_t *event, const FTB_event_t *mask)
              (strcasecmp(mask->hostname, "ALL") == 0))) {
                 if (strcasecmp(mask->event_name, "ALL") != 0) {
                     if (strcasecmp(event->event_name, mask->event_name) == 0) {
-                        printf("event name is a match\n");
                         return 1;
                     }
                 }
@@ -40,7 +39,6 @@ int FTBU_match_mask(const FTB_event_t *event, const FTB_event_t *mask)
                         (strcasecmp(mask->comp_cat, "ALL") == 0)) &&
                         ((strcasecmp(event->comp, mask->comp) == 0) || 
                         (strcasecmp(mask->comp, "ALL") == 0))) {
-                            printf ("Its a match\n");
                             return 1;
                     }
                 }
@@ -89,8 +87,9 @@ int FTBU_is_equal_clienthandle(const FTB_client_handle_t *lhs, const FTB_client_
             && (lhs->ext == rhs->ext)) {
         return 1;
     }
-    else 
+    else { 
         return 0;
+    }
 }
 
 #define FTB_BOOTSTRAP_UTIL_MAX_STR_LEN  128

@@ -169,7 +169,6 @@ int FTBCI_split_namespace(const char *event_space, char *region_name, char *cate
     str=strsep(&tempstr,"."); strcpy(region_name,str);
     str=strsep(&tempstr,"."); strcpy(category_name,str);
     str=strsep(&tempstr,"."); strcpy(component_name,str);
-    printf("region = %s, category=%s and component = %s\n", region_name, category_name, component_name);
     if ((strcmp(region_name,"\0")==0) || (strcmp(category_name,"\0")==0) 
             || (strcmp(component_name,"\0")==0)  || (tempstr != NULL) 
             || (!check_alphanumeric_underscore_format(region_name)) 
@@ -294,7 +293,6 @@ int FTBCI_parse_subscription_string(const char *subscription_str, FTB_event_t *s
             return FTB_ERR_SUBSCRIPTION_STR;
         else 
             rhs[i] = trim_string(rhs[i]);
-        printf("tempstr=%s, pairs=%s, lhs=%s and rhs=%s\n", tempstr, pairs[i], lhs[i], rhs[i]);
         if ((strlen(lhs[i]) == 0) || (strlen(rhs[i]) == 0) 
                 || (pairs[i] != NULL))
             return FTB_ERR_SUBSCRIPTION_STR;
@@ -363,9 +361,11 @@ int FTBCI_populate_hashtable_with_events(const char *comp_cat, const char *comp,
         if (!FTBCI_check_severity_values(event_table[i].severity)) {
             return FTB_ERR_INVALID_FIELD;
         }
-        char *event_key = (char *)malloc(sizeof(FTB_eventspace_t) + sizeof(FTB_event_name_t) + 2); //NOTE: currently namespace has the region name portion
+        char *event_key = (char *)malloc(sizeof(FTB_eventspace_t) + sizeof(FTB_event_name_t) + 2);
         event_entry = (FTBCI_publish_event_entry_t *)malloc(sizeof(FTBCI_publish_event_entry_t));
         concatenate_strings(event_key, comp_cat, "_", comp, "_", event_table[i].event_name, NULL);
+        int j=0;
+        for (j=0; j<strlen(event_key); j++) event_key[j]=toupper(event_key[j]);
         if (FTBCI_search_hash(event_key) != NULL) {
             FTB_INFO("Out FTBCI_populate_hashtable_with_events\n");
             return FTB_ERR_DUP_EVENT;
@@ -374,7 +374,6 @@ int FTBCI_populate_hashtable_with_events(const char *comp_cat, const char *comp,
         strcpy(event_entry->comp_cat, comp_cat);
         strcpy(event_entry->comp, comp);
         strcpy(event_entry->severity, event_table[i].severity);
-        printf("Event key is %s\n", event_key);
         event.key = event_key;
         event.data = event_entry;
         FTBCI_lock_client_lib();
@@ -386,19 +385,18 @@ int FTBCI_populate_hashtable_with_events(const char *comp_cat, const char *comp,
     return 0;
 }
 
-int FTBCI_get_event_by_name(const char *event_name_key, FTB_event_t *e) 
+int FTBCI_get_event_by_name(const char *key, FTB_event_t *e) 
 {
     ENTRY *found_event;
+    char *event_name_key = (char *)malloc(strlen(key)+1);
+    int j=0;
+    for (j=0; j<=strlen(key); j++) event_name_key[j]=toupper(key[j]);
     FTB_INFO("In function FTBCI_get_event_by_name with event_name_key=%s\n", event_name_key);
     if ((found_event = FTBCI_search_hash(event_name_key)) != NULL) {
         strcpy(e->event_name, ((FTBCI_publish_event_entry_t *)found_event->data)->event_name);
         strcpy(e->severity, ((FTBCI_publish_event_entry_t  *)found_event->data)->severity);
         strcpy(e->comp_cat, ((FTBCI_publish_event_entry_t  *)found_event->data)->comp_cat);
         strcpy(e->comp, ((FTBCI_publish_event_entry_t  *)found_event->data)->comp);
-        printf ("event->severity=%s\n", e->severity);
-        printf ("event->comp_cat=%s\n", e->comp_cat);
-        printf ("event->comp=%s\n", e->comp);
-        printf ("event->event_name=%s\n", e->event_name);
     }   
     else {
         FTB_INFO("Out function FTBCI_get_event_by_name with an error\n");
@@ -445,11 +443,10 @@ static void FTBCI_util_remove_from_callback_map(FTBCI_client_info_t *client_info
 {
     FTBCI_callback_entry_t *entry = (FTBCI_callback_entry_t *)malloc(sizeof(FTBCI_callback_entry_t));
     entry->mask = (FTB_event_t *)malloc(sizeof(FTB_event_t));
-    int ret = 0;
 
     memcpy(entry->mask, event, sizeof(FTB_event_t));
     FTBCI_lock_client(client_info);
-    ret = FTBU_map_remove_key(client_info->callback_map, FTBU_MAP_PTR_KEY(entry->mask));
+    FTBU_map_remove_key(client_info->callback_map, FTBU_MAP_PTR_KEY(entry->mask));
     FTBCI_unlock_client(client_info);
     // The key should be found! If the subscribe handle's subscription_event
     // was invalid, it should have been caught before
@@ -801,17 +798,19 @@ int FTBC_Subscribe_with_polling(FTB_subscribe_handle_t *subscribe_handle, FTB_cl
         return FTB_ERR_NOT_SUPPORTED;
     }
 
+
     if ((ret = FTBCI_parse_subscription_string(subscription_str, subscription_event)) != FTB_SUCCESS)
         return ret;
+
+    memcpy(&subscribe_handle->client_handle, &client_handle, sizeof(FTB_client_handle_t));
+    memcpy(&subscribe_handle->subscription_event, subscription_event, sizeof(FTB_event_t));
+    subscribe_handle->subscription_type = FTB_SUBSCRIPTION_POLLING;
+    subscribe_handle->valid = 1;
 
     memcpy(&msg.event, subscription_event, sizeof(FTB_event_t));
     memcpy(&msg.src, client_info->id, sizeof(FTB_id_t));
     msg.msg_type =  FTBM_MSG_TYPE_REG_SUBSCRIPTION;
     FTBM_Get_parent_location_id(&msg.dst.location_id);
-    memcpy(&subscribe_handle->client_handle, &client_handle, sizeof(FTB_client_handle_t));
-    memcpy(&subscribe_handle->subscription_event, subscription_event, sizeof(FTB_event_t));
-    subscribe_handle->subscription_type = FTB_SUBSCRIPTION_POLLING;
-    subscribe_handle->valid = 1;
     ret = FTBM_Send(&msg);
 
     FTB_INFO("FTBC_Subscribe_with_polling Out");
@@ -838,16 +837,19 @@ int FTBC_Subscribe_with_callback(FTB_subscribe_handle_t *subscribe_handle, FTB_c
     if ((ret = FTBCI_parse_subscription_string(subscription_str, subscription_event)) != FTB_SUCCESS)
         return ret;
 
+    //Set the subscribe_handle to correct parameters in case the arg for
+    //callback is using the subscribe handle itself
+    memcpy(&subscribe_handle->client_handle, &client_handle, sizeof(FTB_client_handle_t));
+    memcpy(&subscribe_handle->subscription_event, subscription_event, sizeof(FTB_event_t));
+    subscribe_handle->subscription_type = FTB_SUBSCRIPTION_NOTIFY;
+    subscribe_handle->valid = 1;
+
     FTBCI_util_add_to_callback_map(client_info, subscription_event, callback, arg);
 
     memcpy(&msg.event, subscription_event, sizeof(FTB_event_t));
     memcpy(&msg.src, client_info->id, sizeof(FTB_id_t));
     msg.msg_type =  FTBM_MSG_TYPE_REG_SUBSCRIPTION;
     FTBM_Get_parent_location_id(&msg.dst.location_id);
-    memcpy(&subscribe_handle->client_handle, &client_handle, sizeof(FTB_client_handle_t));
-    memcpy(&subscribe_handle->subscription_event, subscription_event, sizeof(FTB_event_t));
-    subscribe_handle->subscription_type = FTB_SUBSCRIPTION_NOTIFY;
-    subscribe_handle->valid = 1;
     ret = FTBM_Send(&msg);
     FTB_INFO("FTBC_Subscribe_with_callback Out");
     return ret;
@@ -867,8 +869,6 @@ int FTBC_Publish(FTB_client_handle_t handle, const char *event_name,  const FTB_
     FTBCI_LOOKUP_CLIENT_INFO(handle,client_info);
 
     concatenate_strings(event_key, client_info->id->client_id.comp_cat, "_", client_info->id->client_id.comp, "_", event_name, NULL);
-    printf("event_key is %s\n", event_key);
-
     ret = FTBCI_get_event_by_name(event_key, &msg.event);
     if (ret != FTB_SUCCESS) {
         FTB_INFO("FTBC_Publish Out with an error");
@@ -1097,19 +1097,21 @@ int FTBC_Unsubscribe(FTB_subscribe_handle_t *subscribe_handle) {
         return FTB_ERR_INVALID_HANDLE;
     }
 
-    if (subscribe_handle->subscription_type & FTB_SUBSCRIPTION_NOTIFY) {
-        //Subscription was registered for callback mechanism
-        FTBCI_util_remove_from_callback_map(client_info, &subscribe_handle->subscription_event);    
-    }
-    //If Subscription was registered using polling mechanism, so do nothing
-    //for now. Just set the valid attribute for the handle  to 0;
-
     memcpy(&msg.event, &subscribe_handle->subscription_event, sizeof(FTB_event_t));
     memcpy(&msg.src, client_info->id, sizeof(FTB_id_t));
     msg.msg_type = FTBM_MSG_TYPE_SUBSCRIPTION_CANCEL;
     FTBM_Get_parent_location_id(&msg.dst.location_id);
     subscribe_handle->valid = 0;
     ret = FTBM_Send(&msg);
+    if (ret != FTB_SUCCESS) return ret;
+
+    if (subscribe_handle->subscription_type & FTB_SUBSCRIPTION_NOTIFY) {
+        //Subscription was registered for callback mechanism
+        FTBCI_util_remove_from_callback_map(client_info, &subscribe_handle->subscription_event);    
+    }
+    //Nothing needs to be done if subscription was registered using polling mechanism. Only the
+    //subscribe_handle->valid needs to be set to 0
+
     FTB_INFO("FTBC_Unsubscribe Out");
     return ret;
 }
