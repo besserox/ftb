@@ -38,10 +38,14 @@ int main (int argc, char *argv[])
         printf("FTB_Connect is not successful ret=%d\n", ret);
         exit(-1);
     }
-    
-    //printf("FTB_Register_publishbale_events\n");
-    //FTB_Register_publishable_events(handle, ftb_mpi_mpi_example_events, FTB_MPI_MPI_EXAMPLE_TOTAL_EVENTS);
 
+    FTB_event_info_t event_info[1] = {{"MPI_SIMPLE_EVENT", "INFO"}};
+   /printf("FTB_Declare_publishable_events\n");
+    ret = FTB_Declare_publishable_events(handle, 0, event_info, 1); 
+    if (ret != FTB_SUCCESS) {
+        printf("FTB_Declare_publishable_events failed ret=%d!\n", ret); exit(-1);
+    }   
+    
     MPI_Init(&argc, &argv);
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     MPI_Comm_size(MPI_COMM_WORLD, &size);

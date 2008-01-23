@@ -12,6 +12,7 @@ int main (int argc, char *argv[])
     FTB_client_t cinfo;
     FTB_client_handle_t handle;
     FTB_event_handle_t ehandle;
+    FTB_event_info_t event_info[1] = {{"SIMPLE_EVENT", "INFO"}};
     int ret=0;
     int i;
 
@@ -28,6 +29,11 @@ int main (int argc, char *argv[])
         printf("FTB_Connect did not return a success\n");
             exit(-1);
     }
+
+     ret = FTB_Declare_publishable_events(handle, 0, event_info, 1); 
+     if (ret != FTB_SUCCESS) {
+        printf("FTB_Declare_publishable_events failed ret=%d!\n", ret); exit(-1);
+     }   
 
     for (i=0;i<12;i++) {
         printf("FTB_Publish\n");

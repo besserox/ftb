@@ -41,7 +41,7 @@ int main (int argc, char *argv[])
         while(1) {
             printf("FTB_Poll_event\n");
             ret = FTB_Poll_event(shandle, &event);
-            if (ret == FTB_GOT_EVENT) {
+            if (ret == FTB_SUCCESS) {
                 printf("Caught event: comp_cat: %s, comp: %s, severity: %s, event_name: %s\n",
                    event.comp_cat, event.comp, event.severity, event.event_name);
                 printf("From host: %s, pid: %d \n",

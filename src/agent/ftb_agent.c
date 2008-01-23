@@ -58,40 +58,40 @@ void *progress_loop(void *arg)
             }
             ret = FTBM_Release_comp_list(ids);
         }
-        else if (msg.msg_type == FTBM_MSG_TYPE_COMP_REG) {
-            ret = FTBM_Component_reg(&msg.src);
+        else if (msg.msg_type == FTBM_MSG_TYPE_CLIENT_REG) {
+            ret = FTBM_Client_register(&msg.src);
             if (ret != FTB_SUCCESS) {
-                FTB_WARNING("FTBM_Component_reg failed");
+                FTB_WARNING("FTBM_Client_register failed");
             }
         }
-        else if (msg.msg_type == FTBM_MSG_TYPE_COMP_DEREG) {
-            ret = FTBM_Component_dereg(&msg.src);
+        else if (msg.msg_type ==  FTBM_MSG_TYPE_CLIENT_DEREG) {
+            ret = FTBM_Client_deregister(&msg.src);
             if (ret != FTB_SUCCESS) {
-                FTB_WARNING("FTBM_Component_reg failed");
+                FTB_WARNING("FTBM_Client_register failed");
             }
         }
-        else if (msg.msg_type == FTBM_MSG_TYPE_REG_CATCH) {
-            ret = FTBM_Reg_catch(&msg.src, &msg.event);
+        else if (msg.msg_type ==  FTBM_MSG_TYPE_REG_SUBSCRIPTION) {
+            ret = FTBM_Register_subscription(&msg.src, &msg.event);
             if (ret != FTB_SUCCESS) {
-                FTB_WARNING("FTBM_Reg_catch failed");
+                FTB_WARNING("FTBM_Register_subscription failed");
             }
         }
-        else if (msg.msg_type == FTBM_MSG_TYPE_REG_THROW) {
-            ret = FTBM_Reg_throw(&msg.src, &msg.event);
+        else if (msg.msg_type == FTBM_MSG_TYPE_REG_PUBLISHABLE_EVENT) {
+            ret = FTBM_Register_publishable_event(&msg.src, &msg.event);
             if (ret != FTB_SUCCESS) {
-                FTB_WARNING("FTBM_Reg_throw failed");
+                FTB_WARNING("FTBM_Register_publishable_event failed");
             }
         }
-        else if (msg.msg_type == FTBM_MSG_TYPE_REG_CATCH_CANCEL) {
-            ret = FTBM_Reg_catch_cancel(&msg.src, &msg.event);
+        else if (msg.msg_type == FTBM_MSG_TYPE_SUBSCRIPTION_CANCEL) {
+            ret = FTBM_Cancel_subscription(&msg.src, &msg.event);
             if (ret != FTB_SUCCESS) {
-                FTB_WARNING("FTBM_Reg_catch_cancel failed");
+                FTB_WARNING("FTBM_Cancel_subscription failed");
             }
         }
-        else if (msg.msg_type == FTBM_MSG_TYPE_REG_THROW_CANCEL) {
-            ret = FTBM_Reg_throw_cancel(&msg.src, &msg.event);
+        else if (msg.msg_type == FTBM_MSG_TYPE_PUBLISHABLE_EVENT_REG_CANCEL) {
+            ret = FTBM_Publishable_event_registration_cancel(&msg.src, &msg.event);
             if (ret != FTB_SUCCESS) {
-                FTB_WARNING("FTBM_Reg_throw_cancel failed");
+                FTB_WARNING("FTBM_Publishable_event_registration_cancel failed");
             }
         }
         else {

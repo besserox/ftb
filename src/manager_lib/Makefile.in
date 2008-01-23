@@ -30,29 +30,26 @@ CC=@CC@
 RANLIB=@RANLIB@
 LIBS_PTHREAD=@LIBS_PTHREAD@
 
-all: ftb_network ftb_event_table.o ftb_manager_lib.o libs 
+all: ftb_network ftb_manager_lib.o libs 
 
 CFLAGS = $(CFLAGS_MANAGER) 
 
 libs: $(MANAGER_LIB_PATH_STATIC)/lib$(MANAGER_LIB_NAME).a $(MANAGER_LIB_PATH_SHARED)/lib$(MANAGER_LIB_NAME).so
 
-$(MANAGER_LIB_PATH_SHARED)/lib$(MANAGER_LIB_NAME).so: ftb_network ftb_event_table.o ftb_manager_lib.o
-	$(CC) -shared -o $@ $(UTIL_OBJ) ftb_event_table.o ftb_manager_lib.o ${abs_top_srcdir}/src/manager_lib/network/network_$(network)/*.o
+$(MANAGER_LIB_PATH_SHARED)/lib$(MANAGER_LIB_NAME).so: ftb_network ftb_manager_lib.o
+	$(CC) -shared -o $@ $(UTIL_OBJ) ftb_manager_lib.o ${abs_top_srcdir}/src/manager_lib/network/network_$(network)/*.o
 
-$(MANAGER_LIB_PATH_STATIC)/lib$(MANAGER_LIB_NAME).a: ftb_network ftb_event_table.o ftb_manager_lib.o
-	$(AR) -rc $@ $(UTIL_OBJ) ftb_event_table.o ftb_manager_lib.o ${abs_top_srcdir}/src/manager_lib/network/network_$(network)/*.o
+$(MANAGER_LIB_PATH_STATIC)/lib$(MANAGER_LIB_NAME).a: ftb_network ftb_manager_lib.o
+	$(AR) -rc $@ $(UTIL_OBJ) ftb_manager_lib.o ${abs_top_srcdir}/src/manager_lib/network/network_$(network)/*.o
 	$(RANLIB) $@
 
 clean:
 	rm -f $(MANAGER_LIB_PATH_STATIC)/lib$(MANAGER_LIB_NAME).a $(MANAGER_LIB_PATH_SHARED)/lib$(MANAGER_LIB_NAME).so 
-	rm -f ftb_manager_lib.o ftb_event_table.o
+	rm -f ftb_manager_lib.o 
 #(cd network/network_$(network) && $(MAKE) clean)
 	$(MAKE) -C network/network_$(network) clean
 
 ftb_manager_lib.o: ftb_manager_lib.c
-	$(CC) $(CFLAGS) -c $<
-
-ftb_event_table.o: ftb_event_table.c
 	$(CC) $(CFLAGS) -c $<
 
 ftb_network:

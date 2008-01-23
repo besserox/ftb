@@ -18,6 +18,7 @@ int main (int argc, char *argv[])
     FTB_subscribe_handle_t shandle;
     FTB_event_handle_t ehandle;
     int ret = 0;
+    FTB_event_info_t event_info[1] = {{"WATCH_DOG_EVENT", "INFO"}};
 
     /* Create namespace and other attributes before calling FTB_Connect */
     strcpy(cinfo.event_space, "FTB.FTB_EXAMPLES.Watchdog");
@@ -37,6 +38,11 @@ int main (int argc, char *argv[])
         printf("FTB_Subscribe failed ret=%d!\n", ret); exit(-1);
     }
    
+    ret = FTB_Declare_publishable_events(handle, 0, event_info, 1);
+    if (ret != FTB_SUCCESS) {
+        printf("FTB_Declare_publishable_events failed ret=%d!\n", ret); exit(-1);
+    }
+
     signal(SIGINT, Int_handler);
     int i =0;
     while(1) {

@@ -11,14 +11,14 @@ extern "C" {
 #define FTBM_MSG_TYPE_NOTIFY                     0x01
 
 /*Component registration/deregistration, only src field is valid*/
-#define FTBM_MSG_TYPE_COMP_REG                   0x11
-#define FTBM_MSG_TYPE_COMP_DEREG                 0x12
+#define FTBM_MSG_TYPE_CLIENT_REG                   0x11
+#define FTBM_MSG_TYPE_CLIENT_DEREG                 0x12
 
 /*Control messages, treat the event as eventmask*/
-#define FTBM_MSG_TYPE_REG_THROW                  0x21
-#define FTBM_MSG_TYPE_REG_CATCH                  0x22
-#define FTBM_MSG_TYPE_REG_THROW_CANCEL           0x23
-#define FTBM_MSG_TYPE_REG_CATCH_CANCEL           0x24
+#define FTBM_MSG_TYPE_REG_PUBLISHABLE_EVENT         0x21
+#define FTBM_MSG_TYPE_REG_SUBSCRIPTION              0x22
+#define FTBM_MSG_TYPE_PUBLISHABLE_EVENT_REG_CANCEL  0x23
+#define FTBM_MSG_TYPE_SUBSCRIPTION_CANCEL           0x24
 
 typedef struct FTBM_msg {
     int msg_type;
@@ -37,9 +37,9 @@ int FTBM_Get_location_id(FTB_location_id_t *location_id);
 
 int FTBM_Get_parent_location_id(FTB_location_id_t *location_id);
 
-int FTBM_Component_reg(const FTB_id_t *id);
+int FTBM_Client_register(const FTB_id_t *id);
    
-int FTBM_Component_dereg(const FTB_id_t *id);
+int FTBM_Client_deregister(const FTB_id_t *id);
 
 /*
 Communication calls
@@ -54,13 +54,13 @@ int FTBM_Wait(FTBM_msg_t *msg, FTB_location_id_t *incoming_src);
 /*
 Local book-keeping
 */
-int FTBM_Reg_throw(const FTB_id_t *id, FTB_event_t *event);
+int FTBM_Register_subscription(const FTB_id_t *id, FTB_event_t *event);
 
-int FTBM_Reg_catch(const FTB_id_t *id, FTB_event_t *event);
+int FTBM_Cancel_subscription(const FTB_id_t *id, FTB_event_t *event);
 
-int FTBM_Reg_throw_cancel(const FTB_id_t *id, FTB_event_t *event);
+int FTBM_Register_publishable_event(const FTB_id_t *id, FTB_event_t *event);
 
-int FTBM_Reg_catch_cancel(const FTB_id_t *id, FTB_event_t *event);
+int FTBM_Publishable_event_registration_cancel(const FTB_id_t *id, FTB_event_t *event);
 
 int FTBM_Get_catcher_comp_list(const FTB_event_t *event, FTB_id_t **list, int *len);
 

@@ -47,8 +47,6 @@ clean:
 	rm -f .event_def .config_def
 	rm -rf @TEMPSBIN@;
 	rm -rf @TEMPLIB@;
-#if [ -e @abs_top_srcdir@/include/ftb_throw_events.h ]; then \
-#	rm @abs_top_srcdir@/include/ftb_throw_events.h; fi
 
 ftb: 
 	if [ ! -e @TEMPSBIN@ ]; then mkdir @TEMPSBIN@; fi				

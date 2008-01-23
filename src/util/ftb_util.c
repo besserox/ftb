@@ -28,8 +28,10 @@ int FTBU_match_mask(const FTB_event_t *event, const FTB_event_t *mask)
             ((strcasecmp(event->hostname, mask->hostname) == 0) ||
              (strcasecmp(mask->hostname, "ALL") == 0))) {
                 if (strcasecmp(mask->event_name, "ALL") != 0) {
-                    if (strcasecmp(event->event_name, mask->event_name) == 0) 
+                    if (strcasecmp(event->event_name, mask->event_name) == 0) {
+                        printf("event name is a match\n");
                         return 1;
+                    }
                 }
                 else {
                     if (((strcasecmp(event->severity, mask->severity) == 0) || 

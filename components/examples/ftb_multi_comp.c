@@ -22,8 +22,8 @@ int Comp3_Init()
 {
     int ret = 0;
     FTB_client_t cinfo;
+    FTB_event_info_t event_info[1] = {{"TEST_EVENT_3", "INFO"}};
     
-
     strcpy(cinfo.event_space, "FTB.FTB_EXAMPLES.MULTICOMP_COMP3");
     strcpy(cinfo.client_schema_ver, "0.5");
     strcpy(cinfo.client_name, "");
@@ -37,7 +37,11 @@ int Comp3_Init()
         exit(-1);
     }
 
-    
+    ret = FTB_Declare_publishable_events(Comp3_ftb_handle, 0, event_info, 1); 
+    if (ret != FTB_SUCCESS) {
+        printf("FTB_Declare_publishable_events failed ret=%d!\n", ret); exit(-1);
+    }   
+
     printf("Comp3: FTB_Subscribe \n");
     ret = FTB_Subscribe(&shandle3, Comp3_ftb_handle, "severity=info", Comp3_evt_handler, NULL);
     if (ret != FTB_SUCCESS) {
@@ -72,6 +76,7 @@ FTB_subscribe_handle_t shandle2;
 int Comp2_Init()
 {
     FTB_client_t cinfo;
+    FTB_event_info_t event_info[1] = {{"TEST_EVENT_2", "INFO"}};
     int ret = 0;
 
     printf("Comp2: FTB_Connect\n");
@@ -86,6 +91,11 @@ int Comp2_Init()
         printf("FTB_Connect failed\n");
         exit(-1);
     }
+    
+    ret = FTB_Declare_publishable_events(Comp2_ftb_handle, 0, event_info, 1); 
+    if (ret != FTB_SUCCESS) {
+        printf("FTB_Declare_publishable_events failed ret=%d!\n", ret); exit(-1);
+    }   
     
     printf("Comp2: FTB_Subscribe via polling\n");
     ret = FTB_Subscribe(&shandle2, Comp2_ftb_handle, "event_name=TEST_EVENT_1", NULL, NULL);
@@ -112,7 +122,7 @@ int Comp2_Func()
            break;
        }
        count++;
-       printf("Comp2 caught event: comp_cat: %s, comp %s, severity: %s, event_name %s, count=%d ++++++++++++++ ",
+       printf("Comp2 caught event: comp_cat: %s, comp: %s, severity: %s, event_name %s, count=%d ++++++++++++++ ",
             evt.comp_cat, evt.comp, evt.severity, evt.event_name, count);
        printf("from host %s, pid %d \n",
            evt.incoming_src.hostname, evt.incoming_src.pid);
@@ -160,6 +170,7 @@ int Comp1_evt_handler(FTB_receive_event_t *evt, void *arg)
 int Comp1_Init()
 {
     FTB_client_t cinfo;
+    FTB_event_info_t event_info[1] = {{"TEST_EVENT_1", "INFO"}};
     int ret = 0;
 
     printf("Comp1: FTB_Connect\n");
@@ -175,6 +186,11 @@ int Comp1_Init()
         exit(-1);
     }
     
+    ret = FTB_Declare_publishable_events(Comp1_ftb_handle, 0, event_info, 1); 
+    if (ret != FTB_SUCCESS) {
+        printf("FTB_Declare_publishable_events failed ret=%d!\n", ret); exit(-1);
+    }   
+
     printf("Comp1: FTB_Subscribe \n");
     ret = FTB_Subscribe(&shandle1, Comp1_ftb_handle, "severity=fatal", Comp1_evt_handler, NULL);
     if (ret != FTB_SUCCESS) {

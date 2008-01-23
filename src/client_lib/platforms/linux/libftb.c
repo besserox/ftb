@@ -26,9 +26,9 @@ int FTB_Unsubscribe(FTB_subscribe_handle_t *subscribe_handle) {
     return FTBC_Unsubscribe(subscribe_handle);
 }
 
-int FTB_Register_publishable_events(FTB_client_handle_t handle, FTB_event_info_t  *einfo, int num_events)
+int FTB_Declare_publishable_events(FTB_client_handle_t client_handle, int schema_file, const FTB_event_info_t  *einfo, int num_events)
 {
-    return FTB_SUCCESS;
+    return FTBC_Declare_publishable_events(client_handle, schema_file, einfo, num_events);
 }
 
 int FTB_Poll_event(FTB_subscribe_handle_t subscribe_handle, FTB_receive_event_t *receive_event)

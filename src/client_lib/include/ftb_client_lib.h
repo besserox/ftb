@@ -3,10 +3,13 @@
 
 #include "ftb_manager_lib.h"
 #include "ftb_def.h"
+
 /*
 
 */
 int FTBC_Connect(const FTB_client_t *cinfo, uint8_t extension, FTB_client_handle_t *client_handle);
+
+int FTBC_Declare_publishable_events(FTB_client_handle_t client_handle, int schema_file, const FTB_event_info_t  *einfo, int num_events);
 
 int FTBC_Publish(FTB_client_handle_t client_handle, const char *event_name, const FTB_event_properties_t *event_properties, FTB_event_handle_t *event_handle);
 
