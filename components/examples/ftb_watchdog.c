@@ -15,6 +15,7 @@ int main (int argc, char *argv[])
 {
     FTB_client_t cinfo;
     FTB_client_handle_t handle;
+    FTB_client_handle_t handle1;
     FTB_subscribe_handle_t shandle;
     FTB_event_handle_t ehandle;
     int ret = 0;
@@ -32,7 +33,6 @@ int main (int argc, char *argv[])
         printf("FTB_Connect is not successful ret=%d\n", ret);
         exit(-1);
     }
-
     ret = FTB_Subscribe(&shandle, handle, "event_space=ftb.all.watchdog", NULL, NULL);
     if (ret != FTB_SUCCESS) {
         printf("FTB_Subscribe failed ret=%d!\n", ret); exit(-1);

@@ -6,6 +6,7 @@
 #include <string.h>
 
 #include "ftb_def.h"
+#include "ftb_client_lib_defs.h"
 #include "ftb_manager_lib.h"
 #include "ftb_util.h"
 

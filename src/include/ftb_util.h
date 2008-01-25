@@ -3,6 +3,7 @@
 
 #include <stdio.h>
 #include "ftb_def.h"
+#include "ftb_client_lib_defs.h"
 
 #ifdef __cplusplus
 extern "C" {
