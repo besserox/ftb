@@ -8,11 +8,9 @@ extern FILE* FTBU_log_file_fp;
 
 int FTBU_match_mask(const FTB_event_t *event, const FTB_event_t *mask)
 {  
-    FTB_INFO("In FTBU_match_mask\n"); 
-
+    FTB_INFO("In FTBU_match_mask"); 
     printf ("event->region=%s and mask->region=%s\n", event->region, mask->region);
     printf ("event->client_jobid=%s and mask->client_jobid=%s\n", event->client_jobid, mask->client_jobid);
-    //printf ("event->client_name=%s and mask->client_name=%s\n", event->client_name, mask->client_name);
     printf ("event->hostname=%s and mask->hostname=%s\n", event->hostname, mask->hostname);
     printf ("event->event_name=%s and mask->event_name=%s\n", event->event_name, mask->event_name);
     printf ("event->severity=%s and mask->severity=%s\n", event->severity, mask->severity);
@@ -81,10 +79,10 @@ int FTBU_is_equal_event(const FTB_event_t *lhs, const FTB_event_t *rhs)
 
 int FTBU_is_equal_clienthandle(const FTB_client_handle_t *lhs, const FTB_client_handle_t *rhs)
 {
-    if ((strcasecmp(lhs->comp_cat, rhs->comp_cat) == 0)
-            && (strcasecmp(lhs->comp, rhs->comp) == 0)
-            && (strcasecmp(lhs->client_name, rhs->client_name) == 0)
-            && (lhs->ext == rhs->ext)) {
+    if ((strcasecmp(lhs->client_id.comp_cat, rhs->client_id.comp_cat) == 0)
+            && (strcasecmp(lhs->client_id.comp, rhs->client_id.comp) == 0)
+            && (strcasecmp(lhs->client_id.client_name, rhs->client_id.client_name) == 0)
+            && (lhs->client_id.ext == rhs->client_id.ext)) {
         return 1;
     }
     else { 

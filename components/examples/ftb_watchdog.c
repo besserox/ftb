@@ -33,7 +33,7 @@ int main (int argc, char *argv[])
         exit(-1);
     }
 
-    ret = FTB_Subscribe(&shandle, handle, "", NULL, NULL);
+    ret = FTB_Subscribe(&shandle, handle, "event_space=ftb.all.watchdog", NULL, NULL);
     if (ret != FTB_SUCCESS) {
         printf("FTB_Subscribe failed ret=%d!\n", ret); exit(-1);
     }
@@ -72,13 +72,7 @@ int main (int argc, char *argv[])
                 recv_info.watchdog_id, recv_info.watchdog_name, tag_data_recv);*/
         printf("Watchdog: Location is hostname=%s pid=%d\n", caught_event.incoming_src.hostname, 
                 caught_event.incoming_src.pid);
-        sleep(10);
-        if (i == 100) {
-            ret = FTB_Unsubscribe(&shandle);
-            if (ret != FTB_SUCCESS) {
-                printf("Didnt get a success\n");
-            }
-        }
+        
         if (done)
             break;
     }

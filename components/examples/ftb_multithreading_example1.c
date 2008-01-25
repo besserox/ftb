@@ -24,7 +24,7 @@ int callback_handle_recovery(FTB_receive_event_t *evt, void *arg)
     FTB_subscribe_handle_t *shandle =(FTB_subscribe_handle_t *)arg;
     int ret = 0;
     printf("In callback_handle_recovery function comp_cat=%s comp=%s event_name=%s\n", 
-            shandle->client_handle.comp_cat, shandle->client_handle.comp, 
+            shandle->client_handle.client_id.comp_cat, shandle->client_handle.client_id.comp, 
             shandle->subscription_event.event_name);
     ret = FTB_Unsubscribe(shandle);
     if (ret != FTB_SUCCESS) {
@@ -67,11 +67,10 @@ int main (int argc, char *argv[])
         FTB_Disconnect(handle);
     }
 
-    for (k=0; k<2; k++) {
+    for (k=0; k<3; k++) {
         ret = FTB_Publish(handle, "ExEVENT_memory_errors", NULL, &ehandle);
         if (ret != FTB_SUCCESS) {
             printf("FTB_Publish_event failed with return code=%d\n", ret);
-            FTB_Disconnect(handle);
         }
     }
 

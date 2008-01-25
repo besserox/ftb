@@ -98,7 +98,11 @@ typedef struct FTB_event_properties {
     char event_payload[FTB_MAX_PAYLOAD_DATA];
 }FTB_event_properties_t;
 
-typedef FTB_client_id_t FTB_client_handle_t;
+//typedef FTB_client_id_t FTB_client_handle_t;
+typedef struct FTB_client_handle {
+    int valid;
+    FTB_client_id_t client_id;
+}FTB_client_handle_t;
 
 typedef struct FTB_id {
     FTB_location_id_t location_id;
