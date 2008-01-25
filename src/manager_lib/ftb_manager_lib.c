@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <errno.h>
-#include <error.h>
+//#include <error.h>
 #include <time.h>
 #include <stdlib.h>
 #include <unistd.h>
