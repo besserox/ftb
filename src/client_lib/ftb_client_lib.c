@@ -577,23 +577,19 @@ static void *FTBCI_callback_component(void *arg)
             callback_entry = (FTBCI_callback_entry_t *)FTBU_map_get_data(iter);
             if (FTBU_match_mask(&entry->event_inst, callback_entry->mask))  {
                 /*Make callback*/
-                //(*callback_entry->callback)(&entry->event_inst, &entry->src, callback_entry->arg);
                 FTB_receive_event_t receive_event;
-                strcpy(receive_event.comp_cat, entry->event_inst.comp_cat);
-                strcpy(receive_event.comp, entry->event_inst.comp);
-                strcpy(receive_event.client_name, entry->event_inst.client_name);
-                strcpy(receive_event.severity, entry->event_inst.severity);
+                concatenate_strings(receive_event.event_space, entry->event_inst.region, ".", entry->event_inst.comp_cat, ".", entry->event_inst.comp, NULL);
                 strcpy(receive_event.event_name, entry->event_inst.event_name);
-                strcpy(receive_event.region, entry->event_inst.region);
+                strcpy(receive_event.severity, entry->event_inst.severity);
+                strcpy(receive_event.client_name, entry->event_inst.client_name);
                 strcpy(receive_event.client_jobid, entry->event_inst.client_jobid);
-                strcpy(receive_event.hostname, entry->event_inst.hostname);
+                memcpy(&receive_event.client_extension, &entry->src.client_id.ext, sizeof(int));
                 memcpy(&receive_event.seqnum, &entry->event_inst.seqnum, sizeof(int));
                 memcpy(&receive_event.len, &entry->event_inst.len, sizeof(FTB_tag_len_t));
                 memcpy(&receive_event.event_properties, &entry->event_inst.event_properties, sizeof(FTB_event_properties_t));
                 memcpy(&receive_event.incoming_src, &entry->src.location_id, sizeof(FTB_location_id_t));
                 memcpy(receive_event.dynamic_data, entry->event_inst.dynamic_data,  FTB_MAX_DYNAMIC_DATA_SIZE);
                 (*callback_entry->callback)(&receive_event, callback_entry->arg);
-                //(*callback_entry->callback)((FTB_receive_event_t *)&entry->event_inst, callback_entry->arg);
                 FTBCI_lock_client(client_info);
                 FTBU_list_remove_entry((FTBU_list_node_t *)entry);
                 FTBCI_unlock_client(client_info);
@@ -654,7 +650,7 @@ static void FTBCI_util_finalize_component(FTBCI_client_info_t * client_info)
 }
 
 
-int FTBC_Connect(const FTB_client_t *cinfo, uint8_t extension, FTB_client_handle_t *client_handle)
+int FTBC_Connect(const FTB_client_t *cinfo, int extension, FTB_client_handle_t *client_handle)
 {
     FTBCI_client_info_t *client_info;
     char category_name[FTB_MAX_EVENTSPACE];
@@ -702,7 +698,7 @@ int FTBC_Connect(const FTB_client_t *cinfo, uint8_t extension, FTB_client_handle
     client_info->err_handling = FTB_ERR_HANDLE_NONE;
 
 
-    if (FTBCI_split_namespace(cinfo->event_space, region_name, category_name, component_name)) {
+    if (FTBCI_split_namespace(cinfo->event_space, region_name, category_name, component_name) != FTB_SUCCESS) {
         FTB_WARNING("Invalid namespace format");
         FTB_INFO("FTBC_Connect Out");
         return FTB_ERR_EVENTSPACE_FORMAT;
@@ -710,12 +706,10 @@ int FTBC_Connect(const FTB_client_t *cinfo, uint8_t extension, FTB_client_handle
 
     FTBCI_lock_client_lib();
     if (num_components == 0) {
-        //FTBCI_client_info_map = FTBU_map_init(NULL); /*Since the key: client_handle is uint32_t*/
         FTBCI_client_info_map = FTBU_map_init(FTBCI_util_is_equal_clienthandle);
         FTBCI_tag_map = FTBU_map_init(FTBCI_util_is_equal_tag);
         memset(tag_string,0,FTB_MAX_DYNAMIC_DATA_SIZE);
         FTBCI_hash_init();
-        //FTBCI_populate_hashtable_with_events();
         FTBM_Init(1);
     }
     num_components++;
@@ -723,6 +717,7 @@ int FTBC_Connect(const FTB_client_t *cinfo, uint8_t extension, FTB_client_handle
 
     client_info->id = (FTB_id_t *)malloc(sizeof(FTB_id_t));
     client_info->id->client_id.ext = extension;
+    printf("In CONNECT, extension is %d\n", client_info->id->client_id.ext);
     strcpy(client_info->id->client_id.region, region_name);
     strcpy(client_info->id->client_id.comp_cat, category_name);
     strcpy(client_info->id->client_id.comp, component_name);
@@ -730,7 +725,6 @@ int FTBC_Connect(const FTB_client_t *cinfo, uint8_t extension, FTB_client_handle
         return FTB_ERR_INVALID_VALUE;
     else 
         strcpy(client_info->id->client_id.client_name, cinfo->client_name);
-    //client_info->client_handle = FTB_CLIENT_ID_TO_HANDLE(client_info->id->client_id);
     FTBCI_convert_clientid_to_clienthandle(client_info->id->client_id, &client_info->client_handle);
     *client_handle = client_info->client_handle;
     
@@ -779,7 +773,6 @@ int FTBC_Connect(const FTB_client_t *cinfo, uint8_t extension, FTB_client_handle
         client_info->callback_map = NULL;
     }
     FTBCI_lock_client_lib();
-    //if (FTBU_map_insert(FTBCI_client_info_map,FTBU_MAP_UINT_KEY(client_info->client_handle), (void *)client_info)==FTBU_EXIST) {
     if (FTBU_map_insert(FTBCI_client_info_map, FTBU_MAP_PTR_KEY(&client_info->client_handle), (void *)client_info)==FTBU_EXIST) {
         FTB_WARNING("This component has already been registered");
         FTB_INFO("FTBC_Connect Out");
@@ -1014,6 +1007,48 @@ int FTBC_Subscribe_with_callback(FTB_subscribe_handle_t *subscribe_handle, FTB_c
     return ret;
 }
 
+int FTBC_Get_event_handle(const FTB_receive_event_t receive_event, FTB_event_handle_t *event_handle)
+{
+    int ret;
+
+    FTB_INFO("FTBC_Get_event_handle In");
+    if ((ret = FTBCI_split_namespace(receive_event.event_space, event_handle->client_id.region, event_handle->client_id.comp_cat, event_handle->client_id.comp)) != FTB_SUCCESS) {
+        return ret;
+    }
+
+    printf("receive_event.event_space=%s, event_handle->client_id.region=%s, event_handle->client_id.comp_cat=%s and  event_handle->client_id.comp=%s\n", receive_event.event_space, event_handle->client_id.region, event_handle->client_id.comp_cat, event_handle->client_id.comp);
+    strcpy(event_handle->client_id.client_name , receive_event.client_name);
+    event_handle->client_id.ext = receive_event.client_extension;
+    strcpy(event_handle->location_id.hostname, receive_event.incoming_src.hostname);
+    memcpy(&event_handle->location_id.pid, &receive_event.incoming_src.pid, sizeof(pid_t));
+    strcpy(event_handle->event_name, receive_event.event_name);
+    strcpy(event_handle->severity, receive_event.severity);
+    event_handle->seqnum = receive_event.seqnum;
+    FTB_INFO("FTBC_Get_event_handle Out");
+    return FTB_SUCCESS;
+}
+
+int FTBC_Compare_event_handles(const FTB_event_handle_t event_handle1, const FTB_event_handle_t event_handle2)
+{
+    if ((strcasecmp(event_handle1.client_id.region, event_handle2.client_id.region) == 0)
+            && (strcasecmp(event_handle1.client_id.comp_cat, event_handle2.client_id.comp_cat) == 0)
+            && (strcasecmp(event_handle1.client_id.comp, event_handle2.client_id.comp) == 0)
+            && (strcasecmp(event_handle1.client_id.client_name, event_handle2.client_id.client_name) == 0)
+            && (event_handle1.client_id.ext == event_handle2.client_id.ext)
+            && (strcasecmp(event_handle1.location_id.hostname, event_handle2.location_id.hostname) == 0)
+            && (event_handle1.location_id.pid == event_handle2.location_id.pid)
+            && (strcasecmp(event_handle1.event_name, event_handle2.event_name) == 0)
+            && (strcasecmp(event_handle1.severity, event_handle2.severity) == 0)
+            && (event_handle1.seqnum == event_handle2.seqnum)) {
+        FTB_INFO("FTBC_Compare_event_handles In");
+        return FTB_SUCCESS;
+    }
+    else {
+        FTB_INFO("FTBC_Compare_event_handles Out");
+        return FTB_FAILURE;
+    }
+}
+
 int FTBC_Publish(FTB_client_handle_t client_handle, const char *event_name,  const FTB_event_properties_t *event_properties, FTB_event_handle_t *event_handle)
 {
     FTBM_msg_t msg;
@@ -1044,7 +1079,7 @@ int FTBC_Publish(FTB_client_handle_t client_handle, const char *event_name,  con
     FTBCI_lock_client_lib();
     memcpy(&msg.event.dynamic_data, tag_string, FTB_MAX_DYNAMIC_DATA_SIZE);
     FTBCI_unlock_client_lib();
-   
+ 
     memcpy(&msg.src, client_info->id, sizeof(FTB_id_t));
     if (event_properties == NULL) {
         event_properties = (FTB_event_properties_t*)malloc(sizeof(FTB_event_properties_t));
@@ -1061,18 +1096,25 @@ int FTBC_Publish(FTB_client_handle_t client_handle, const char *event_name,  con
     strcpy(msg.event.client_jobid, client_info->jobid);
     msg.event.seqnum=client_info->seqnum;
     msg.msg_type = FTBM_MSG_TYPE_NOTIFY;
+    if (event_handle == NULL)  {
+        FTB_INFO("FTBC_Publish Out");
+        return FTB_ERR_NULL_POINTER;
+    }
+    else {
+        strcpy(event_handle->client_id.region , msg.event.region);
+        strcpy(event_handle->client_id.comp_cat , msg.event.comp_cat);
+        strcpy(event_handle->client_id.comp , msg.event.comp);
+        strcpy(event_handle->client_id.client_name , msg.event.client_name);
+        event_handle->client_id.ext = msg.src.client_id.ext;
+        strcpy(event_handle->location_id.hostname, msg.src.location_id.hostname);
+        memcpy(&event_handle->location_id.pid, &msg.src.location_id.pid, sizeof(pid_t));
+        strcpy(event_handle->event_name, msg.event.event_name);
+        strcpy(event_handle->severity, msg.event.severity);
+        event_handle->seqnum = msg.event.seqnum;
+    }
     FTBM_Get_parent_location_id(&msg.dst.location_id);
     ret = FTBM_Send(&msg);
-    //qs: create the event handle and return it to use. FTB does not need
-    //the event handle in anyway.
-    /* 
-    if (event_handle == NULL) 
-        return FTB_ERR_NULL_POINTER;
-    else {
-        memcpy(event_handle->id, client_info->id,sizeof(FTB_id_t));
-        event_handle->seqnum = client_info->seqnum;
-    }*/
-    event_handle = NULL; //Qs: Remove this
+
     FTB_INFO("FTBC_Publish Out");
     return ret;
 }
@@ -1112,14 +1154,12 @@ int FTBC_Poll_event(FTB_subscribe_handle_t subscribe_handle, FTB_receive_event_t
         do { 
             if (FTBU_match_mask(&entry->event_inst, &subscribe_handle.subscription_event))  {
                 event_found = 1;
-                strcpy(receive_event->comp_cat, entry->event_inst.comp_cat);
-                strcpy(receive_event->comp, entry->event_inst.comp);
-                strcpy(receive_event->client_name, entry->event_inst.client_name);
-                strcpy(receive_event->severity, entry->event_inst.severity);
+                concatenate_strings(receive_event->event_space, entry->event_inst.region, ".", entry->event_inst.comp_cat, ".", entry->event_inst.comp, NULL);
                 strcpy(receive_event->event_name, entry->event_inst.event_name);
-                strcpy(receive_event->region, entry->event_inst.region);
+                strcpy(receive_event->severity, entry->event_inst.severity);
                 strcpy(receive_event->client_jobid, entry->event_inst.client_jobid);
-                strcpy(receive_event->hostname, entry->event_inst.hostname);
+                strcpy(receive_event->client_name, entry->event_inst.client_name);
+                memcpy(&receive_event->client_extension, &entry->src.client_id.ext, sizeof(int));
                 memcpy(&receive_event->seqnum, &entry->event_inst.seqnum, sizeof(int));
                 memcpy(&receive_event->len, &entry->event_inst.len, sizeof(FTB_tag_len_t));
                 memcpy(&receive_event->event_properties, &entry->event_inst.event_properties, sizeof(FTB_event_properties_t));
@@ -1177,16 +1217,12 @@ int FTBC_Poll_event(FTB_subscribe_handle_t subscribe_handle, FTB_receive_event_t
             if (!is_for_callback) {
                 FTB_INFO("Not for callback");
                 if (FTBU_match_mask(&msg.event, &subscribe_handle.subscription_event))  {
-                    
-                    strcpy(receive_event->comp_cat, msg.event.comp_cat);
-                    strcpy(receive_event->comp, msg.event.comp);
-                    strcpy(receive_event->client_name, msg.event.client_name);
-                    strcpy(receive_event->severity, msg.event.severity);
+                    concatenate_strings(receive_event->event_space, msg.event.region, ".", msg.event.comp_cat, ".", msg.event.comp, NULL);
                     strcpy(receive_event->event_name, msg.event.event_name);
-                    strcpy(receive_event->region, msg.event.region);
+                    strcpy(receive_event->severity, msg.event.severity);
                     strcpy(receive_event->client_jobid,  msg.event.client_jobid);
                     strcpy(receive_event->client_name, msg.event.client_name);
-                    strcpy(receive_event->hostname, msg.event.hostname);
+                    memcpy(&receive_event->client_extension, &msg.src.client_id.ext, sizeof(int));
                     memcpy(&receive_event->seqnum, &msg.event.seqnum, sizeof(int));
                     memcpy(&receive_event->len, &msg.event.len, sizeof(FTB_tag_len_t));
                     memcpy(&receive_event->event_properties, &msg.event.event_properties, sizeof(FTB_event_properties_t));
@@ -1216,14 +1252,12 @@ int FTBC_Poll_event(FTB_subscribe_handle_t subscribe_handle, FTB_receive_event_t
                 FTBCI_event_inst_list_t * start = (FTBCI_event_inst_list_t *)client_info->event_queue->next;
                 do { 
                     if (FTBU_match_mask(&entry->event_inst, &subscribe_handle.subscription_event))  {
-                        strcpy(receive_event->comp_cat, entry->event_inst.comp_cat);
-                        strcpy(receive_event->comp, entry->event_inst.comp);
-                        strcpy(receive_event->severity, entry->event_inst.severity);
+                        concatenate_strings(receive_event->event_space, entry->event_inst.region, ".", entry->event_inst.comp_cat, ".", entry->event_inst.comp, NULL);
                         strcpy(receive_event->event_name, entry->event_inst.event_name);
-                        strcpy(receive_event->region, entry->event_inst.region);
+                        strcpy(receive_event->severity, entry->event_inst.severity);
                         strcpy(receive_event->client_jobid, entry->event_inst.client_jobid);
                         strcpy(receive_event->client_name, entry->event_inst.client_name);
-                        strcpy(receive_event->hostname, entry->event_inst.hostname);
+                        memcpy(&receive_event->client_extension, &entry->src.client_id.ext, sizeof(int));
                         memcpy(&receive_event->seqnum, &entry->event_inst.seqnum, sizeof(int));
                         memcpy(&receive_event->len, &entry->event_inst.len, sizeof(FTB_tag_len_t));
                         memcpy(&receive_event->event_properties, &entry->event_inst.event_properties, sizeof(FTB_event_properties_t));

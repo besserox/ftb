@@ -15,13 +15,13 @@ int main (int argc, char *argv[])
 {
     FTB_client_t cinfo;
     FTB_client_handle_t handle;
-    FTB_client_handle_t handle1;
     FTB_subscribe_handle_t shandle;
+    FTB_event_handle_t ehandle1;
     FTB_event_handle_t ehandle;
     int ret = 0, num =0;
     FTB_event_info_t event_info[1] = {{"WATCH_DOG_EVENT", "INFO"}};
 
-    /* Create namespace and other attributes before calling FTB_Connect */
+    /* Create eventspace and other attributes before calling FTB_Connect */
     strcpy(cinfo.event_space, "FTB.FTB_EXAMPLES.watchdog");
     strcpy(cinfo.client_schema_ver, "0.5");
     strcpy(cinfo.client_name, "watchdog");
@@ -38,10 +38,6 @@ int main (int argc, char *argv[])
         printf("FTB_Declare_Publishable_events is not successful ret=%d\n", ret);
         exit(-1);
     }
-    ret = FTB_Subscribe(&shandle, handle, "event_space=ftb.all.watchdog", NULL, NULL);
-    if (ret != FTB_SUCCESS) {
-        printf("FTB_Subscribe failed ret=%d!\n", ret); exit(-1);
-    }
 
     /*
     ret = FTB_Declare_publishable_events(handle, 0, event_info, 1);
@@ -50,7 +46,17 @@ int main (int argc, char *argv[])
     }
     */
 
+    ret = FTB_Subscribe(&shandle, handle, "event_space=ftb.all.watchdog", NULL, NULL);
+    if (ret != FTB_SUCCESS) {
+        printf("FTB_Subscribe failed ret=%d!\n", ret); exit(-1);
+    }
+
     signal(SIGINT, Int_handler);
+    ret = FTB_Publish(handle, "WATCH_DOG_EVENT", NULL, &ehandle1);
+    if (ret != FTB_SUCCESS) {
+        printf("FTB_Publish failed\n");
+        exit(-1);
+    }
     int i =0;
     while(1) {
         i++;
@@ -70,15 +76,21 @@ int main (int argc, char *argv[])
             fprintf(stderr,"Watchdog: No event caught Error code is %d!\n", ret);
             break;
         }
-        printf("Watchdog: Component name=%s Comp category=%s Severity=%s ",
-                caught_event.comp, caught_event.comp_cat, caught_event.severity);
-        printf("Event name=%s Region=%s Instance name=%s Hostname=%s, Jobid=%s, Seqnum=%d ",
-                caught_event.event_name, caught_event.region, caught_event.client_name, 
-                caught_event.hostname, caught_event.client_jobid, caught_event.seqnum);
-        /*printf("User specified received data has watchdogid=%d and watchdog name=%s. Watchdog Tag is %s\n", 
-                recv_info.watchdog_id, recv_info.watchdog_name, tag_data_recv);*/
-        printf("Watchdog: Location is hostname=%s pid=%d\n", caught_event.incoming_src.hostname, 
-                caught_event.incoming_src.pid);
+
+        FTB_event_handle_t ehandle2;
+        ret = FTB_Get_event_handle(caught_event, &ehandle2);
+        if (ret != FTB_SUCCESS) {
+            fprintf(stderr,"FTB_Get_event_handle failed %d", ret);
+            exit(-1);
+        }
+        ret = FTB_Compare_event_handles(ehandle1, ehandle2);
+        if (ret != FTB_SUCCESS) {
+            fprintf(stderr,"FTB_Get_event_handle failed %d", ret);
+            exit(-1);
+        }
+        printf("Handle is same as first publish\n");
+
+        printf("Received event details: Event space=%s, Severity=%s, Event name=%s, Client name=%s, Hostname=%s, Jobid=%s, Seqnum=%d\n", caught_event.event_space, caught_event.severity,  caught_event.event_name, caught_event.client_name, caught_event.incoming_src.hostname, caught_event.client_jobid, caught_event.seqnum);
         
         if (done)
             break;

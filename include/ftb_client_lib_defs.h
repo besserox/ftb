@@ -33,13 +33,15 @@ will cause more resource usage and an additional thread in client
 process.
 */
 
-
+/* region, comp_cat, comp will be of total size FTB_eventspace_t */
+/* Total size of FTB_client_id_t is 101 bytes*/
 typedef struct FTB_client_id {
     FTB_eventspace_t region;
     FTB_eventspace_t comp_cat;
     FTB_eventspace_t comp;
     FTB_client_name_t client_name;
-    uint8_t ext;
+    //uint8_t ext;
+    int ext;
 }FTB_client_id_t;
 
 struct FTB_client_handle {
@@ -61,6 +63,7 @@ typedef struct FTB_event {
     FTB_client_jobid_t client_jobid;
     FTB_client_name_t client_name;
     FTB_hostname_t hostname;
+    //uint8_t ext;;
     int seqnum;
     FTB_tag_len_t len;
     FTB_event_properties_t event_properties;
@@ -74,16 +77,16 @@ struct FTB_subscribe_handle {
     uint8_t valid;
 };//FTB_subscribe_handle_t;
 
-typedef struct FTB_event_handle {
-    FTB_client_id_t client_id;
-    FTB_location_id_t location_id;
-    FTB_event_name_t event_name;
-    FTB_severity_t  severity;
-    int seqnum;
+struct FTB_event_handle {
+    FTB_client_id_t client_id;      /* 101 bytes*/
+    FTB_location_id_t location_id;  /* 64 for hostname + 4 for pid */
+    FTB_event_name_t event_name;    /* 32 for event_name */
+    FTB_severity_t  severity;       /* 16 for severity */
+    int seqnum;                     /* 4 bytes*/
     /* Do we need the client_jobid?
      * FTB_client_jobid_t client_jobid;
      */
-};
+};                                  /* 217 bytes */
 
 
 #ifdef __cplusplus

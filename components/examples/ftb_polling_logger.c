@@ -72,11 +72,8 @@ int main (int argc, char *argv[])
         else {
             time_t current = time(NULL);
             fprintf(log_fp,"%s\t",asctime(localtime(&current)));
-            fprintf(log_fp, "Caught some event\n");
-            fprintf(log_fp,"Caught event: comp_cat: %s, comp: %s, severity: %s,  event_name: %s, client_name: %s \
-                    hostname: %s client_jobid: %s region: %s ",
-                   event.comp_cat, event.comp, event.severity, event.event_name, event.client_name, 
-                   event.hostname, event.client_jobid, event.region);
+            fprintf(log_fp,"Caught eventspace: %s , severity: %s,  event_name: %s, client_name: %s \
+                   client_jobid: %s ", event.event_space, event.severity, event.event_name, event.client_name, event.client_jobid);
             fprintf(log_fp,"from host %s, pid %d \n",event.incoming_src.hostname, event.incoming_src.pid);
             
             fflush(log_fp);

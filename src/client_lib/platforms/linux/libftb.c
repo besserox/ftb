@@ -36,14 +36,24 @@ int FTB_Poll_event(FTB_subscribe_handle_t subscribe_handle, FTB_receive_event_t 
     if (receive_event == NULL) {
         return FTB_ERR_NULL_POINTER;
     }
-    //else if (shandle.cmask.initialized == 0)
-    //    return FTB_ERR_MASK_NOT_INITIALIZED;
     return FTBC_Poll_event(subscribe_handle, receive_event);
 }
 
 int FTB_Disconnect(FTB_client_handle_t client_handle) {
     return FTBC_Disconnect(client_handle);
 }
+
+int FTB_Get_event_handle(const FTB_receive_event_t receive_event, FTB_event_handle_t *event_handle){
+    return FTBC_Get_event_handle(receive_event, event_handle);
+}
+
+int FTB_Compare_event_handles(const FTB_event_handle_t event_handle1, const FTB_event_handle_t event_handle2) {
+    return FTBC_Compare_event_handles(event_handle1, event_handle2);
+ }
+
+
+
+
 /*
 int FTB_Add_tag(FTB_client_handle_t handle, FTB_tag_t tag, const char *tag_data, FTB_tag_len_t data_len, char *error_msg)
 {

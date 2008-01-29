@@ -4,10 +4,7 @@
 #include "ftb_manager_lib.h"
 #include "ftb_def.h"
 
-/*
-
-*/
-int FTBC_Connect(const FTB_client_t *cinfo, uint8_t extension, FTB_client_handle_t *client_handle);
+int FTBC_Connect(const FTB_client_t *cinfo, int extension, FTB_client_handle_t *client_handle);
 
 int FTBC_Declare_publishable_events(FTB_client_handle_t client_handle, char * schema_file, const FTB_event_info_t  *einfo, int num_events);
 
@@ -15,8 +12,7 @@ int FTBC_Publish(FTB_client_handle_t client_handle, const char *event_name, cons
 
 int FTBC_Subscribe_with_polling(FTB_subscribe_handle_t *subscribe_handle, FTB_client_handle_t client_handle, const char *subscription_str);
 
-int FTBC_Subscribe_with_callback(FTB_subscribe_handle_t *subscribe_handle, FTB_client_handle_t handle, const char *subscription_str, 
-        int (*callback)(FTB_receive_event_t *, void*), const void *arg);
+int FTBC_Subscribe_with_callback(FTB_subscribe_handle_t *subscribe_handle, FTB_client_handle_t handle, const char *subscription_str, int (*callback)(FTB_receive_event_t *, void*), const void *arg);
 
 int FTBC_Unsubscribe(FTB_subscribe_handle_t *subscribe_handle);
 
@@ -25,6 +21,10 @@ int FTBC_Poll_event(FTB_subscribe_handle_t subscribe_handle, FTB_receive_event_t
 int FTBC_Reg_throw(FTB_client_handle_t handle, const char *event);
 
 int FTBC_Disconnect(FTB_client_handle_t handle);
+
+int FTBC_Get_event_handle(const FTB_receive_event_t receive_event, FTB_event_handle_t *event_handle);
+
+int FTBC_Compare_event_handles(const FTB_event_handle_t event_handle1, const FTB_event_handle_t event_handle2);
 
 /*
 int FTBC_Add_dynamic_tag(FTB_client_handle_t handle, FTB_tag_t tag, const char *tag_data, FTB_tag_len_t data_len);

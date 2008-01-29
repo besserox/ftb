@@ -11,8 +11,8 @@ FTB_subscribe_handle_t shandle3;
 
 int Comp3_evt_handler(FTB_receive_event_t *evt, void *arg)
 {
-    printf("Comp3 caught event: comp_cat: %s, comp %s, severity: %s, event_name %s, ",
-            evt->comp_cat, evt->comp, evt->severity, evt->event_name);
+    printf("Comp3 caught event: event_space: %s, severity: %s, event_name %s, ",
+            evt->event_space, evt->severity, evt->event_name);
     printf("from host %s, pid %d\n",
            evt->incoming_src.hostname, evt->incoming_src.pid);
     return 0;
@@ -111,9 +111,8 @@ int Comp2_Init()
 int Comp2_Func()
 {
     FTB_receive_event_t evt;
-    FTB_event_handle_t ehandle;
     int ret = 0;
-    static int count=0;
+    FTB_event_handle_t ehandle;
 
     Comp3_Func();
     while(1) {
@@ -121,19 +120,10 @@ int Comp2_Func()
        if (ret == FTB_GOT_NO_EVENT) {
            break;
        }
-       count++;
-       printf("Comp2 caught event: comp_cat: %s, comp: %s, severity: %s, event_name %s, count=%d ++++++++++++++ ",
-            evt.comp_cat, evt.comp, evt.severity, evt.event_name, count);
+       printf("Comp2 caught event: event_space: %s, severity: %s, event_name %s",
+            evt.event_space, evt.severity, evt.event_name);
        printf("from host %s, pid %d \n",
            evt.incoming_src.hostname, evt.incoming_src.pid);
-        if (count == 2) {
-            ret = FTB_Unsubscribe(&shandle3);
-            if (ret != FTB_SUCCESS) {
-                printf("Return value is bnot success\n");
-                exit(-1);
-            }
-            else printf("************************\n");
-        }
     }
 
     printf("Comp2: FTB_Publish\n");
@@ -160,8 +150,8 @@ FTB_subscribe_handle_t shandle1;
 
 int Comp1_evt_handler(FTB_receive_event_t *evt, void *arg)
 {
-    printf("Comp1 caught event: comp_cat: %s, comp %s, severity: %s, event_name %s, ",
-            evt->comp_cat, evt->comp, evt->severity, evt->event_name);
+    printf("Comp1 caught event: event_space: %s, severity: %s, event_name %s, ",
+            evt->event_space, evt->severity, evt->event_name);
     printf("from hostname %s, pid %d \n",
            evt->incoming_src.hostname, evt->incoming_src.pid);
     return 0;

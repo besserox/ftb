@@ -20,8 +20,8 @@ int event_logger(FTB_receive_event_t *evt, void *arg)
     FILE* log_fp = (FILE*)arg;
     time_t current = time(NULL);
     fprintf(log_fp,"%s\t",asctime(localtime(&current)));
-    fprintf(log_fp,"Caught event: region: %s comp_cat: %s, comp %s, severity: %s, event_name %s, ",
-            evt->region, evt->comp_cat, evt->comp, evt->severity, evt->event_name);
+    fprintf(log_fp,"Caught event: event_space %s, severity: %s, event_name %s from hostname=%s and pid=%d ",
+            evt->event_space, evt->severity, evt->event_name, evt->incoming_src.hostname, evt->incoming_src.pid);
     fflush(log_fp);
     return 0;
 }
