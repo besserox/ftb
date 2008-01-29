@@ -18,11 +18,11 @@ int main (int argc, char *argv[])
     FTB_client_handle_t handle1;
     FTB_subscribe_handle_t shandle;
     FTB_event_handle_t ehandle;
-    int ret = 0;
+    int ret = 0, num =0;
     FTB_event_info_t event_info[1] = {{"WATCH_DOG_EVENT", "INFO"}};
 
     /* Create namespace and other attributes before calling FTB_Connect */
-    strcpy(cinfo.event_space, "FTB.FTB_EXAMPLES.Watchdog");
+    strcpy(cinfo.event_space, "FTB.FTB_EXAMPLES.watchdog");
     strcpy(cinfo.client_schema_ver, "0.5");
     strcpy(cinfo.client_name, "watchdog");
     strcpy(cinfo.client_jobid,"watchdog-111");
@@ -33,15 +33,22 @@ int main (int argc, char *argv[])
         printf("FTB_Connect is not successful ret=%d\n", ret);
         exit(-1);
     }
+    ret = FTB_Declare_publishable_events(handle, "/homes/rgupta/ftb-code/trunk/components/examples/data.txt", event_info, num);
+    if (ret != FTB_SUCCESS) {
+        printf("FTB_Declare_Publishable_events is not successful ret=%d\n", ret);
+        exit(-1);
+    }
     ret = FTB_Subscribe(&shandle, handle, "event_space=ftb.all.watchdog", NULL, NULL);
     if (ret != FTB_SUCCESS) {
         printf("FTB_Subscribe failed ret=%d!\n", ret); exit(-1);
     }
-   
+
+    /*
     ret = FTB_Declare_publishable_events(handle, 0, event_info, 1);
     if (ret != FTB_SUCCESS) {
         printf("FTB_Declare_publishable_events failed ret=%d!\n", ret); exit(-1);
     }
+    */
 
     signal(SIGINT, Int_handler);
     int i =0;

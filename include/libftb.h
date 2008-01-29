@@ -18,7 +18,7 @@ int FTB_Subscribe(FTB_subscribe_handle_t *subscribe_handle, FTB_client_handle_t 
 int FTB_Unsubscribe(FTB_subscribe_handle_t *subscribe_handle);
 
 //int FTB_Register_publishable_events(FTB_client_handle_t handle, FTB_event_info_t  *einfo, int num_events);
-int FTB_Declare_publishable_events(FTB_client_handle_t client_handle, int schema_file, const FTB_event_info_t *event_info, int num_events);
+int FTB_Declare_publishable_events(FTB_client_handle_t client_handle, char *schema_file, const FTB_event_info_t *event_info, int num_events);
 
 int FTB_Poll_event(FTB_subscribe_handle_t shandle, FTB_receive_event_t *receive_event);
 

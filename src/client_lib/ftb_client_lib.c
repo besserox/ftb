@@ -163,22 +163,45 @@ int FTBCI_split_namespace(const char *event_space, char *region_name, char *cate
 {
     char *tempstr = (char *)malloc(strlen(event_space)+1);
     char *str = (char *)malloc(strlen(event_space)+1);
+    FTB_INFO("In FTBCI_split_namespace");
     if (strlen(event_space) >= FTB_MAX_EVENTSPACE) {
-        FTB_INFO("In FTBCI_split_namespace");
+        FTB_INFO("Out FTBCI_split_namespace");
         return FTB_ERR_EVENTSPACE_FORMAT;
     }
     strcpy(tempstr, event_space);
-    str=strsep(&tempstr,"."); strcpy(region_name,str);
-    str=strsep(&tempstr,"."); strcpy(category_name,str);
-    str=strsep(&tempstr,"."); strcpy(component_name,str);
-    if ((strcmp(region_name,"\0")==0) || (strcmp(category_name,"\0")==0) 
-            || (strcmp(component_name,"\0")==0)  || (tempstr != NULL) 
+
+    str=strsep(&tempstr,"."); 
+    if ((strcmp(str, "\0") == 0) || (strcmp(tempstr, "\0") == 0)) {
+        FTB_INFO("Out FTBCI_split_namespace");
+        return FTB_ERR_EVENTSPACE_FORMAT;
+    }
+    printf("str=%s and tempstr=%s\n", str, tempstr);
+    strcpy(region_name,str);
+
+    str=strsep(&tempstr,"."); 
+    if ((strcmp(str, "\0") == 0) || (strcmp(tempstr, "\0") == 0)) {
+        FTB_INFO("Out FTBCI_split_namespace");
+        return FTB_ERR_EVENTSPACE_FORMAT;
+    }
+    printf("str=%s and tempstr=%s\n", str, tempstr);
+    strcpy(category_name,str);
+    
+    str=strsep(&tempstr,"."); 
+    if (strcmp(str, "\0") == 0) {
+        FTB_INFO("Out FTBCI_split_namespace");
+        return FTB_ERR_EVENTSPACE_FORMAT;
+    }
+    strcpy(component_name,str);
+    printf("str=%s\n", str);
+
+    if ((tempstr != NULL) 
             || (!check_alphanumeric_underscore_format(region_name)) 
             || (!check_alphanumeric_underscore_format(category_name)) 
             || (!check_alphanumeric_underscore_format(component_name))) { 
         FTB_INFO("Out FTBCI_split_namespace");
         return FTB_ERR_EVENTSPACE_FORMAT;
     }
+    FTB_INFO("Out FTBCI_split_namespace");
     return FTB_SUCCESS;
 }
 
@@ -348,7 +371,7 @@ static ENTRY* FTBCI_search_hash(const char *name)
     return (hsearch(event, FIND));
 }
 
-int FTBCI_populate_hashtable_with_events(const char *comp_cat, const char *comp,  const FTB_event_info_t *event_table, int num_events)
+int FTBCI_populate_hashtable_with_events(const char *region, const char *comp_cat, const char *comp, const FTB_event_info_t *event_table, int num_events)
 {
     ENTRY event;
     FTBCI_publish_event_entry_t *event_entry;
@@ -356,20 +379,33 @@ int FTBCI_populate_hashtable_with_events(const char *comp_cat, const char *comp,
 
     FTB_INFO("In FTBCI_populate_hashtable_with_events");
 
+    if (num_events == 0) {
+        FTB_WARNING("0 events being registered!");
+    }
+
     for (i=0; i<num_events; i++) {
         if (total_publish_events >= FTBCI_MAX_EVENTS_PER_PROCESS) {
+            FTB_INFO("Out FTBCI_populate_hashtable_with_events");
             return FTB_ERR_GENERAL;
         }
+
+        if ((strlen(event_table[i].event_name) >= FTB_MAX_EVENT_NAME) 
+                ||(!check_alphanumeric_underscore_format(event_table[i].event_name))) {
+            FTB_INFO("Out FTBCI_populate_hashtable_with_events");
+            return FTB_ERR_INVALID_FIELD;
+        }
+
         if (!FTBCI_check_severity_values(event_table[i].severity)) {
+            FTB_INFO("Out FTBCI_populate_hashtable_with_events");
             return FTB_ERR_INVALID_FIELD;
         }
         char *event_key = (char *)malloc(sizeof(FTB_eventspace_t) + sizeof(FTB_event_name_t) + 2);
         event_entry = (FTBCI_publish_event_entry_t *)malloc(sizeof(FTBCI_publish_event_entry_t));
-        concatenate_strings(event_key, comp_cat, "_", comp, "_", event_table[i].event_name, NULL);
+        concatenate_strings(event_key, region, "_", comp_cat, "_", comp, "_", event_table[i].event_name, NULL);
         int j=0;
         for (j=0; j<strlen(event_key); j++) event_key[j]=toupper(event_key[j]);
         if (FTBCI_search_hash(event_key) != NULL) {
-            FTB_INFO("Out FTBCI_populate_hashtable_with_events");
+            FTB_INFO("Out FTBCI_populate_hashtable_with_events : Duplicate event");
             return FTB_ERR_DUP_EVENT;
         }
         strcpy(event_entry->event_name, event_table[i].event_name);
@@ -379,12 +415,13 @@ int FTBCI_populate_hashtable_with_events(const char *comp_cat, const char *comp,
         event.key = event_key;
         event.data = event_entry;
         FTBCI_lock_client_lib();
+        FTB_INFO("Event key is %s", event_key);
         hsearch(event, ENTER);
         total_publish_events++;
         FTBCI_unlock_client_lib();
     }
     FTB_INFO("Out FTBCI_populate_hashtable_with_events");
-    return 0;
+    return FTB_SUCCESS;
 }
 
 int FTBCI_get_event_by_name(const char *key, FTB_event_t *e) 
@@ -766,15 +803,103 @@ int FTBC_Connect(const FTB_client_t *cinfo, uint8_t extension, FTB_client_handle
     return FTB_SUCCESS;
 }
 
-int FTBC_Declare_publishable_events(FTB_client_handle_t client_handle, int schema_file, const FTB_event_info_t  *einfo, int num_events)
+int FTBCI_check_schema_file(const FTB_client_handle_t client_handle, const char *schema_file)
 {
-    //if schema_file ==  1 then read the schema file and convert it into the
-    //FTB_event_info_t structure
-    //
-    //If schema_file == 0, send the FTB_event_info_t structure along
+    typedef enum state {INIT, IN_STRUCT, FOUND_EVENTSPACE, FOUND_EVENTNAME, EMPTY, }state_t;
+    FTB_eventspace_t comp_cat;
+    FTB_eventspace_t comp;
+    FTB_eventspace_t region;
+    FTB_event_info_t einfo;
+    char str[1024];
+    FILE * fp;
+    int ret;
+
+    /* Set the schema script */
+    char schema_file_script[512] = "cat ";
+    strcat(schema_file_script, schema_file);
+    strcat(schema_file_script, " | sed -e 's/#.*//g'"); 
+    state_t state = EMPTY;
+
+    fp = popen(schema_file_script, "r");
+    while (!feof(fp)) {
+        fscanf(fp, "%s", str);
+        if (feof(fp)) break;
+        if ((state == INIT) || (state == EMPTY)) {
+            /* Initial state: Ignore non-start strings */
+            if (!strcmp(str, "start")) {
+                state = IN_STRUCT;
+            }
+            else {
+                FTB_WARNING("Unexpected string (%s) found in schema file (%s)\n", str, schema_file);
+            }
+        }
+        else {
+             /* Started reading. Store strings till you hit end */
+            if (!strcmp(str, "end")) {
+                /* End of struct */
+                state = INIT;
+            }
+            else {
+                /* Within struct. Store eventspace string */
+                 if (state == IN_STRUCT) {
+                     printf("********* here we are where we found event space %s\n", str);
+                    if (strlen(str) >= FTB_MAX_EVENTSPACE) {
+                        FTB_WARNING("Event space exceeds expected length\n");
+                        return FTB_ERR_INVALID_SCHEMA_FILE;
+                    }
+                    ret = FTBCI_split_namespace(str, region, comp_cat, comp);
+                    if (ret != FTB_SUCCESS) {
+                        FTB_WARNING("Event space if of incorrect format in file (%s)", schema_file);
+                        return FTB_ERR_INVALID_SCHEMA_FILE;
+                    }
+                    /* Check if the schema file was submitted by the right
+                     * client 
+                     */
+                    if ((strcasecmp(client_handle.client_id.region, region) != 0)
+                        || (strcasecmp(client_handle.client_id.comp_cat, comp_cat) != 0) 
+                        || (strcasecmp(client_handle.client_id.comp, comp) != 0 ))
+                        return FTB_ERR_INVALID_SCHEMA_FILE;
+                    state = FOUND_EVENTSPACE;
+                 }
+                 else if (state == FOUND_EVENTSPACE) {
+                    /*Store the event name */
+                    state = FOUND_EVENTNAME;
+                    strcpy(einfo.event_name, str);
+                 }
+                 else if (state == FOUND_EVENTNAME) {
+                    /*Store the event severity*/
+                    if (!FTBCI_check_severity_values(str)) {
+                        FTB_WARNING("Unrecognized severity (%s) in file(%s)", str, schema_file);
+                        return FTB_ERR_INVALID_SCHEMA_FILE;
+                    }
+                    state = FOUND_EVENTSPACE;
+                    strcpy(einfo.severity, str);
+                    if ((ret = FTBCI_populate_hashtable_with_events(region, comp_cat, comp, &einfo, 1)) != FTB_SUCCESS)
+                        return ret;
+                 }
+            }
+        }
+     }
+     pclose(fp);
+     if (state == EMPTY) {
+         FTB_WARNING("Schema file (%s) is either not present, or empty or of invalid format", schema_file);
+         return FTB_ERR_INVALID_SCHEMA_FILE;
+     }
+     else if (state != INIT) {
+         FTB_WARNING("Schema file (%s) is of invalid format ('end' missing)", schema_file);
+         return FTB_ERR_INVALID_SCHEMA_FILE;
+     }
+     else
+         return FTB_SUCCESS;
+}
+
+
+int FTBC_Declare_publishable_events(FTB_client_handle_t client_handle, char *schema_file, const FTB_event_info_t  *einfo, int num_events)
+{
     char *region = (char *)malloc(sizeof(FTB_eventspace_t));
     char *comp_cat = (char *)malloc(sizeof(FTB_eventspace_t));
     char *comp = (char *)malloc(sizeof(FTB_eventspace_t));
+    int ret = 0;
     
     FTB_INFO("FTBC_Declare_publishable_events In");
 
@@ -783,14 +908,23 @@ int FTBC_Declare_publishable_events(FTB_client_handle_t client_handle, int schem
         return FTB_ERR_INVALID_HANDLE;
     }
 
-    strcpy(region, client_handle.client_id.region);
-    strcpy(comp_cat, client_handle.client_id.comp_cat);
-    strcpy(comp, client_handle.client_id.comp);
-    FTBCI_populate_hashtable_with_events(comp_cat, comp, einfo, num_events);
+    if (schema_file != NULL) {
+        ret = FTBCI_check_schema_file(client_handle, schema_file);
+        if (ret != FTB_SUCCESS) {
+            FTB_INFO("FTBC_Declare_publishable_events Out");
+            return ret;
+        }
+    }
+    else {
+        strcpy(region, client_handle.client_id.region);
+        strcpy(comp_cat, client_handle.client_id.comp_cat);
+        strcpy(comp, client_handle.client_id.comp);
+        ret = FTBCI_populate_hashtable_with_events(region, comp_cat, comp, einfo, num_events);
+        FTB_INFO("FTBC_Declare_publishable_events Out");
+        return ret;
+    }
 
-    FTB_INFO("FTBC_Declare_publishable_events Out");
     return FTB_SUCCESS;
-    
 }
 
 int FTBC_Subscribe_with_polling(FTB_subscribe_handle_t *subscribe_handle, FTB_client_handle_t client_handle, const char *subscription_str)
@@ -901,7 +1035,7 @@ int FTBC_Publish(FTB_client_handle_t client_handle, const char *event_name,  con
     
     FTBCI_LOOKUP_CLIENT_INFO(client_handle, client_info);
 
-    concatenate_strings(event_key, client_info->id->client_id.comp_cat, "_", client_info->id->client_id.comp, "_", event_name, NULL);
+    concatenate_strings(event_key, client_info->id->client_id.region, "_", client_info->id->client_id.comp_cat, "_", client_info->id->client_id.comp, "_", event_name, NULL);
     ret = FTBCI_get_event_by_name(event_key, &msg.event);
     if (ret != FTB_SUCCESS) {
         FTB_INFO("FTBC_Publish Out with an error");

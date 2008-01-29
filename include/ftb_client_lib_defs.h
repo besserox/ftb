@@ -74,7 +74,17 @@ struct FTB_subscribe_handle {
     uint8_t valid;
 };//FTB_subscribe_handle_t;
 
-typedef struct FTB_event FTB_event_handle_t; 
+typedef struct FTB_event_handle {
+    FTB_client_id_t client_id;
+    FTB_location_id_t location_id;
+    FTB_event_name_t event_name;
+    FTB_severity_t  severity;
+    int seqnum;
+    /* Do we need the client_jobid?
+     * FTB_client_jobid_t client_jobid;
+     */
+};
+
 
 #ifdef __cplusplus
 } /*extern "C"*/

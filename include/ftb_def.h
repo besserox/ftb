@@ -42,6 +42,7 @@ extern "C" {
 #define FTB_ERR_INVALID_FIELD                   (-17)
 
 #define FTB_GOT_NO_EVENT                        (-31)
+#define FTB_ERR_INVALID_SCHEMA_FILE             (-32)
 
 /* If client will subscribe to any events */
 #define FTB_SUBSCRIPTION_NONE               0x0                        
@@ -120,6 +121,7 @@ typedef struct FTB_receive_event_info {
 
 typedef struct FTB_client_handle FTB_client_handle_t;
 typedef struct FTB_subscribe_handle FTB_subscribe_handle_t;
+typedef struct FTB_event FTB_event_handle_t;
 
 #ifdef __cplusplus
 } /*extern "C"*/
