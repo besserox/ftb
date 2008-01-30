@@ -26,12 +26,12 @@ int FTBC_Get_event_handle(const FTB_receive_event_t receive_event, FTB_event_han
 
 int FTBC_Compare_event_handles(const FTB_event_handle_t event_handle1, const FTB_event_handle_t event_handle2);
 
-/*
+#ifdef FTB_TAG
 int FTBC_Add_dynamic_tag(FTB_client_handle_t handle, FTB_tag_t tag, const char *tag_data, FTB_tag_len_t data_len);
 
 int FTBC_Remove_dynamic_tag(FTB_client_handle_t handle, FTB_tag_t tag);
 
 int FTBC_Read_dynamic_tag(const FTB_receive_event_t *event, FTB_tag_t tag, char *tag_data, FTB_tag_len_t *data_len);
-*/
+#endif
 
 #endif

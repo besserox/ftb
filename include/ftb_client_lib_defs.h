@@ -10,6 +10,7 @@
 extern "C" {
 #endif 
 
+
 /*
 The behavior in case therer is an internal FTB error,
 defined as FTB_ERR_HANDLE_NONE, or | of the others
@@ -63,11 +64,12 @@ typedef struct FTB_event {
     FTB_client_jobid_t client_jobid;
     FTB_client_name_t client_name;
     FTB_hostname_t hostname;
-    //uint8_t ext;;
     int seqnum;
-    FTB_tag_len_t len;
     FTB_event_properties_t event_properties;
+#ifdef FTB_TAG
+    FTB_tag_len_t len;
     char dynamic_data[FTB_MAX_DYNAMIC_DATA_SIZE];
+#endif
 }FTB_event_t;
 
 struct FTB_subscribe_handle {

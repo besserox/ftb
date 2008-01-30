@@ -27,6 +27,7 @@ int FTB_Get_event_handle(const FTB_receive_event_t receive_event, FTB_event_hand
 
 int FTB_Compare_event_handles(const FTB_event_handle_t event_handle1, const FTB_event_handle_t event_handle2);
 
+#ifdef FTB_TAG
 /*
  *    FTB_Add_dynamic_tag, FTB_Remove_dynamic_tag, & FTB_Read_dynamic_tag
  *    Provide a simple mechanism to stamp some dynamic info, such as job id, onto the event thrown from a same client.
@@ -48,14 +49,12 @@ int FTB_Compare_event_handles(const FTB_event_handle_t event_handle1, const FTB_
  *    If there is no such tag with the event, FTB_ERR_TAG_NOT_FOUND is returned.
  *    If the data_len passed in is smaller than the actual data, FTB_ERR_TAG_NO_SPACE is returned.
  */
-/*
 int FTB_Add_tag(FTB_client_handle_t handle, FTB_tag_t tag, const char *tag_data, FTB_tag_len_t data_len, char *error_msg);
 
 int FTB_Remove_tag(FTB_client_handle_t handle, FTB_tag_t tag, char *error_msg);
 
 int FTB_Read_tag(const FTB_receive_event_t *event, FTB_tag_t tag, char *tag_data, FTB_tag_len_t *data_len, char *error_msg);
-*/
-
+#endif
 
 #ifdef __cplusplus
 } /*extern "C"*/

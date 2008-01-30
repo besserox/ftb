@@ -9,6 +9,7 @@
 extern "C" {
 #endif 
 #define FTB_DEBUG   0
+/*#define FTB_TAG*/
 
 
 #define FTB_SUCCESS                             0
@@ -68,6 +69,8 @@ extern "C" {
 * event_handle (and event_type), if needed
 */
 #define FTB_EVENT_SIZE               512
+
+#ifdef FTB_TAG
 #define FTB_MAX_DYNAMIC_DATA_SIZE   ((FTB_EVENT_SIZE)-sizeof(FTB_eventspace_t)\
         -sizeof(FTB_event_name_t)\
         -sizeof(FTB_severity_t)\
@@ -77,6 +80,7 @@ extern "C" {
         -sizeof(int)\
         -sizeof(FTB_tag_len_t)\
         -sizeof(FTB_event_properties_t))
+#endif
 
 typedef char FTB_eventspace_t[FTB_MAX_EVENTSPACE];
 typedef char FTB_client_name_t[FTB_MAX_CLIENT_NAME];
@@ -88,8 +92,10 @@ typedef char FTB_hostname_t[FTB_MAX_HOST_NAME];
 typedef char FTB_subscription_style_t[FTB_MAX_SUBSCRIPTION_STYLE];     
 typedef char FTB_pid_starttime_t[FTB_MAX_PID_STARTTIME];
 
+#ifdef FTB_TAG
 typedef uint8_t FTB_tag_t;
 typedef uint8_t FTB_tag_len_t;
+#endif
 
 typedef struct FTB_client {
     FTB_client_schema_ver_t client_schema_ver;
@@ -126,8 +132,10 @@ typedef struct FTB_receive_event_info {
     int seqnum;
     FTB_event_properties_t event_properties;
     FTB_location_id_t incoming_src;
+#ifdef FTB_TAG
     FTB_tag_len_t len;
     char dynamic_data[FTB_MAX_DYNAMIC_DATA_SIZE];
+#endif
 }FTB_receive_event_t;
 
 typedef struct FTB_client_handle FTB_client_handle_t;

@@ -93,6 +93,7 @@ int ZOID_FTB_Abort (FTB_client_handle_t handle /* in:obj */)
     return FTBC_Abort(handle);
 }
 
+#ifdef FTB_TAG
 int ZOID_FTB_Add_dynamic_tag(FTB_client_handle_t handle /* in:obj */,
                                 FTB_tag_t tag /* in:obj */, 
                                 const char *tag_data /* in:ptr */,
@@ -106,4 +107,5 @@ int ZOID_FTB_Remove_dynamic_tag (FTB_client_handle_t handle /* in:obj */,
 {
     return ZOID_FTB_Remove_dynamic_tag(handle, tag);
 }
+#endif
 

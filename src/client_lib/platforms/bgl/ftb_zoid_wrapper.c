@@ -70,6 +70,7 @@ int FTB_Abort(FTB_client_handle_t handle)
     return ZOID_FTB_Abort(handle);
 }
 
+#ifdef FTB_TAG
 int FTB_Add_dynamic_tag(FTB_client_handle_t handle, FTB_tag_t tag, const char *tag_data, FTB_tag_len_t data_len)
 {
     if (tag_data == NULL) {
@@ -113,4 +114,4 @@ int FTB_Read_dynamic_tag(const FTB_event_t *event, FTB_tag_t tag, char *tag_data
 
     return FTB_ERR_TAG_NOT_FOUND;
 }
-
+#endif

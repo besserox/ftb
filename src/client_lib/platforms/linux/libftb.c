@@ -51,10 +51,7 @@ int FTB_Compare_event_handles(const FTB_event_handle_t event_handle1, const FTB_
     return FTBC_Compare_event_handles(event_handle1, event_handle2);
  }
 
-
-
-
-/*
+#ifdef FTB_TAG
 int FTB_Add_tag(FTB_client_handle_t handle, FTB_tag_t tag, const char *tag_data, FTB_tag_len_t data_len, char *error_msg)
 {
     *error_msg = 0;
@@ -71,4 +68,5 @@ int FTB_Read_tag(const FTB_receive_event_t *event, FTB_tag_t tag, char *tag_data
 {
     *error_msg = 0;
     return FTBC_Read_dynamic_tag(event, tag, tag_data, data_len);
-}*/
+}
+#endif

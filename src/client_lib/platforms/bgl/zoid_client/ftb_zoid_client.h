@@ -35,6 +35,7 @@ int ZOID_FTB_Catch ( FTB_client_handle_t handle /* in:obj */,
 int ZOID_FTB_Disconnect (FTB_client_handle_t handle /* in:obj */);
 
 int ZOID_FTB_Abort (FTB_client_handle_t handle /* in:obj */);
+#ifdef FTB_TAG
 
 int ZOID_FTB_Add_dynamic_tag(FTB_client_handle_t handle /* in:obj */,
                                 FTB_tag_t tag /* in:obj */, 
@@ -43,5 +44,7 @@ int ZOID_FTB_Add_dynamic_tag(FTB_client_handle_t handle /* in:obj */,
 
 int ZOID_FTB_Remove_dynamic_tag (FTB_client_handle_t handle /* in:obj */,
                                 FTB_tag_t tag /* in:obj */);
+#endif
+
 #endif /* FTB_ZOID_CLIENT_H */
 
