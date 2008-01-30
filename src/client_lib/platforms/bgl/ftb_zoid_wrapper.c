@@ -3,85 +3,74 @@
 #include "libftb.h"
 #include "ftb_zoid_client.h"
 
-int FTB_Connect(FTB_client_t *comp_info, FTB_client_handle_t *client_handle)
+int FTB_Connect(FTB_client_t *client_info, FTB_client_handle_t *client_handle)
 {
-    return ZOID_FTB_Connect(comp_info, client_handle); 
+    if ((strcasecmp(cinfo->client_subscription_style, "FTB_SUBSCRIPTION_NOTIFY") == 0)
+        || (strcasecmp(cinfo->client_subscription_style, "FTB_SUBSCRIPTION_BOTH") == 0)) {
+        return FTB_ERR_SUBSCRIPTION_STYLE;
+    }
+    else
+        return ZOID_FTB_Connect(client_info, client_handle); 
 }
 
-int FTB_Reg_throw(FTB_client_handle_t handle, const char *event)
-{
-    return ZOID_FTB_Reg_throw(handle, event);
+
+int FTB_Publish(FTB_client_handle_t client_handle, const char *event_name,  const FTB_event_properties_t *event_properties, FTB_event_handle_t *event_handle) {
+    return ZOID_FTBC_Publish(client_handle, event_name, event_properties, event_handle);
 }
 
-int FTB_Reg_catch_polling_event(FTB_client_handle_t handle, const char *name)
+int FTB_Subscribe(FTB_subscribe_handle_t *subscribe_handle, FTB_client_handle_t client_handle, const char *subscription_str, int (*callback)(FTB_receive_event_t *, void*), void *arg) { 
+    if (callback != NULL)
+        return FTB_ERR_NOT_SUPPORTED;
+    else
+        return ZOID_FTB_Subscribe_with_polling(subscribe_handle, client_handle, subscription_str);
+}
+
+int FTB_Unsubscribe(FTB_subscribe_handle_t *subscribe_handle) {
+    return ZOID_FTB_Unsubscribe(subscribe_handle);
+}
+
+int FTB_Declare_publishable_events(FTB_client_handle_t client_handle, const char * schema_file, const FTB_event_info_t  *einfo, int num_events)
 {
-    if (name == NULL) {
+    if (schema_file != NULL)
+         return FTB_ERR_NOT_SUPPORTED;
+    else
+        return ZOID_FTB_Declare_publishable_events(client_handle, NULL, einfo, num_events);
+}
+
+int FTB_Poll_event(FTB_subscribe_handle_t subscribe_handle, FTB_receive_event_t *receive_event)
+{
+    if (receive_event == NULL) {
         return FTB_ERR_NULL_POINTER;
     }
-    return ZOID_FTB_Reg_catch_polling_event(handle, name);
+    else
+        return ZOID_FTB_Poll_event(subscribe_handle, receive_event);
 }
 
-int FTB_Reg_catch_polling_mask(FTB_client_handle_t handle, const FTB_event_t *event)
+int FTB_Disconnect(FTB_client_handle_t client_handle)
 {
-    if (event == NULL) {
-        return FTB_ERR_NULL_POINTER;
-    }
-    return ZOID_FTB_Reg_catch_polling_mask(handle, event);
+    return ZOID_FTB_Disconnect(client_handle);
 }
 
-int FTB_Reg_catch_notify_event(FTB_client_handle_t handle, const char *name, int (*callback)(FTB_event_t *, FTB_id_t *, void*), void *arg)
-{
-    if (name == NULL) {
-        return FTB_ERR_NULL_POINTER;
-    }
-    return FTB_ERR_NOT_SUPPORTED;
+int FTB_Get_event_handle(const FTB_receive_event_t receive_event, FTB_event_handle_t *event_handle){
+    return ZOID_FTB_Get_event_handle(receive_event, event_handle);
 }
 
-int FTB_Reg_catch_notify_mask(FTB_client_handle_t handle, const FTB_event_t *event, int (*callback)(FTB_event_t *, FTB_id_t *, void*), void *arg)
-{
-    return FTB_ERR_NOT_SUPPORTED;
-}
-
-int FTB_Reg_all_predefined_catch(FTB_client_handle_t handle)
-{
-    return ZOID_FTB_Reg_all_predefined_catch(handle);
-}
-
-int FTB_Publish_event(FTB_client_handle_t handle, const char *event, FTB_event_data_t *datadetails, char *error_msg)
-{
-    return ZOID_FTB_Publish(handle, event, datadetails, error_msg);
-}
-
-int FTB_Catch(FTB_client_handle_t handle, FTB_event_t *event, FTB_id_t *src)
-{
-    if (event == NULL) {
-        return FTB_ERR_NULL_POINTER;
-    }
-    return ZOID_FTB_Catch(handle, event, src);
-}
-
-int FTB_Disconnect(FTB_client_handle_t handle)
-{
-    return ZOID_FTB_Disconnect(handle);
-}
-
-int FTB_Abort(FTB_client_handle_t handle)
-{
-    return ZOID_FTB_Abort(handle);
+int FTB_Compare_event_handles(const FTB_event_handle_t event_handle1, const FTB_event_handle_t event_handle2) {
+    return ZOID_FTB_Compare_event_handles(event_handle1, event_handle2);
 }
 
 #ifdef FTB_TAG
-int FTB_Add_dynamic_tag(FTB_client_handle_t handle, FTB_tag_t tag, const char *tag_data, FTB_tag_len_t data_len)
+int FTB_Add_dynamic_tag(FTB_client_handle_t client_handle, FTB_tag_t tag, const char *tag_data, FTB_tag_len_t data_len)
 {
     if (tag_data == NULL) {
         return FTB_ERR_NULL_POINTER;
     }
-    return ZOID_FTB_Add_dynamic_tag(handle, tag, tag_data, data_len);
+    return ZOID_FTB_Add_dynamic_tag(client_handle, tag, tag_data, data_len);
 }
 
-int FTB_Remove_dynamic_tag(FTB_client_handle_t handle, FTB_tag_t tag)
+int FTB_Remove_dynamic_tag(FTB_client_handle_t client_handle, FTB_tag_t tag)
 {
-    return ZOID_FTB_Remove_dynamic_tag(handle, tag);
+    return ZOID_FTB_Remove_dynamic_tag(client_handle, tag);
 }
 
 int FTB_Read_dynamic_tag(const FTB_event_t *event, FTB_tag_t tag, char *tag_data, FTB_tag_len_t *data_len)

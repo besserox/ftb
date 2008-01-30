@@ -306,7 +306,11 @@ int FTBCI_parse_subscription_string(const char *subscription_str, FTB_event_t *s
     char *pairs[FTBCI_MAX_SUBSCRIPTION_FIELDS],*lhs[FTBCI_MAX_SUBSCRIPTION_FIELDS], *rhs[FTBCI_MAX_SUBSCRIPTION_FIELDS];
     int i=0, j=0, ret=0;
 
-    FTB_INFO("In function FTBCI_parse_subscription_string");
+    FTB_INFO("FTBCI_parse_subscription_string In");
+    if (subscription_str == NULL) {
+        FTB_INFO("FTBCI_parse_subscription_string Out");
+        return FTB_ERR_SUBSCRIPTION_STR;
+    }
     tempstr =trim_string(subscription_str);
     ret = FTBCI_check_subscription_value_pair("", "", subscription_event);
     if ((subscriptionstr_len = strlen(tempstr)) == 0) return ret;
@@ -314,41 +318,51 @@ int FTBCI_parse_subscription_string(const char *subscription_str, FTB_event_t *s
         pairs[i] = (char *)malloc(subscriptionstr_len+1);
         lhs[i] = (char *)malloc(subscriptionstr_len+1);
         rhs[i] = (char *)malloc(subscriptionstr_len+1);
-        if ((pairs[i] = strsep(&tempstr, ",")) == NULL)
+        if ((pairs[i] = strsep(&tempstr, ",")) == NULL) {
+            FTB_INFO("FTBCI_parse_subscription_string Out");
             return FTB_ERR_SUBSCRIPTION_STR;
-        if ((lhs[i] = strsep(&pairs[i], "=")) == NULL)
+        }
+        if ((lhs[i] = strsep(&pairs[i], "=")) == NULL) {
+            FTB_INFO("FTBCI_parse_subscription_string Out");
             return FTB_ERR_SUBSCRIPTION_STR;
+        }
         else
             lhs[i] = trim_string(lhs[i]);  
-        if ((rhs[i] = strsep(&pairs[i], "=")) == NULL)
+        if ((rhs[i] = strsep(&pairs[i], "=")) == NULL) {
+            FTB_INFO("FTBCI_parse_subscription_string Out");
             return FTB_ERR_SUBSCRIPTION_STR;
+        }
         else 
             rhs[i] = trim_string(rhs[i]);
         if ((strlen(lhs[i]) == 0) || (strlen(rhs[i]) == 0) 
-                || (pairs[i] != NULL))
+                || (pairs[i] != NULL)) {
+            FTB_INFO("FTBCI_parse_subscription_string Out");
             return FTB_ERR_SUBSCRIPTION_STR;
+        }
         for (j=0; j<strlen(lhs[i]); j++)  {
             if (lhs[i][j] == ' ') {
-                FTB_INFO("Out function FTBCI_parse_subscription_string");
+                FTB_INFO("FTBCI_parse_subscription_string Out");
                 return FTB_ERR_FILTER_ATTR;
             }
         }
         for (j=0; j<strlen(rhs[i]); j++) {
             if (rhs[i][j] == ' ') {
-                FTB_INFO("Out function FTBCI_parse_subscription_string");
+                FTB_INFO("FTBCI_parse_subscription_string Out");
                 return FTB_ERR_FILTER_VALUE;
             }
         }
-        if ((ret = FTBCI_check_subscription_value_pair(lhs[i], rhs[i], subscription_event)) != FTB_SUCCESS) 
+        if ((ret = FTBCI_check_subscription_value_pair(lhs[i], rhs[i], subscription_event)) != FTB_SUCCESS) {
+            FTB_INFO("FTBCI_parse_subscription_string Out");
             return ret;
+        }
         i++;
         if (i > FTBCI_MAX_SUBSCRIPTION_FIELDS) { 
             FTB_INFO("Subscription string has too many fields. This maybe an internal FTB error"); 
-            FTB_INFO("Out function FTBCI_parse_subscription_string");
+            FTB_INFO("FTBCI_parse_subscription_string Out");
             return FTB_ERR_SUBSCRIPTION_STR; 
         }
     }
-    FTB_INFO("Out function FTBCI_parse_subscription_string");
+    FTB_INFO("FTBCI_parse_subscription_string Out");
     return FTB_SUCCESS;
 }
 
@@ -897,7 +911,7 @@ int FTBCI_check_schema_file(const FTB_client_handle_t client_handle, const char 
 }
 
 
-int FTBC_Declare_publishable_events(FTB_client_handle_t client_handle, char *schema_file, const FTB_event_info_t  *einfo, int num_events)
+int FTBC_Declare_publishable_events(FTB_client_handle_t client_handle, const char *schema_file, const FTB_event_info_t  *einfo, int num_events)
 {
     char *region = (char *)malloc(sizeof(FTB_eventspace_t));
     char *comp_cat = (char *)malloc(sizeof(FTB_eventspace_t));
