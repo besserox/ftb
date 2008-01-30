@@ -57,6 +57,7 @@ int main (int argc, char *argv[])
         printf("FTB_Publish failed\n");
         exit(-1);
     }
+    printf("%%%%ehandle1->pid is %d and starttime=%s\n",ehandle1.location_id.pid, ehandle1.location_id.pid_starttime);
     int i =0;
     while(1) {
         i++;
@@ -79,6 +80,7 @@ int main (int argc, char *argv[])
 
         FTB_event_handle_t ehandle2;
         ret = FTB_Get_event_handle(caught_event, &ehandle2);
+        printf("%%%%%%%%ehandle2->pid is %d and starttime=%s\n",ehandle2.location_id.pid, ehandle2.location_id.pid_starttime);
         if (ret != FTB_SUCCESS) {
             fprintf(stderr,"FTB_Get_event_handle failed %d", ret);
             exit(-1);
@@ -91,6 +93,7 @@ int main (int argc, char *argv[])
         printf("Handle is same as first publish\n");
 
         printf("Received event details: Event space=%s, Severity=%s, Event name=%s, Client name=%s, Hostname=%s, Jobid=%s, Seqnum=%d\n", caught_event.event_space, caught_event.severity,  caught_event.event_name, caught_event.client_name, caught_event.incoming_src.hostname, caught_event.client_jobid, caught_event.seqnum);
+        printf("Received events: pid=%d and pid_starttime=%s\n", caught_event.incoming_src.pid,  caught_event.incoming_src.pid_starttime);
         
         if (done)
             break;

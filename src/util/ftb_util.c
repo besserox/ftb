@@ -47,7 +47,8 @@ int FTBU_match_mask(const FTB_event_t *event, const FTB_event_t *mask)
 int FTBU_is_equal_location_id(const FTB_location_id_t *lhs, const FTB_location_id_t *rhs)
 {
     if (lhs->pid == rhs->pid) {
-        if (strncmp(lhs->hostname, rhs->hostname, FTB_MAX_HOST_NAME) == 0)
+       if ((strncasecmp(lhs->hostname, rhs->hostname, FTB_MAX_HOST_NAME) == 0)
+            && (strncasecmp(lhs->pid_starttime, rhs->pid_starttime, FTB_MAX_PID_STARTTIME) == 0))
             return 1;
     }
     return 0;

@@ -230,8 +230,13 @@ static void FTBMI_util_get_system_id(uint32_t *system_id)
 
 static void FTBMI_util_get_location_id(FTB_location_id_t *location_id)
 {
+    char cmd[128];
     location_id->pid = getpid();
     FTBU_get_output_of_cmd("hostname", location_id->hostname, FTB_MAX_HOST_NAME);
+    sprintf(cmd, "ps -o lstart -p %d |sed /STARTED/d|sed 's/ /_/g'", location_id->pid);
+    FTBU_get_output_of_cmd(cmd, location_id->pid_starttime, FTB_MAX_PID_STARTTIME);
+    printf("pid = %d and pid start time=%s\n", location_id->pid, location_id->pid_starttime);
+
 }
 
 int FTBM_Get_catcher_comp_list(const FTB_event_t *event, FTB_id_t **list, int *len)
@@ -509,9 +514,9 @@ int FTBM_Client_register(const FTB_id_t *id)
             }
         }
     }
-    FTB_INFO("new client comp:%s comp_cat:%s client_name:%s ext:%d registered, from host %s, pid %d",
+    FTB_INFO("new client comp:%s comp_cat:%s client_name:%s ext:%d registered, from host %s, pid %d pid starttime=%s",
         comp->id.client_id.comp, comp->id.client_id.comp_cat, comp->id.client_id.client_name, comp->id.client_id.ext, 
-        comp->id.location_id.hostname, comp->id.location_id.pid);
+        comp->id.location_id.hostname, comp->id.location_id.pid, comp->id.location_id.pid_starttime);
 
     FTB_INFO("FTBM_Client_register Out");
     return FTB_SUCCESS;

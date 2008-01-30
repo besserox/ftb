@@ -785,7 +785,7 @@ int FTBC_Connect(const FTB_client_t *cinfo, int extension, FTB_client_handle_t *
         memcpy(&msg.src,client_info->id,sizeof(FTB_id_t));
         msg.msg_type = FTBM_MSG_TYPE_CLIENT_REG;
         FTBM_Get_parent_location_id(&msg.dst.location_id);
-        FTB_INFO("parent: %s pid %d",msg.dst.location_id.hostname, msg.dst.location_id.pid);
+        FTB_INFO("parent: %s pid %d pid_starttime=%s",msg.dst.location_id.hostname, msg.dst.location_id.pid, msg.dst.location_id.pid_starttime);
         ret = FTBM_Send(&msg);
         if (ret != FTB_SUCCESS) {
             FTB_INFO("FTBC_Connect Out");
@@ -1021,6 +1021,7 @@ int FTBC_Get_event_handle(const FTB_receive_event_t receive_event, FTB_event_han
     event_handle->client_id.ext = receive_event.client_extension;
     strcpy(event_handle->location_id.hostname, receive_event.incoming_src.hostname);
     memcpy(&event_handle->location_id.pid, &receive_event.incoming_src.pid, sizeof(pid_t));
+    strcpy(event_handle->location_id.pid_starttime, receive_event.incoming_src.pid_starttime);
     strcpy(event_handle->event_name, receive_event.event_name);
     strcpy(event_handle->severity, receive_event.severity);
     event_handle->seqnum = receive_event.seqnum;
@@ -1037,6 +1038,7 @@ int FTBC_Compare_event_handles(const FTB_event_handle_t event_handle1, const FTB
             && (event_handle1.client_id.ext == event_handle2.client_id.ext)
             && (strcasecmp(event_handle1.location_id.hostname, event_handle2.location_id.hostname) == 0)
             && (event_handle1.location_id.pid == event_handle2.location_id.pid)
+            && (strcasecmp(event_handle1.location_id.pid_starttime, event_handle2.location_id.pid_starttime) == 0)
             && (strcasecmp(event_handle1.event_name, event_handle2.event_name) == 0)
             && (strcasecmp(event_handle1.severity, event_handle2.severity) == 0)
             && (event_handle1.seqnum == event_handle2.seqnum)) {
@@ -1108,6 +1110,7 @@ int FTBC_Publish(FTB_client_handle_t client_handle, const char *event_name,  con
         event_handle->client_id.ext = msg.src.client_id.ext;
         strcpy(event_handle->location_id.hostname, msg.src.location_id.hostname);
         memcpy(&event_handle->location_id.pid, &msg.src.location_id.pid, sizeof(pid_t));
+        strcpy(event_handle->location_id.pid_starttime, msg.src.location_id.pid_starttime);
         strcpy(event_handle->event_name, msg.event.event_name);
         strcpy(event_handle->severity, msg.event.severity);
         event_handle->seqnum = msg.event.seqnum;

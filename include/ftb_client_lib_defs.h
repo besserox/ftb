@@ -79,14 +79,14 @@ struct FTB_subscribe_handle {
 
 struct FTB_event_handle {
     FTB_client_id_t client_id;      /* 101 bytes*/
-    FTB_location_id_t location_id;  /* 64 for hostname + 4 for pid */
+    FTB_location_id_t location_id;  /* 64 for hostname + 4 for pid + 30 for pid_start_time */
     FTB_event_name_t event_name;    /* 32 for event_name */
     FTB_severity_t  severity;       /* 16 for severity */
     int seqnum;                     /* 4 bytes*/
     /* Do we need the client_jobid?
      * FTB_client_jobid_t client_jobid;
      */
-};                                  /* 217 bytes */
+};                                  /* 247 bytes */
 
 
 #ifdef __cplusplus

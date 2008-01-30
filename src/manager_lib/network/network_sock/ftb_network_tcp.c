@@ -123,7 +123,7 @@ static inline FTB_connection_entry_t* FTBNI_util_find_connection_to_location(con
     FTBU_list_for_each_readonly(pos, FTBNI_connection_table) {
         FTB_connection_entry_t *entry = (FTB_connection_entry_t *)pos;
         if (FTBU_is_equal_location_id(entry->dst, location_id)) {
-            FTBNI_unlock_conn_table();
+            FTBNI_unlock_conn_table(); /* Is this needed ? */
             return entry;
         }
     }
