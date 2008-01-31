@@ -147,7 +147,7 @@ int main(int argc, char* argv[])
         {
             perror("recvfrom");
             //FTB_WARNING("recvfrom returns %d when expecting a packet of size %d", ret, sizeof(FTBNI_bootstrap_pkt_t));
-            FTB_WARNING("recvfrom returns %d when expecting a packet of size %ld", ret, sizeof(FTBNI_bootstrap_pkt_t));
+            FTB_WARNING("recvfrom returns %d when expecting a packet of size %lu", ret, sizeof(FTBNI_bootstrap_pkt_t));
             continue;
         }
         FTB_INFO("received packet type %d client addr %s:%d",pkt.bootstrap_msg_type, inet_ntoa(client.sin_addr), ntohs(client.sin_port));

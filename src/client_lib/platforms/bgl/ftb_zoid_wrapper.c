@@ -3,16 +3,16 @@
 #include "libftb.h"
 #include "ftb_zoid_client.h"
 
-int FTB_Connect(FTB_client_t *client_info, FTB_client_handle_t *client_handle)
+
+int FTB_Connect(const FTB_client_t *client_info, FTB_client_handle_t *client_handle)
 {
-    if ((strcasecmp(cinfo->client_subscription_style, "FTB_SUBSCRIPTION_NOTIFY") == 0)
-        || (strcasecmp(cinfo->client_subscription_style, "FTB_SUBSCRIPTION_BOTH") == 0)) {
-        return FTB_ERR_SUBSCRIPTION_STYLE;
-    }
-    else
-        return ZOID_FTB_Connect(client_info, client_handle); 
+    return ZOID_FTB_Connect(client_info, client_handle); 
 }
 
+int FTB_Declare_publishable_events(FTB_client_handle_t client_handle, const char * schema_file, const FTB_event_info_t  *einfo, int num_events)
+{
+    return ZOID_FTB_Declare_publishable_events(client_handle, NULL, einfo, num_events);
+}
 
 int FTB_Publish(FTB_client_handle_t client_handle, const char *event_name,  const FTB_event_properties_t *event_properties, FTB_event_handle_t *event_handle) {
     return ZOID_FTBC_Publish(client_handle, event_name, event_properties, event_handle);
@@ -27,14 +27,6 @@ int FTB_Subscribe(FTB_subscribe_handle_t *subscribe_handle, FTB_client_handle_t 
 
 int FTB_Unsubscribe(FTB_subscribe_handle_t *subscribe_handle) {
     return ZOID_FTB_Unsubscribe(subscribe_handle);
-}
-
-int FTB_Declare_publishable_events(FTB_client_handle_t client_handle, const char * schema_file, const FTB_event_info_t  *einfo, int num_events)
-{
-    if (schema_file != NULL)
-         return FTB_ERR_NOT_SUPPORTED;
-    else
-        return ZOID_FTB_Declare_publishable_events(client_handle, NULL, einfo, num_events);
 }
 
 int FTB_Poll_event(FTB_subscribe_handle_t subscribe_handle, FTB_receive_event_t *receive_event)

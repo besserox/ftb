@@ -36,10 +36,19 @@ void ftb_zoid_client_fini()
 #endif
 }
 
-int ZOID_FTB_Connect( FTB_client_t *client_info /* in:ptr */,
+int ZOID_FTB_Connect(const FTB_client_t *client_info /* in:ptr */,
                     FTB_client_handle_t *client_handle /* out:ptr */)
 {
     int proc_id = __zoid_calling_process_id();
+
+    /*
+     * For BGL systems, subscription_style of FTB_SUBSCRIPTION_NOTIFY
+     * and FTB_SUBSCRIPTION_BOTH is not supported
+     */
+    if ((strcasecmp(cinfo->client_subscription_style, "FTB_SUBSCRIPTION_NOTIFY") == 0)
+        || (strcasecmp(cinfo->client_subscription_style, "FTB_SUBSCRIPTION_BOTH") == 0)) {
+            return  FTB_ERR_NOT_SUPPORTED ;
+    }   
     return FTBC_Connect(client_info, proc_id, client_handle);
 }
 

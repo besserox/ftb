@@ -43,7 +43,7 @@ int main (int argc, char *argv[])
             exit(-1);
         }
         printf("sleep(10)\n");
-        sleep(10);
+        //sleep(10);
     }
     printf("FTB_Disconnect\n");
     FTB_Disconnect(handle);
