@@ -1,9 +1,0 @@
-<ftb_component_details>
-<schema_ver>0.5</schema_ver>
-<namespace>ftb.mpi.mpi_example</namespace>
-<publish_event>
-	<event_name>mpi_simple_event</event_name>
-	<event_severity>ftb_info</event_severity>
-	<event_desc>This event is used by a sample mpi application</event_desc>
-</publish_event>
-</ftb_component_details>

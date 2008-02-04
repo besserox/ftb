@@ -1,9 +1,0 @@
-<ftb_component_details>
-<schema_ver>0.5</schema_ver>
-<namespace>FTb.FTB_EXAMPLES1234567890123456789.watchdog</namespace>
-<publish_event>
-	<event_name>WATCH_DOG_EVENT</event_name>
-	<event_severity>ftb_info</event_severity>
-	<event_desc>This event is used by watchdog</event_desc>
-</publish_event>
-</ftb_component_details>
