@@ -147,17 +147,6 @@ int FTBCI_util_is_equal_clienthandle(const void *lhs_void, const void* rhs_void)
     FTBCI_unlock_client_lib();\
 }while(0)
 
-int print_event(FTB_event_t *event) {
-    printf ("event->severity=%s\n", event->severity);
-    printf ("event->region=%s\n", event->region);
-    printf ("event->comp_cat=%s\n", event->comp_cat);
-    printf ("event->comp=%s\n", event->comp);
-    printf ("event->event_name=%s\n", event->event_name);
-    printf ("event->client_jobid=%s\n", event->client_jobid);
-    printf ("event->hostname=%s\n", event->hostname);
-    return 0 ;
-}
-
 static int FTBCI_convert_clientid_to_clienthandle(const FTB_client_id_t client_id, FTB_client_handle_t *client_handle) {
     client_handle->valid = 1;
     memcpy(&client_handle->client_id, &client_id, sizeof(FTB_client_id_t));
@@ -180,7 +169,6 @@ int FTBCI_split_namespace(const char *event_space, char *region_name, char *cate
         FTB_INFO("Out FTBCI_split_namespace");
         return FTB_ERR_EVENTSPACE_FORMAT;
     }
-    printf("str=%s and tempstr=%s\n", str, tempstr);
     strcpy(region_name,str);
 
     str=strsep(&tempstr,"."); 
@@ -188,7 +176,6 @@ int FTBCI_split_namespace(const char *event_space, char *region_name, char *cate
         FTB_INFO("Out FTBCI_split_namespace");
         return FTB_ERR_EVENTSPACE_FORMAT;
     }
-    printf("str=%s and tempstr=%s\n", str, tempstr);
     strcpy(category_name,str);
     
     str=strsep(&tempstr,"."); 
@@ -197,7 +184,6 @@ int FTBCI_split_namespace(const char *event_space, char *region_name, char *cate
         return FTB_ERR_EVENTSPACE_FORMAT;
     }
     strcpy(component_name,str);
-    printf("str=%s\n", str);
 
     if ((tempstr != NULL) 
             || (!check_alphanumeric_underscore_format(region_name)) 
@@ -864,7 +850,6 @@ int FTBCI_check_schema_file(const FTB_client_handle_t client_handle, const char 
             else {
                 /* Within struct. Store eventspace string */
                  if (state == IN_STRUCT) {
-                     printf("********* here we are where we found event space %s\n", str);
                     if (strlen(str) >= FTB_MAX_EVENTSPACE) {
                         FTB_WARNING("Event space exceeds expected length\n");
                         return FTB_ERR_INVALID_SCHEMA_FILE;
@@ -1044,8 +1029,6 @@ int FTBC_Get_event_handle(const FTB_receive_event_t receive_event, FTB_event_han
     if ((ret = FTBCI_split_namespace(receive_event.event_space, event_handle->client_id.region, event_handle->client_id.comp_cat, event_handle->client_id.comp)) != FTB_SUCCESS) {
         return ret;
     }
-
-    printf("receive_event.event_space=%s, event_handle->client_id.region=%s, event_handle->client_id.comp_cat=%s and  event_handle->client_id.comp=%s\n", receive_event.event_space, event_handle->client_id.region, event_handle->client_id.comp_cat, event_handle->client_id.comp);
     strcpy(event_handle->client_id.client_name , receive_event.client_name);
     event_handle->client_id.ext = receive_event.client_extension;
     strcpy(event_handle->location_id.hostname, receive_event.incoming_src.hostname);

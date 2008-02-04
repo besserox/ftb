@@ -118,20 +118,6 @@ elif test "$CLIENTS" == "bgl"; then
 		exit 1;
 	fi
 fi
-dnl Create throw_events.h file
-PARSER_PATH=`pwd`/utils;
-SCHEMA_FILES_PATH=`pwd`/components/schemas/*.xml;
-echo "Converting throw event schema files"
-for i in `ls $SCHEMA_FILES_PATH`; do
-   temp=$temp"$i ";
- done
-dnl perl $PARSER_PATH/ftb_event_parser.pl $temp
-dnl if test ! -e `pwd`/ftb_throw_events.h; then
-dnl	echo "ftb_throw_events.h could not be created.";
-dnl 	echo "configure script aborting...correct errors first" >&2;
-dnl 	exit 1;
-dnl fi
-dnl /bin/mv `pwd`/ftb_throw_events.h `pwd`/include/;
 
 dnl Create include/ftb_conf file
 FTB_CONF_FILE=`pwd`/include/ftb_conf.h
@@ -147,8 +133,8 @@ network="sock";
 FTB_NETWORK_CFLAG="-DFTB_NETWORK_SOCK";
 TEMPSBIN='${abs_top_srcdir}/sbin';
 TEMPLIB='${abs_top_srcdir}/lib';
-FTB_LIB_PATH_SHARED='${TEMPLIB}/shared';
-FTB_LIB_PATH_STATIC='${TEMPLIB}/static';
+FTB_LIB_PATH_SHARED='${TEMPLIB}';
+FTB_LIB_PATH_STATIC='${TEMPLIB}';
 INC_DIR='${abs_top_srcdir}/include';
 AR='ar';
 LIBS_PTHREAD='-lpthread';
@@ -210,6 +196,6 @@ AC_OUTPUT(Makefile 								\
 	  src/client_lib/platforms/bgl/zoid_client/client/Makefile		\
 	  src/client_lib/platforms/bgl/zoid_client/server/Makefile		\
 	  src/agent/Makefile							\
-	  components/mvapich2/standalone_ib/Makefile					\
+	  components/mvapich2/standalone_ib/Makefile				\
 	  components/examples/Makefile)
 

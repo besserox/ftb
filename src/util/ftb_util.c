@@ -9,13 +9,6 @@ extern FILE* FTBU_log_file_fp;
 int FTBU_match_mask(const FTB_event_t *event, const FTB_event_t *mask)
 {  
     FTB_INFO("In FTBU_match_mask"); 
-    printf ("event->region=%s and mask->region=%s\n", event->region, mask->region);
-    printf ("event->client_jobid=%s and mask->client_jobid=%s\n", event->client_jobid, mask->client_jobid);
-    printf ("event->hostname=%s and mask->hostname=%s\n", event->hostname, mask->hostname);
-    printf ("event->event_name=%s and mask->event_name=%s\n", event->event_name, mask->event_name);
-    printf ("event->severity=%s and mask->severity=%s\n", event->severity, mask->severity);
-    printf ("event->comp_cat=%s and mask->comp_cat=%s\n", event->comp_cat, mask->comp_cat);
-    printf ("event->comp=%s and mask->comp=%s\n", event->comp, mask->comp);
 
     if (((strcasecmp(event->region, mask->region) == 0) ||
             (strcasecmp(mask->region, "ALL") == 0)) &&

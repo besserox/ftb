@@ -39,7 +39,6 @@ clean:
 	rm -f ftb_bootstrap_udp.o ftb_network_tcp.o
 
 ${TEMPSBIN}/ftb_database_server: ftb_database_server_udp.c
-	echo "UTIL_OBJ=${TEMPSBIN}"
 	${CC} ${CFLAGS} -o $@ $< ${UTIL_OBJ}
 
 ftb_bootstrap_udp.o: ftb_bootstrap_udp.c

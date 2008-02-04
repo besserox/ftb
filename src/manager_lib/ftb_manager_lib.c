@@ -235,7 +235,6 @@ static void FTBMI_util_get_location_id(FTB_location_id_t *location_id)
     FTBU_get_output_of_cmd("hostname", location_id->hostname, FTB_MAX_HOST_NAME);
     sprintf(cmd, "ps -o lstart -p %d |sed /STARTED/d|sed 's/ /_/g'", location_id->pid);
     FTBU_get_output_of_cmd(cmd, location_id->pid_starttime, FTB_MAX_PID_STARTTIME);
-    printf("pid = %d and pid start time=%s\n", location_id->pid, location_id->pid_starttime);
 
 }
 

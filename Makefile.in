@@ -20,15 +20,15 @@ TEMPSBIN=@TEMPSBIN@
 TEMPLIB=@TEMPLIB@
 FTB_LIB_BGL_CN_NAME=@FTB_LIB_BGL_CN_NAME@
 FTB_LIB_LINUX_NAME=@FTB_LIB_LINUX_NAME@
-FTB_LIB_PATH_SHARED=@FTB_LIB_PATH_SHARED@
-FTB_LIB_PATH_STATIC=@FTB_LIB_PATH_STATIC@
+#FTB_LIB_PATH_SHARED=@FTB_LIB_PATH_SHARED@
+#FTB_LIB_PATH_STATIC=@FTB_LIB_PATH_STATIC@
 INC_DIR=@INC_DIR@
 AR=@AR@
 CFLAGS_FTB=@CFLAGS_FTB@
 CFLAGS_SRC=@CFLAGS_SRC@
 UTIL_OBJ=@UTIL_OBJ@
-MANAGER_LIB_PATH_SHARED=@MANAGER_LIB_PATH_SHARED@
-MANAGER_LIB_PATH_STATIC=@MANAGER_LIB_PATH_STATIC@
+#MANAGER_LIB_PATH_SHARED=@MANAGER_LIB_PATH_SHARED@
+#MANAGER_LIB_PATH_STATIC=@MANAGER_LIB_PATH_STATIC@
 MANAGER_LIB_NAME=@MANAGER_LIB_NAME@
 CFLAGS_CLIENT=@CFLAGS_CLIENT@
 CLIENT_LIB_OBJ=@CLIENT_LIB_OBJ@
@@ -51,8 +51,8 @@ clean:
 ftb: 
 	if [ ! -e @TEMPSBIN@ ]; then mkdir @TEMPSBIN@; fi				
 	if [ ! -e @TEMPLIB@ ]; then mkdir @TEMPLIB@; fi
-	if [ ! -e @TEMPLIB@/static ]; then mkdir @TEMPLIB@/static; fi
-	if [ ! -e @TEMPLIB@/shared ]; then mkdir @TEMPLIB@/shared; fi
+#if [ ! -e @TEMPLIB@/static ]; then mkdir @TEMPLIB@/static; fi
+#if [ ! -e @TEMPLIB@/shared ]; then mkdir @TEMPLIB@/shared; fi
 	${MAKE} -C src all
 
 ftb_examples:
@@ -62,10 +62,12 @@ install:
 	install -v -b -d @prefix@; 
 	install -v -b -d @sbindir@;
 	install -v -b -d @includedir@;
-	install -v -b -d @libdir@ @libdir@/shared @libdir@/static;
+	install -v -b -d @libdir@; 
+#@libdir@/shared @libdir@/static;
 	install -v -b -d @prefix@/components/examples;
 	install -v -b @TEMPSBIN@/* @sbindir@;
-	install -v -b @TEMPLIB@/shared/* @libdir@/shared/;
-	install -v -b @TEMPLIB@/static/* @libdir@/static/;
+	install -v -b @TEMPLIB@/* @libdir@/;
+#install -v -b @TEMPLIB@/shared/* @libdir@/shared/;
+#install -v -b @TEMPLIB@/static/* @libdir@/static/;
 	install -v -b @abs_top_srcdir@/include/* @includedir@;
 	install -v -b @abs_top_srcdir@/components/examples/ftb_* @prefix@/components/examples;

@@ -1,3 +1,9 @@
+/*
+ * A sample MPI application.
+ * This calculates the amount of time it takes to run the FTB_Publish
+ * routine
+ */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <signal.h>
@@ -40,7 +46,7 @@ int main (int argc, char *argv[])
     }
 
     FTB_event_info_t event_info[1] = {{"MPI_SIMPLE_EVENT", "INFO"}};
-   /printf("FTB_Declare_publishable_events\n");
+    printf("FTB_Declare_publishable_events\n");
     ret = FTB_Declare_publishable_events(handle, 0, event_info, 1); 
     if (ret != FTB_SUCCESS) {
         printf("FTB_Declare_publishable_events failed ret=%d!\n", ret); exit(-1);
@@ -51,6 +57,10 @@ int main (int argc, char *argv[])
     MPI_Comm_size(MPI_COMM_WORLD, &size);
     MPI_Barrier(MPI_COMM_WORLD);
     begin = MPI_Wtime();
+    /*
+     * Publish the events and calculate user-level wall time needed for this
+     * publish to complete
+     */
     for (i=0;i<count;i++) {
         FTB_Publish(handle, "MPI_SIMPLE_EVENT", NULL, &ehandle);
     }
