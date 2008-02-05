@@ -102,6 +102,5 @@ AC_SUBST(FTB_LIB_PATH_STATIC)
 AC_SUBST(FTB_INC_DIR)
 AC_SUBST(LIBS_PTHREAD)
 AC_OUTPUT(Makefile \
-	  mvapich2/standalone_ib/Makefile \
 	  examples/Makefile)
 
