@@ -11,8 +11,8 @@ Building FTB
 
 2. Run ./autogen.sh
 
-3. Run ./configure --with-btsrap-server=<server_name>
-   	The --with-btsrap-server=<server_name> is used to specify the
+3. Run ./configure --with-bstrap-server=<server_name>
+   	The --with-bstrap-server=<server_name> is used to specify the
    	hostname of the bootstrap server. This is a required option to
    	./configure. The user can override this value and specify a new
    	hostname for the bootstrap server using the FTB_BSTRAP_SERVER
@@ -101,8 +101,10 @@ Running FTB and an FTB-enabled component
 2. Start the FTB agent by running ./sbin/ftb_agent &
 
 3. Cd to the examples directory.
+   Ensure that LD_LIBRARY_PATH environment variable points to the lib directory in FTB_HOME. 
+
    Run ./ftb_watchdog. Ensure that the file watchdog_schema.ftb is
-   present in the directory from where ./ftb_watchdog is launched.
+present in the directory from where ./ftb_watchdog is launched.
 
 
 Understanding FTB Examples 

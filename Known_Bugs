@@ -1,4 +1,6 @@
 Listing of bugs as of Feb 05, 2008
 ----------------------------------
 
-1. Agent throw an failed FTBM_Wait (with error code -20) when a client disconnects.
+1. Agent may throw the following warning when a client exits
+[FTB_WARNING][ftb_manager_lib.c: line 791]FTBN_Recv_msg failed -20
+[FTB_WARNING][ftb_agent.c: line 34]FTBM_Wait failed -20
