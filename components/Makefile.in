@@ -1,0 +1,29 @@
+#Please ignore blank spaces (if any) in the start of this file
+@ZOID_HOME@
+@ZOID_LIBC_PATH@
+@CC_BLRTS@
+@AR_BLRTS@
+@BGLSYS_LIB_PATH@
+clients=@clients@
+ZOID_CLIENT_DIR=@ZOID_CLIENT_DIR@
+FTB_LIB_LINUX_NAME=@FTB_LIB_LINUX_NAME@
+FTB_LIB_PATH_SHARED=@FTB_LIB_PATH_SHARED@
+FTB_LIB_PATH_STATIC=@FTB_LIB_PATH_STATIC@
+FTB_INC_DIR=@FTB_INC_DIR@
+CC=@CC@
+LIBS_PTHREAD=@LIBS_PTHREAD@
+
+SUBDIRS = examples
+
+all: ftb_examples
+
+clean:
+	for i in ${SUBDIRS}; do ${MAKE} -C $$i $@; done
+
+ftb_examples:
+	${MAKE} -C examples all
+
+install:
+	install -v -b -d @prefix@; 
+	install -v -b -d @prefix@/examples;
+	install -v -b @abs_top_srcdir@/examples/*ftb* @prefix@/examples;

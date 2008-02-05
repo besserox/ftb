@@ -42,6 +42,7 @@ int callback_handle_recovery(FTB_receive_event_t *evt, void *arg)
         printf("FTB_Unsubscribe failed with code %d\n", ret);
         return ret;
     }
+    printf("In callback function: Unsubscribing the subscription string\n");
 
     return 0;
 }
@@ -111,6 +112,7 @@ int main (int argc, char *argv[])
      * completes before FTB_Disconnect is called
      */
     sleep (10);
+    printf("Disconnecting from FTB\n");
     FTB_Disconnect(handle);
     
     return 0;

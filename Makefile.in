@@ -38,9 +38,9 @@ CC=@CC@
 RANLIB=@RANLIB@
 LIBS_PTHREAD=@LIBS_PTHREAD@
 
-SUBDIRS = src components/examples
+SUBDIRS = src
 
-all: ftb ftb_examples
+all: ftb
 
 clean:
 	for i in ${SUBDIRS}; do ${MAKE} -C $$i $@; done
@@ -51,8 +51,6 @@ clean:
 ftb: 
 	if [ ! -e @TEMPSBIN@ ]; then mkdir @TEMPSBIN@; fi				
 	if [ ! -e @TEMPLIB@ ]; then mkdir @TEMPLIB@; fi
-#if [ ! -e @TEMPLIB@/static ]; then mkdir @TEMPLIB@/static; fi
-#if [ ! -e @TEMPLIB@/shared ]; then mkdir @TEMPLIB@/shared; fi
 	${MAKE} -C src all
 
 ftb_examples:
@@ -63,11 +61,7 @@ install:
 	install -v -b -d @sbindir@;
 	install -v -b -d @includedir@;
 	install -v -b -d @libdir@; 
-#@libdir@/shared @libdir@/static;
-	install -v -b -d @prefix@/components/examples;
 	install -v -b @TEMPSBIN@/* @sbindir@;
 	install -v -b @TEMPLIB@/* @libdir@/;
-#install -v -b @TEMPLIB@/shared/* @libdir@/shared/;
-#install -v -b @TEMPLIB@/static/* @libdir@/static/;
 	install -v -b @abs_top_srcdir@/include/* @includedir@;
-	install -v -b @abs_top_srcdir@/components/examples/ftb_* @prefix@/components/examples;
+#	install -v -b @abs_top_srcdir@/components/examples/*ftb* @prefix@/components/examples;

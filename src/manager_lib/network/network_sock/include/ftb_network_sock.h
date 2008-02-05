@@ -1,7 +1,7 @@
 #ifndef FTB_NETWORK_TCP_H
 #define FTB_NETWORK_TCP_H
 
-#include "ftb_conf.h"
+#include "config.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -65,10 +65,38 @@ int FTBNI_Bootstrap_abort(void);
 
 static inline void FTBNI_util_setup_config_sock(FTBNI_config_sock_t *config)
 {
-    config->agent_port = FTB_CONF_AGENT_PORT;
-    config->server_port = FTB_CONF_SERVER_PORT;
-    strncpy(config->server_name, FTB_CONF_SERVER_NAME, FTB_MAX_HOST_NAME);
+    char *env = (char*)malloc(1024);
+
+    if ((env = getenv("FTB_AGENT_PORT")) == NULL) {
+        config->agent_port =  FTB_AGENT_PORT;
+    }
+    else {
+        config->agent_port = atoi(env);
+    }
+
+    if ((env = getenv("FTB_BSTRAP_PORT")) == NULL) {
+        config->server_port = FTB_BSTRAP_PORT;
+    }
+    else {
+        config->server_port = atoi(env);
+    }
+    
+    if ((env = getenv("FTB_BSTRAP_SERVER")) == NULL) {
+        strncpy(config->server_name, FTB_BSTRAP_SERVER, FTB_MAX_HOST_NAME);
+    }
+    else {
+        strncpy(config->server_name, env, FTB_MAX_HOST_NAME);
+    }
+
+    /*FTB_INFO("agent port=%d, server port=%d and hostname=%s\n", 
+            config->agent_port, config->server_port, config->server_name);
+
+    config->agent_port = FTB_AGENT_PORT;
+    config->server_port = FTB_BSTRAP_PORT;
+    strncpy(config->server_name, FTB_BSTRAP_SERVER, FTB_MAX_HOST_NAME);
+    */
 }
+
 
 #ifdef __cplusplus
 } /*extern "C"*/

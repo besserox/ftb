@@ -4,11 +4,11 @@
 #include <stdint.h>
 #include <unistd.h>
 #include <sys/types.h>
+#include "config.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif 
-#define FTB_DEBUG   0
 /*#define FTB_TAG*/
 
 

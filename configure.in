@@ -1,7 +1,9 @@
 dnl Process this file with autoconf to produce a configure script.
 
-AC_INIT()
 AC_PREREQ(2.59)
+AC_INIT()
+AC_CONFIG_HEADERS(include/config.h)
+
 AC_PREFIX_DEFAULT('/usr/local')
 saveCFLAGS=$CFLAGS
 AC_PROG_CC
@@ -9,31 +11,31 @@ CFLAGS=$saveCFLAGS
 AC_PROG_RANLIB
 
 dnl Get bootstrap server name
-AC_ARG_WITH(bstrap-name, [  --with-bstrap-name=<hostname>		Hostname of Bootstrapping server],
-	                 BS_SERVER_NAME=$withval, BS_SERVER_NAME='')
+AC_ARG_WITH(bstrap-server, [  --with-bstrap-server=<hostname>       Hostname of Bootstrapping server[no default]],
+	                 FTB_BSTRAP_SERVER=$withval, FTB_BSTRAP_SERVER='')
 AC_MSG_CHECKING(checking bootstrap server name)
-AC_MSG_RESULT($BS_SERVER_NAME)
-if test "$BS_SERVER_NAME" == ""; then
-	echo "Bootstrap server host name needed. Use ./configure --help ";
+AC_MSG_RESULT($FTB_BSTRAP_SERVER)
+if test "$FTB_BSTRAP_SERVER" == ""; then
+	echo "Bootstrap server host name needed. You can also override it via an environment variable leter";
 	echo "./configure aborting";
 	exit 1;
 fi
+AC_DEFINE_UNQUOTED(FTB_BSTRAP_SERVER, "${FTB_BSTRAP_SERVER}", [Hostname for the FTB bootstrap server])
 
 
 dnl Get bootstrap server port number
-AC_ARG_WITH(bstrap-port, [  --with-bstrap-port=<port number>	Port number of Bootstrapping server.
-					Default port is 14455],
-	                 BS_SERVER_PORT=$withval, BS_SERVER_PORT=14455)
+AC_ARG_WITH(bstrap-port, [  --with-bstrap-port=<port number>	Port number of Bootstrapping server[14455]],
+	                 FTB_BSTRAP_PORT=$withval, FTB_BSTRAP_PORT=14455)
 AC_MSG_CHECKING(checking bootstrap server port number)
-AC_MSG_RESULT($BS_SERVER_PORT)
-
+AC_MSG_RESULT($FTB_BSTRAP_PORT)
+AC_DEFINE_UNQUOTED(FTB_BSTRAP_PORT, ${FTB_BSTRAP_PORT}, [Port number for the FTB bootstrap server])
 
 dnl Get agent port number
-AC_ARG_WITH(agent-port, [  --with-agent-port=<port number>	Port number on which agent is running.
-					Default port is 10809],
-			AGENT_PORT=$withval, AGENT_PORT=10809)
+AC_ARG_WITH(agent-port, [  --with-agent-port=<port number>	Port number on which agent is running[10809]],
+			FTB_AGENT_PORT=$withval, FTB_AGENT_PORT=10809)
 AC_MSG_CHECKING(checking agent port number)
-AC_MSG_RESULT($AGENT_PORT)
+AC_MSG_RESULT($FTB_AGENT_PORT)
+AC_DEFINE_UNQUOTED(FTB_AGENT_PORT, ${FTB_AGENT_PORT}, [FTB Agent port])
 
 
 dnl Expose option for platform type
@@ -43,13 +45,20 @@ AC_MSG_CHECKING(checking platform support)
 AC_MSG_RESULT($CLIENTS)
 
 dnl Expose option for BGL enviroment file
-AC_ARG_WITH(platform-envfile, [  --with-platform-envfile=<bgl envfile>
-					Default file will be bgl_setup_env for
+AC_ARG_WITH(platform-envfile, [  --with-platform-envfile=<bgl envfile> Default file will be bgl_setup_env for
 					bgl platforms. For all other platforms,
 					this file is ignored.],
 			ENVFILE=$withval, ENVFILE=)
 AC_MSG_CHECKING(user specified platform environment file)
 AC_MSG_RESULT($ENVFILE)
+
+AC_ARG_ENABLE(debug, [  --enable-debug: To enable debug messages. Default is no debug], FTB_DEBUG=$enableval, FTB_DEBUG=no)
+AC_MSG_CHECKING(debug messages)
+AC_MSG_RESULT($FTB_DEBUG)
+if test "$FTB_DEBUG" = "yes" ; then
+   AC_DEFINE(FTB_DEBUG,, [FTB Debug definition])
+fi
+
 
 FTB_LIB_LINUX_NAME=ftb
 if  test "$CLIENTS" == "linux"; then
@@ -119,15 +128,6 @@ elif test "$CLIENTS" == "bgl"; then
 	fi
 fi
 
-dnl Create include/ftb_conf file
-FTB_CONF_FILE=`pwd`/include/ftb_conf.h
-echo "#ifndef FTB_CONF_H">$FTB_CONF_FILE;
-echo "#define FTB_CONF_H">>$FTB_CONF_FILE;
-echo "#define FTB_CONF_AGENT_PORT $AGENT_PORT" >>$FTB_CONF_FILE;
-echo "#define FTB_CONF_SERVER_PORT $BS_SERVER_PORT">>$FTB_CONF_FILE;
-echo "#define FTB_CONF_SERVER_NAME  \"$BS_SERVER_NAME\"">>$FTB_CONF_FILE;
-echo "#endif">>$FTB_CONF_FILE;
-
 dnl Setup some default variables that will be useful in lower Maekfiles
 network="sock";
 FTB_NETWORK_CFLAG="-DFTB_NETWORK_SOCK";
@@ -195,7 +195,7 @@ AC_OUTPUT(Makefile 								\
 	  src/client_lib/platforms/bgl/zoid_client/implementation/Makefile	\
 	  src/client_lib/platforms/bgl/zoid_client/client/Makefile		\
 	  src/client_lib/platforms/bgl/zoid_client/server/Makefile		\
-	  src/agent/Makefile							\
-	  components/mvapich2/standalone_ib/Makefile				\
-	  components/examples/Makefile)
+	  src/agent/Makefile)
+dnl	  components/mvapich2/standalone_ib/Makefile				\
+dnl	  components/examples/Makefile)
 
