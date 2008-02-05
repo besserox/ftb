@@ -13,11 +13,11 @@ AC_ARG_WITH(ftb, [--with-ftb=<install dir> Path to FTB Install dir[/usr/loca/ftb
 	    FTB_HOME=$withval, FTB_HOME='/usr/local/ftb')
 AC_MSG_CHECKING(checking ftb install directory)
 AC_MSG_RESULT($FTB_HOME)
-if test "$FTB_HOME" == ""; then
-	echo "FTB install directory needed";
-	echo "./configure aborted";
-	exit 1;
-fi
+dnl if test "$FTB_HOME" == ""; then
+dnl	echo "FTB install directory needed";
+dnl	echo "./configure aborted";
+dnl	exit 1;
+dnl fi
 
 dnl Expose option for platform type
 AC_ARG_WITH(platform, [  --with-platform=<platform type>        Possible values: bgl, linux],

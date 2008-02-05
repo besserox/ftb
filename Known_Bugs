@@ -1,0 +1,4 @@
+Listing of bugs as of Feb 05, 2008
+----------------------------------
+
+1. Agent throw an failed FTBM_Wait (with error code -20) when a client disconnects.

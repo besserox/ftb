@@ -1,30 +1,170 @@
 					FTB Release 0.5
 
-Intro 
-=====
-
-
-
-Supported Features 
-================== 
 
 Getting started 
 ===============
 
-pre-req i
-unpack tar
+Building FTB
+-------------
+1. Download the FTB code from the CIFTS SVN trunk at: https://svn.mcs.anl.gov/repos/cifts/ftb/trunk/
+	svn co https://svn.mcs.anl.gov/repos/cifts/ftb/trunk
 
-choose installation dir
+2. Run ./autogen.sh
 
-build
+3. Run ./configure --with-btsrap-server=<server_name>
+   	The --with-btsrap-server=<server_name> is used to specify the
+   	hostname of the bootstrap server. This is a required option to
+   	./configure. The user can override this value and specify a new
+   	hostname for the bootstrap server using the FTB_BSTRAP_SERVER
+   	environment variable during runtime.
 
-initial testing
+   Other options to ./configure in addition to above:
+	(a) --with-bstrap-port=<port_number>
+	 Default value: 14455 
+	 This is the port used by the FTB agent and perhaps the FTB
+	 clients to communicate to the bootstrap server. This value
+	 can be overridden at run-time by specifying the environment
+	 variable FTB_BSTRAP_PORT
+
+	(b) --with-agent-port=<port_number>
+	 Default value: 10809 
+	 This is the port used by the FTB clients to connect to an
+	 FTB agent. This value can be overriden at run-time by
+	 specifying the environment variable FTB_AGENT_PORT
+
+	(c) --enable-debug 
+	 Default: no debug
+	 This option enables debug messages on the client as well as the FTB side.
+
+	(d) --with-platform=<linux or bgl>
+	 Default: linux
+	 This option is used by the user to specify the platform
+	 for this FTB build. Only BGL and linux are supported at
+	 this point.
+
+	(d) In addition, the user can use other standard options
+	 like --with-prefix etc. ./configure --help will provide
+	 more options
+
+4. Run make
+	This builds the FTB
+
+5. Run make install
+	This installs the FTB binaries (which include the lib, sbin
+	and include files) in the directory specified by --prefix
+	during ./configure. Default prefix is /usr/local
+
+6. The FTB is built and ready to go.
 
 
-Changing the Defaults 
-=====================
+Building FTB components
+-----------------------
+
+The current release of FTB comes with some sample components, which
+can be used to test the FTB and establish its working status. These
+examples also serve as a starting point for other component developers
+
+1. Cd to the components directory
+
+2. Run ./autogen.sh
+
+3. Run ./configure --with-ftb=<path_to_ftb_binaries>
+	The default directory to --with-ftb is /usr/local/ftb.
+   Other options to above are:
+	(a) --with-platform=<linux,bgl>
+	 Default: linux
+	 This option is used to specify the platform for which the
+	 components are to be built for
+
+	(b) In addition, the user can use other standard option
+	 like --with-prefix etc. ./configure --help will provide
+	 more options
+
+4. Run make
+
+5. Run make install (default prefix=/usr/local)
 
 
-FTB Examples 
-============
+Running FTB and an FTB-enabled component
+----------------------------------------
+
+1. Cd to ftb_home which contains the binaries, on the bootstrap
+   server mentioned during ./configure.
+
+   If you want to change the bootstrap server, bootstrap server
+   port or FTB agent port, you can do so by specifying the
+   FTB_BSTRAP_SERVER, FTB_BSTRAP_PORT and FTB_AGENT_PORT variables
+   on all nodes
+
+   Run ./sbin/ftb_database_server &
+
+2. Start the FTB agent by running ./sbin/ftb_agent &
+
+3. Cd to the examples directory.
+   Run ./ftb_watchdog. Ensure that the file watchdog_schema.ftb is
+   present in the directory from where ./ftb_watchdog is launched.
+
+
+Understanding FTB Examples 
+==========================
+o Examples can be found in the ftb source code in the components/examples directory
+o Please use the format "./example_name usage" to get the usage for the example
+o All the below examples work on linux. Some examples may require the MPI library 
+  or the OFED InfiniBand software stack
+
+(1) ftb_simple_publisher and ftb_simple_subscriber
+ Demonstrates: Connecting to FTB and publish event, Connecting to FTB and catching specific events using polling
+	     : This is the only working example on BGL for now.
+ Description : Start the ftb_simple_subscriber and ftb_simple_publisher on two different machines. 
+	       ftb_simple_subscriber subscribes and polls events published by ftb_simple_publisher 
+
+
+(2) ftb_watchdog
+ Demonstrates: Connecting to FTB, Declare publishable events using a schema 
+	       file, Subscribe (using polling) and Publish an event
+ Description : This component publishes the watch_dog_event and subscribes to catch the same event. 
+	       This can be used to confirm the working of FTB
+
+
+(3) ftb_polling_logger
+ Demonstrates: Subscribe to all events and record them,  using polling mechanism
+ Description : This component calls and records *every* event sent to the FTB 
+
+
+(4) ftb_notify_logger
+ Demonstrates: Subscribe to all events and record them, using callback mechanism
+ Description : This component calls and records *every* event sent to the FTB 
+
+
+(5) ftb_pingpong
+ Demonstrates: Multi-threading: Publish an event from the callback function, 
+	       which is called when an subscribed event arrives
+ Description : This example is composed of the server and the client components. 
+               The client publishes an event, the server recives the event and responds
+               with its own events. The client receives the server events and throws its
+               own event. Events, thus, pingpong between the client and the server
+
+(6) ftb_multiplecomp
+ Demonstrates: Multiple FTB-enabled components in a single software stack
+ Description : Refer to the code documentation for an understanding of how this example works
+
+(7) ftb_example_callback_unsubscribe
+ Demonstrates: Multi-threading: Calling unsubscribe from the callback
+ 		function, triggered when a specific event, matching subscription
+ 		string arrives.  
+ Description : Refer to the code documentation for an understanding of how this example works
+
+(8) ftb_eventhandle_example
+ Demonstrates: Multithreading and Event association using event responses
+ Description : Refer to the code documentation for an understanding of how this example works
+
+(9) ftb_ib_port_status_publisher
+ Demonstrates: An example of an FTB-enabled InfiniBand network library
+ Description : This example throws an event when the InfiniBand port becomes active. The example
+	       needs the OFED stack to be present
+
+(10) ftb_throw_delay_mpi
+ Demonstrates: An example of how to FTb-enabled MPI application
+ Description : This example calculates the amount of time needed to publish events. The example
+               needs the MPI software to be present
 
