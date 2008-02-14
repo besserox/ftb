@@ -7,6 +7,7 @@ usage()
 
 if [ "$1" == "clean" ]; then
     echo -n "Cleaning up configuration files... "
+    make clean
     rm -rf config.* configure Makefile autom4te.cache `find . -name \*~` \
     `find . -name \*\.d` `find . -name Makefile` include/ftb_throw_events.h
     echo "done"

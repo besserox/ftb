@@ -15,7 +15,7 @@ LIBS_PTHREAD=@LIBS_PTHREAD@
 
 all: ${clients}
 
-linux: ftb_watchdog ftb_polling_logger ftb_simple_publisher ftb_simple_subscriber ftb_notify_logger ftb_multiplecomp ftb_pingpong ftb_example_callback_unsubscribe ftb_eventhandle_example ftb_ib_port_status_publisher 
+linux: ftb_watchdog ftb_polling_logger ftb_simple_publisher ftb_simple_subscriber ftb_notify_logger ftb_multiplecomp ftb_pingpong ftb_example_callback_unsubscribe ftb_eventhandle_example ftb_ib_port_status_publisher  ftb_throw_delay_mpi
 
 bgl: ftb_simple_publisher_bgl ftb_simple_subscriber_bgl
 
@@ -71,6 +71,18 @@ CFLAGS_LINUX_OFED  = -Wall -g -I${FTB_INC_DIR} -I/usr/local/ofed/include
 LDFLAGS_LINUX_OFED = -L${FTB_LIB_PATH_SHARED} -L/usr/local/ofed/lib
 LIBS_LINUX_OFED    = -l${FTB_LIB_LINUX_NAME} ${LIBS_PTHREAD} -libverbs
 
+# This may not work is user has installed ofed using --prefix
 ftb_ib_port_status_publisher: ftb_ib_port_status_publisher.c
+ifeq ($(shell [ -d /usr/local/ofed ]), )
+	$(warning InfiniBand library not prevent. Not compiling ftb_ib_port_status_publisher)
+else
 	${CC} ${CFLAGS_LINUX_OFED} ${LDFLAGS_LINUX_OFED} -o $@ $< ${LIBS_LINUX_OFED}
+endif
+
+ftb_throw_delay_mpi: ftb_throw_delay_mpi.c
+ifeq ($(shell  find . -name mpicc -print ), )
+	$(warning MPI library not prevent. Not compiling ftb_throw_delay_mpi)
+else
+	mpicc ${CFLAGS_LINUX} ${LDFLAGS_LINUX} -o $@ $< ${LIBS_LINUX}
+endif
 

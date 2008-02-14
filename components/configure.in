@@ -9,7 +9,7 @@ AC_PROG_CC
 CFLAGS=$saveCFLAGS
 
 dnl Get the FTB home directory
-AC_ARG_WITH(ftb, [--with-ftb=<install dir> Path to FTB Install dir[/usr/loca/ftbl]],
+AC_ARG_WITH(ftb, [  --with-ftb=<install dir> Absolute path name pointing to the FTB installation directory [Default:/usr/local/ftb]],
 	    FTB_HOME=$withval, FTB_HOME='/usr/local/ftb')
 AC_MSG_CHECKING(checking ftb install directory)
 AC_MSG_RESULT($FTB_HOME)

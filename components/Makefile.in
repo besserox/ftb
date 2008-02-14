@@ -26,4 +26,19 @@ ftb_examples:
 install:
 	install -v -b -d @prefix@; 
 	install -v -b -d @prefix@/examples;
-	install -v -b @abs_top_srcdir@/examples/*ftb* @prefix@/examples;
+	install -v -b @abs_top_srcdir@/examples/ftb_eventhandle_example  @prefix@/examples;
+	install -v -b @abs_top_srcdir@/examples/ftb_example_callback_unsubscribe  @prefix@/examples;
+	install -v -b @abs_top_srcdir@/examples/ftb_multiplecomp    @prefix@/examples;
+	install -v -b @abs_top_srcdir@/examples/ftb_notify_logger @prefix@/examples;
+	install -v -b @abs_top_srcdir@/examples/ftb_pingpong @prefix@/examples;
+	install -v -b @abs_top_srcdir@/examples/ftb_polling_logger  @prefix@/examples;
+	install -v -b @abs_top_srcdir@/examples/ftb_simple_publisher  @prefix@/examples;
+	install -v -b @abs_top_srcdir@/examples/ftb_simple_subscriber  @prefix@/examples;
+	install -v -b @abs_top_srcdir@/examples/ftb_watchdog  @prefix@/examples;
+	install -v -b @abs_top_srcdir@/examples/watchdog_schema.ftb  @prefix@/examples;
+ifeq ($(shell [ -e examples/ftb_throw_delay_mpi ]), ftb_throw_delay_mpi )
+	install -v -b @abs_top_srcdir@/examples/ftb_throw_delay_mpi  @prefix@/examples;
+endif
+ifeq ($(shell [ -e examples/ftb_ib_port_status_publisher ]), ftb_ib_port_status_publisher)
+	install -v -b @abs_top_srcdir@/examples/ftb_ib_port_status_publisher  @prefix@/examples;
+endif

@@ -196,6 +196,4 @@ AC_OUTPUT(Makefile 								\
 	  src/client_lib/platforms/bgl/zoid_client/client/Makefile		\
 	  src/client_lib/platforms/bgl/zoid_client/server/Makefile		\
 	  src/agent/Makefile)
-dnl	  components/mvapich2/standalone_ib/Makefile				\
-dnl	  components/examples/Makefile)
 

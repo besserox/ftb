@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <signal.h>
+#include <string.h>
 #include "mpi.h"
 
 #include "libftb.h"
@@ -18,12 +19,18 @@ int main (int argc, char *argv[])
     FTB_client_t cinfo;
     FTB_event_handle_t ehandle;
     int i, count;
-    int rank, size;
+    int rank, size, ret=0;
     double begin, end, delay;
     double min, max, avg;
+    if (argc > 1) {
+        if ((strcasecmp(argv[1], "usage") == 0) || (argc > 2)) { 
+            printf("Usage: ./ftb_throw_delay_mpi <iterations>");
+            exit(0);
+        }   
+        else if (argc == 2) {
+            count = atoi(argv[1]);
+        }
 
-    if (argc >= 2) {
-       count = atoi(argv[1]);
     }
     else {
        count = 500;
