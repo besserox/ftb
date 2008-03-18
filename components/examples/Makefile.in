@@ -74,14 +74,14 @@ LIBS_LINUX_OFED    = -l${FTB_LIB_LINUX_NAME} ${LIBS_PTHREAD} -libverbs
 # This may not work is user has installed ofed using --prefix
 ftb_ib_port_status_publisher: ftb_ib_port_status_publisher.c
 ifeq ($(shell [ -d /usr/local/ofed ]), )
-	$(warning InfiniBand library not prevent. Not compiling ftb_ib_port_status_publisher)
+	$(warning InfiniBand library not present. Not compiling ftb_ib_port_status_publisher)
 else
 	${CC} ${CFLAGS_LINUX_OFED} ${LDFLAGS_LINUX_OFED} -o $@ $< ${LIBS_LINUX_OFED}
 endif
 
 ftb_throw_delay_mpi: ftb_throw_delay_mpi.c
 ifeq ($(shell  find . -name mpicc -print ), )
-	$(warning MPI library not prevent. Not compiling ftb_throw_delay_mpi)
+	$(warning MPI library not present. Not compiling ftb_throw_delay_mpi)
 else
 	mpicc ${CFLAGS_LINUX} ${LDFLAGS_LINUX} -o $@ $< ${LIBS_LINUX}
 endif
