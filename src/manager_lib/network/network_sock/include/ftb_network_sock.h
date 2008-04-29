@@ -65,7 +65,7 @@ int FTBNI_Bootstrap_abort(void);
 
 static inline void FTBNI_util_setup_config_sock(FTBNI_config_sock_t *config)
 {
-    char *env = (char*)malloc(1024);
+    char *env;
 
     if ((env = getenv("FTB_AGENT_PORT")) == NULL) {
         config->agent_port =  FTB_AGENT_PORT;

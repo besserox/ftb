@@ -45,7 +45,7 @@ int pingpong_server(FTB_receive_event_t *evt, void *arg)
     count++;
     FTB_event_handle_t ehandle;
     FTB_client_handle_t *handle = (FTB_client_handle_t *)arg;
-    printf("In pingpong_server callback handler, called because an event was received\n");
+    printf( "pingpong_server callback handler received event (%d)\n", count );
     /*
      * Server publishes its event in response to the recived client event,
      * that trigerred this callback
@@ -61,13 +61,13 @@ int pingpong_client(FTB_receive_event_t *evt, void *arg)
 {
     FTB_event_handle_t ehandle;
     count++;
+    printf( "pingpong_client callback handler received event (%d)\n", count );
     if (count >= iter) {
         gettimeofday(&end,NULL);
         done = 1;
         return 0;
     }
     FTB_client_handle_t *handle = (FTB_client_handle_t *)arg;
-    printf("In pingpong_client callback handler, called because an event was received\n");
     /*
      * Client publishes its events in response to the received server-side event,
      * which trigerred this callback
