@@ -155,37 +155,40 @@ static int FTBCI_convert_clientid_to_clienthandle(const FTB_client_id_t client_i
 
 int FTBCI_split_namespace(const char *event_space, char *region_name, char *category_name, char *component_name)
 {
-    char *event_space_cpy = (char *)malloc(strlen(event_space)+1);
+    char *tempstr = (char *)malloc(strlen(event_space)+1);
+    char *ptr = tempstr;
     char *str;
+
     FTB_INFO("In FTBCI_split_namespace");
     if (strlen(event_space) >= FTB_MAX_EVENTSPACE) {
         FTB_INFO("Out FTBCI_split_namespace");
         return FTB_ERR_EVENTSPACE_FORMAT;
     }
-    strcpy(event_space_cpy, event_space);
 
-    str=strsep(&event_space_cpy,"."); 
-    if ((strcmp(str, "\0") == 0) || (strcmp(event_space_cpy, "\0") == 0)) {
+    strcpy(tempstr, event_space);
+
+    str=strsep(&tempstr,"."); 
+    if ((strcmp(str, "\0") == 0) || (strcmp(tempstr, "\0") == 0)) {
         FTB_INFO("Out FTBCI_split_namespace");
         return FTB_ERR_EVENTSPACE_FORMAT;
     }
     strcpy(region_name,str);
 
-    str=strsep(&event_space_cpy,"."); 
-    if ((strcmp(str, "\0") == 0) || (strcmp(event_space_cpy, "\0") == 0)) {
+    str=strsep(&tempstr,"."); 
+    if ((strcmp(str, "\0") == 0) || (strcmp(tempstr, "\0") == 0)) {
         FTB_INFO("Out FTBCI_split_namespace");
         return FTB_ERR_EVENTSPACE_FORMAT;
     }
     strcpy(category_name,str);
     
-    str=strsep(&event_space_cpy,"."); 
+    str=strsep(&tempstr,"."); 
     if (strcmp(str, "\0") == 0) {
         FTB_INFO("Out FTBCI_split_namespace");
         return FTB_ERR_EVENTSPACE_FORMAT;
     }
     strcpy(component_name,str);
 
-    if ((event_space_cpy != NULL) 
+    if ((tempstr != NULL) 
             || (!check_alphanumeric_underscore_format(region_name)) 
             || (!check_alphanumeric_underscore_format(category_name)) 
             || (!check_alphanumeric_underscore_format(component_name))) { 
@@ -193,6 +196,9 @@ int FTBCI_split_namespace(const char *event_space, char *region_name, char *cate
         return FTB_ERR_EVENTSPACE_FORMAT;
     }
     FTB_INFO("Out FTBCI_split_namespace");
+
+    if ( ptr != NULL ) free(ptr);
+
     return FTB_SUCCESS;
 }
 
@@ -286,84 +292,91 @@ int FTBCI_check_subscription_value_pair(const char *lhs, const char *rhs, FTB_ev
 
 int FTBCI_parse_subscription_string(const char *subscription_str, FTB_event_t *subscription_event) {
 
-    FTB_INFO("FTBCI_parse_subscription_string In");
+    int subscriptionstr_len; 
+    char *tempstr, *ptr;
+    char *pair[FTBCI_MAX_SUBSCRIPTION_FIELDS],*lhs, *rhs;
+    int i=0, j=0, k=0,ret=0;
 
+    FTB_INFO("FTBCI_parse_subscription_string In");
     if (subscription_str == NULL) {
         FTB_INFO("FTBCI_parse_subscription_string Out");
         return FTB_ERR_SUBSCRIPTION_STR;
     }
 
-    int subscriptionstr_len; 
-    char *sub_str_cpy = (char *)malloc(strlen(subscription_str)+1);
-    char *pairs, *lhs, *rhs, *temp_str;
-    int i=0, j=0, ret=0;
-
-    trim_string( sub_str_cpy, subscription_str );
-    ret = FTBCI_check_subscription_value_pair("", "", subscription_event);
-    if ((subscriptionstr_len = strlen(sub_str_cpy)) == 0) {
-        free( sub_str_cpy );
-        return ret;
+    if ( (tempstr = (char *)malloc(strlen(subscription_str)+1) ) == NULL ) {
+      perror("malloc error\n");
+      exit(-1);
     }
 
-    lhs      = (char *)malloc(subscriptionstr_len+1);
-    pairs    = (char *)malloc(subscriptionstr_len+1);
-    rhs      = (char *)malloc(subscriptionstr_len+1);
-    temp_str = (char *)malloc(subscriptionstr_len+1);
+    strcpy(tempstr, subscription_str);
+    ptr = tempstr;
 
-    while (sub_str_cpy != NULL) {
-        if ((pairs = strsep(&sub_str_cpy, ",")) == NULL) {
+    ret = FTBCI_check_subscription_value_pair("", "", subscription_event);
+
+    if ((subscriptionstr_len = strlen(tempstr)) == 0) return ret;
+
+    while ( tempstr != NULL ) {
+      if ( ( pair[i++] = strsep(&tempstr, ",")) == NULL ) {
+            FTB_INFO("FTBCI_parse_subscription_string Out");
+	    free(tempstr);
+            return FTB_ERR_SUBSCRIPTION_STR;
+      }
+    }
+
+    if (i > FTBCI_MAX_SUBSCRIPTION_FIELDS) { 
+      FTB_INFO("Subscription string has too many fields. This maybe an internal FTB error"); 
+      FTB_INFO("FTBCI_parse_subscription_string Out");
+      free(tempstr);
+      return FTB_ERR_SUBSCRIPTION_STR; 
+    }
+
+    for ( j=0; j<i; j++) {
+      if ( (lhs = strsep(&pair[j],"=")) == NULL ) {
+            free(tempstr);
             FTB_INFO("FTBCI_parse_subscription_string Out");
             return FTB_ERR_SUBSCRIPTION_STR;
-        }
+      }
 
-        if ((temp_str = strsep(&pairs, "=")) == NULL) {
+      if ( (rhs= strsep(&pair[j], "=")) == NULL) {
+	    free(tempstr);
             FTB_INFO("FTBCI_parse_subscription_string Out");
             return FTB_ERR_SUBSCRIPTION_STR;
-        }
-        else {
-            trim_string( lhs, temp_str );  
-        }
+      }
 
-        if ((temp_str = strsep(&pairs, "=")) == NULL) {
-            FTB_INFO("FTBCI_parse_subscription_string Out");
+      soft_trim(&lhs);
+      soft_trim(&rhs);
+
+      if ( strlen(lhs) == 0 || strlen(rhs) == 0)  {
+            free(tempstr);
+	    FTB_INFO("FTBCI_parse_subscription_string Out");
             return FTB_ERR_SUBSCRIPTION_STR;
-        }
-        else 
-            trim_string( rhs, temp_str );
+      }
 
-        if ((strlen(lhs) == 0) || (strlen(rhs) == 0) 
-                || (pairs != NULL)) {
+      for ( k = 0; k<strlen(lhs); k++ ) {
+	if ( lhs[k] == ' ' || lhs[k] == '\t' ) {
+            free(tempstr);
             FTB_INFO("FTBCI_parse_subscription_string Out");
-            return FTB_ERR_SUBSCRIPTION_STR;
-        }
+            return FTB_ERR_FILTER_ATTR;
+	}
+      }
 
-        for (j=0; j<strlen(lhs); j++)  {
-            if (lhs[j] == ' ') {
-                FTB_INFO("FTBCI_parse_subscription_string Out");
-                return FTB_ERR_FILTER_ATTR;
-            }
-        }
-        for (j=0; j<strlen(rhs); j++) {
-            if (rhs[j] == ' ') {
-                FTB_INFO("FTBCI_parse_subscription_string Out");
-                return FTB_ERR_FILTER_VALUE;
-            }
-        }
-        if ((ret = FTBCI_check_subscription_value_pair(lhs, rhs, subscription_event)) != FTB_SUCCESS) {
+      for ( k = 0; k<strlen(rhs); k++ ) {
+	if ( rhs[k] == ' ' || rhs[k] == '\t' ) {
+            free(tempstr);
+            FTB_INFO("FTBCI_parse_subscription_string Out");
+	    return FTB_ERR_FILTER_VALUE;
+	}
+      }
+
+      if ((ret = FTBCI_check_subscription_value_pair(lhs, rhs, subscription_event)) != FTB_SUCCESS) {
+	    free(tempstr);
             FTB_INFO("FTBCI_parse_subscription_string Out");
             return ret;
-        }
-        i++;
-        if (i > FTBCI_MAX_SUBSCRIPTION_FIELDS) { 
-            FTB_INFO("Subscription string has too many fields. This maybe an internal FTB error"); 
-            FTB_INFO("FTBCI_parse_subscription_string Out");
-            return FTB_ERR_SUBSCRIPTION_STR; 
-        }
+      }
     }
+
+    free(ptr);
     FTB_INFO("FTBCI_parse_subscription_string Out");
-
-    if( sub_str_cpy != NULL ) free( sub_str_cpy );
-
     return FTB_SUCCESS;
 }
 
@@ -394,6 +407,7 @@ static ENTRY* FTBCI_search_hash(const char *name)
 
 int FTBCI_populate_hashtable_with_events(const char *region, const char *comp_cat, const char *comp, const FTB_event_info_t *event_table, int num_events)
 {
+    ENTRY event;
     FTBCI_publish_event_entry_t *event_entry;
     int i=0;
 
@@ -403,10 +417,7 @@ int FTBCI_populate_hashtable_with_events(const char *region, const char *comp_ca
         FTB_WARNING("0 events being registered!");
     }
 
-    static int event_key_len = sizeof(FTB_eventspace_t) + sizeof(FTB_event_name_t) + 2;
-
     for (i=0; i<num_events; i++) {
-        ENTRY event;
         if (total_publish_events >= FTBCI_MAX_EVENTS_PER_PROCESS) {
             FTB_INFO("Out FTBCI_populate_hashtable_with_events");
             return FTB_ERR_GENERAL;
@@ -422,13 +433,12 @@ int FTBCI_populate_hashtable_with_events(const char *region, const char *comp_ca
             FTB_INFO("Out FTBCI_populate_hashtable_with_events");
             return FTB_ERR_INVALID_FIELD;
         }
-        event.key = (char *)malloc( event_key_len );
+        char *event_key = (char *)malloc(sizeof(FTB_eventspace_t) + sizeof(FTB_event_name_t) + 2);
         event_entry = (FTBCI_publish_event_entry_t *)malloc(sizeof(FTBCI_publish_event_entry_t));
-        snprintf( event.key, event_key_len, "%s%s%s%s%s%s%s", region, "_", comp_cat, "_", comp, "_",
-                    event_table[i].event_name );
+	concatenate_strings(event_key, region, "_", comp_cat, "_", comp, "_", event_table[i].event_name, NULL);
         int j=0;
-        for (j=0; j<strlen(event.key); j++) event.key[j]=toupper(event.key[j]);
-        if (FTBCI_search_hash(event.key) != NULL) {
+        for (j=0; j<strlen(event_key); j++) event_key[j]=toupper(event_key[j]);
+        if (FTBCI_search_hash(event_key) != NULL) {
             FTB_INFO("Out FTBCI_populate_hashtable_with_events : Duplicate event");
             return FTB_ERR_DUP_EVENT;
         }
@@ -436,16 +446,13 @@ int FTBCI_populate_hashtable_with_events(const char *region, const char *comp_ca
         strcpy(event_entry->comp_cat, comp_cat);
         strcpy(event_entry->comp, comp);
         strcpy(event_entry->severity, event_table[i].severity);
+        event.key = event_key;
         event.data = event_entry;
         FTBCI_lock_client_lib();
-        FTB_INFO("Event key is %s", event.key);
-
-        if( hsearch(event, ENTER) == NULL )
-            perror( "Error: FTBCI_populate_hashtable_with_events()" );
-
+        FTB_INFO("Event key is %s", event_key);
+        hsearch(event, ENTER);
         total_publish_events++;
         FTBCI_unlock_client_lib();
-
     }
     FTB_INFO("Out FTBCI_populate_hashtable_with_events");
     return FTB_SUCCESS;
@@ -470,7 +477,7 @@ int FTBCI_get_event_by_name(const char *key, FTB_event_t *e)
     }   
     FTB_INFO("Out function FTBCI_get_event_by_name");
 
-    if( event_name_key != NULL ) free( event_name_key );
+    if ( event_name_key != NULL ) free(event_name_key);
 
     return FTB_SUCCESS;
 }
@@ -506,7 +513,6 @@ static void FTBCI_util_add_to_callback_map(FTBCI_client_info_t *client_info, con
     FTBCI_lock_client(client_info);
     FTBU_map_insert(client_info->callback_map, FTBU_MAP_PTR_KEY(entry->mask), (void *)entry);
     FTBCI_unlock_client(client_info);
-
 }
 
 static void FTBCI_util_remove_from_callback_map(FTBCI_client_info_t *client_info, const FTB_event_t *event)
@@ -588,8 +594,8 @@ static void *FTBCI_callback_component(void *arg)
     int callback_done;
     //FTBCI_lock_client(client_info);
     while (1) {
+        FTBCI_lock_client(client_info);
         while (client_info->callback_event_queue->next == client_info->callback_event_queue) {
-            FTBCI_lock_client(client_info);
             /*Callback event queue is empty*/
             pthread_cond_wait(&client_info->cond, &client_info->lock);
             if (client_info->finalizing) {
@@ -597,9 +603,8 @@ static void *FTBCI_callback_component(void *arg)
                 FTB_INFO("Finalizing");
                 return NULL;
             }
-            FTBCI_unlock_client(client_info);
-
         }
+        FTBCI_unlock_client(client_info);
         entry = (FTBCI_event_inst_list_t *)client_info->callback_event_queue->next;
         /*Try to match it with callback_map*/
         callback_done = 0;
@@ -609,9 +614,7 @@ static void *FTBCI_callback_component(void *arg)
             if (FTBU_match_mask(&entry->event_inst, callback_entry->mask))  {
                 /*Make callback*/
                 FTB_receive_event_t receive_event;
-                snprintf( receive_event.event_space, FTB_MAX_EVENTSPACE, "%s%s%s%s%s",
-                            entry->event_inst.region, ".", entry->event_inst.comp_cat, ".",
-                            entry->event_inst.comp );
+		concatenate_strings(receive_event.event_space, entry->event_inst.region, ".", entry->event_inst.comp_cat, ".", entry->event_inst.comp, NULL);
                 strcpy(receive_event.event_name, entry->event_inst.event_name);
                 strcpy(receive_event.severity, entry->event_inst.severity);
                 strcpy(receive_event.client_name, entry->event_inst.client_name);
@@ -931,6 +934,9 @@ int FTBCI_check_schema_file(const FTB_client_handle_t client_handle, const char 
 
 int FTBC_Declare_publishable_events(FTB_client_handle_t client_handle, const char *schema_file, const FTB_event_info_t  *einfo, int num_events)
 {
+    char *region = (char *)malloc(sizeof(FTB_eventspace_t));
+    char *comp_cat = (char *)malloc(sizeof(FTB_eventspace_t));
+    char *comp = (char *)malloc(sizeof(FTB_eventspace_t));
     int ret = 0;
     
     FTB_INFO("FTBC_Declare_publishable_events In");
@@ -948,23 +954,11 @@ int FTBC_Declare_publishable_events(FTB_client_handle_t client_handle, const cha
         }
     }
     else {
-
-        char *region = (char *)malloc(sizeof(FTB_eventspace_t));
-        char *comp_cat = (char *)malloc(sizeof(FTB_eventspace_t));
-        char *comp = (char *)malloc(sizeof(FTB_eventspace_t));
-
         strcpy(region, client_handle.client_id.region);
         strcpy(comp_cat, client_handle.client_id.comp_cat);
         strcpy(comp, client_handle.client_id.comp);
-
         ret = FTBCI_populate_hashtable_with_events(region, comp_cat, comp, einfo, num_events);
-
         FTB_INFO("FTBC_Declare_publishable_events Out");
-
-        if( region != NULL ) free( region );
-        if( comp_cat != NULL ) free( comp_cat );
-        if( comp != NULL ) free( comp );
-
         return ret;
     }
 
@@ -1055,9 +1049,6 @@ int FTBC_Subscribe_with_callback(FTB_subscribe_handle_t *subscribe_handle, FTB_c
     FTBM_Get_parent_location_id(&msg.dst.location_id);
     ret = FTBM_Send(&msg);
     FTB_INFO("FTBC_Subscribe_with_callback Out");
-
-    if( subscription_event != NULL ) free( subscription_event );
-
     return ret;
 }
 
@@ -1108,8 +1099,7 @@ int FTBC_Publish(FTB_client_handle_t client_handle, const char *event_name,  con
     FTBM_msg_t msg;
     FTBCI_client_info_t *client_info;
     FTB_event_properties_t *temp_event_properties;
-    static int event_key_len = sizeof(FTB_eventspace_t) + sizeof(FTB_event_name_t) + 2;
-    char *event_key = (char *)malloc( event_key_len );
+    char *event_key = (char *)malloc(sizeof(FTB_eventspace_t) + sizeof(FTB_event_name_t) + 2);
     int ret;
 
     FTB_INFO("FTBC_Publish In");
@@ -1131,10 +1121,8 @@ int FTBC_Publish(FTB_client_handle_t client_handle, const char *event_name,  con
     
     FTBCI_LOOKUP_CLIENT_INFO(client_handle, client_info);
 
-    snprintf( event_key, event_key_len, "%s%s%s%s%s%s%s", client_info->id->client_id.region, "_",
-                client_info->id->client_id.comp_cat, "_", client_info->id->client_id.comp, "_",
-                event_name );
-
+    concatenate_strings(event_key, client_info->id->client_id.region, "_", 
+                client_info->id->client_id.comp_cat, "_", client_info->id->client_id.comp, "_", event_name, NULL);
     ret = FTBCI_get_event_by_name(event_key, &msg.event);
     if (ret != FTB_SUCCESS) {
         FTB_INFO("FTBC_Publish Out with an error");
@@ -1186,8 +1174,8 @@ int FTBC_Publish(FTB_client_handle_t client_handle, const char *event_name,  con
 
     FTB_INFO("FTBC_Publish Out");
 
-    if( event_key != NULL ) free( event_key );
-    if( temp_event_properties != NULL ) free( temp_event_properties );
+    if ( event_key != NULL ) free(event_key);
+    if ( temp_event_properties != NULL ) free(temp_event_properties);
 
     return ret;
 }
@@ -1227,9 +1215,7 @@ int FTBC_Poll_event(FTB_subscribe_handle_t subscribe_handle, FTB_receive_event_t
         do { 
             if (FTBU_match_mask(&entry->event_inst, &subscribe_handle.subscription_event))  {
                 event_found = 1;
-                snprintf( receive_event->event_space, FTB_MAX_EVENTSPACE, "%s%s%s%s%s",
-                            entry->event_inst.region, ".", entry->event_inst.comp_cat, ".",
-                            entry->event_inst.comp );
+		concatenate_strings(receive_event->event_space, entry->event_inst.region, ".", entry->event_inst.comp_cat, ".", entry->event_inst.comp, NULL);
                 strcpy(receive_event->event_name, entry->event_inst.event_name);
                 strcpy(receive_event->severity, entry->event_inst.severity);
                 strcpy(receive_event->client_jobid, entry->event_inst.client_jobid);
@@ -1294,9 +1280,8 @@ int FTBC_Poll_event(FTB_subscribe_handle_t subscribe_handle, FTB_receive_event_t
             if (!is_for_callback) {
                 FTB_INFO("Not for callback");
                 if (FTBU_match_mask(&msg.event, &subscribe_handle.subscription_event))  {
-                    snprintf( receive_event->event_space, FTB_MAX_EVENTSPACE, "%s%s%s%s%s",
-                                msg.event.region, ".", msg.event.comp_cat, ".", msg.event.comp );
-                    strcpy(receive_event->event_name, msg.event.event_name);
+		  concatenate_strings(receive_event->event_space, msg.event.region, ".", msg.event.comp_cat, ".", msg.event.comp, NULL);
+		  strcpy(receive_event->event_name, msg.event.event_name);
                     strcpy(receive_event->severity, msg.event.severity);
                     strcpy(receive_event->client_jobid,  msg.event.client_jobid);
                     strcpy(receive_event->client_name, msg.event.client_name);
@@ -1333,9 +1318,7 @@ int FTBC_Poll_event(FTB_subscribe_handle_t subscribe_handle, FTB_receive_event_t
                 FTBCI_event_inst_list_t * start = (FTBCI_event_inst_list_t *)client_info->event_queue->next;
                 do { 
                     if (FTBU_match_mask(&entry->event_inst, &subscribe_handle.subscription_event))  {
-                        snprintf( receive_event->event_space, FTB_MAX_EVENTSPACE, "%s%s%s%s%s",
-                                    entry->event_inst.region, ".", entry->event_inst.comp_cat, ".",
-                                    entry->event_inst.comp );
+		      concatenate_strings(receive_event->event_space, entry->event_inst.region, ".", entry->event_inst.comp_cat, ".", entry->event_inst.comp, NULL);
                         strcpy(receive_event->event_name, entry->event_inst.event_name);
                         strcpy(receive_event->severity, entry->event_inst.severity);
                         strcpy(receive_event->client_jobid, entry->event_inst.client_jobid);
