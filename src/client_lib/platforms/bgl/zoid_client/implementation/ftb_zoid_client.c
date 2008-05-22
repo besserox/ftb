@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "ftb_def.h"
 #include "ftb_util.h"
@@ -19,7 +20,7 @@ void ftb_zoid_client_init(int count)
         char filename[128], IP[32], TIME[32];
         FTBU_get_output_of_cmd("grep ^BGL_IP /proc/personality.sh | cut -f2 -d=",IP,32);
         FTBU_get_output_of_cmd("date +%m-%d-%H-%M-%S",TIME,32);
-        sprintf(filename,"%s.%s.%s","/bgl/home1/qgao/ftb_bgl/zoid_output",IP,TIME);
+        sprintf(filename,"%s.%s.%s","/bgl/home1/rgupta/ftb_bgl/zoid_output",IP,TIME);
         FTBU_log_file_fp = fopen(filename, "w");
         fprintf(FTBU_log_file_fp, "Begin log file\n");
         fflush(FTBU_log_file_fp);
@@ -45,8 +46,8 @@ int ZOID_FTB_Connect(const FTB_client_t *client_info /* in:ptr */,
      * For BGL systems, subscription_style of FTB_SUBSCRIPTION_NOTIFY
      * and FTB_SUBSCRIPTION_BOTH is not supported
      */
-    if ((strcasecmp(cinfo->client_subscription_style, "FTB_SUBSCRIPTION_NOTIFY") == 0)
-        || (strcasecmp(cinfo->client_subscription_style, "FTB_SUBSCRIPTION_BOTH") == 0)) {
+    if ((strcasecmp(client_info->client_subscription_style, "FTB_SUBSCRIPTION_NOTIFY") == 0)
+        || (strcasecmp(client_info->client_subscription_style, "FTB_SUBSCRIPTION_BOTH") == 0)) {
             return  FTB_ERR_NOT_SUPPORTED ;
     }   
     return FTBC_Connect(client_info, proc_id, client_handle);
@@ -92,29 +93,12 @@ int ZOID_FTB_Disconnect(FTB_client_handle_t client_handle /* in:obj */)
     return FTBC_Disconnect(client_handle);
 }
 
-int FTB_Get_event_handle(const FTB_receive_event_t receive_event /* in:obj */, 
+int ZOID_FTB_Get_event_handle(const FTB_receive_event_t receive_event /* in:obj */, 
                     FTB_event_handle_t *event_handle /* out:ptr */) {
     return FTBC_Get_event_handle(receive_event, event_handle);
 }
 
-int FTB_Compare_event_handles(const FTB_event_handle_t event_handle1 /* in:obj */, 
+int ZOID_FTB_Compare_event_handles(const FTB_event_handle_t event_handle1 /* in:obj */, 
                     const FTB_event_handle_t event_handle2 /* in:obj */) {
     return FTBC_Compare_event_handles(event_handle1, event_handle2);
 }
-
-#ifdef FTB_TAG
-int ZOID_FTB_Add_dynamic_tag(FTB_client_handle_t client_handle /* in:obj */,
-                                FTB_tag_t tag /* in:obj */, 
-                                const char *tag_data /* in:ptr */,
-                                FTB_tag_len_t data_len /* in:obj */)
-{
-    return FTBC_Add_dynamic_tag(client_handle, tag, tag_data, data_len);
-}
-
-int ZOID_FTB_Remove_dynamic_tag (FTB_client_handle_t client_handle /* in:obj */,
-                                FTB_tag_t tag /* in:obj */)
-{
-    return ZOID_FTB_Remove_dynamic_tag(client_handle, tag);
-}
-#endif
-

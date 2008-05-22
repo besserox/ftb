@@ -15,14 +15,14 @@ int FTB_Declare_publishable_events(FTB_client_handle_t client_handle, const char
 }
 
 int FTB_Publish(FTB_client_handle_t client_handle, const char *event_name,  const FTB_event_properties_t *event_properties, FTB_event_handle_t *event_handle) {
-    return ZOID_FTBC_Publish(client_handle, event_name, event_properties, event_handle);
+    return ZOID_FTB_Publish(client_handle, event_name, event_properties, event_handle);
 }
 
 int FTB_Subscribe(FTB_subscribe_handle_t *subscribe_handle, FTB_client_handle_t client_handle, const char *subscription_str, int (*callback)(FTB_receive_event_t *, void*), void *arg) { 
     if (callback != NULL)
         return FTB_ERR_NOT_SUPPORTED;
     else
-        return ZOID_FTB_Subscribe_with_polling(subscribe_handle, client_handle, subscription_str);
+        return ZOID_FTB_Subscribe(subscribe_handle, client_handle, subscription_str);
 }
 
 int FTB_Unsubscribe(FTB_subscribe_handle_t *subscribe_handle) {
@@ -51,48 +51,48 @@ int FTB_Compare_event_handles(const FTB_event_handle_t event_handle1, const FTB_
     return ZOID_FTB_Compare_event_handles(event_handle1, event_handle2);
 }
 
-#ifdef FTB_TAG
-int FTB_Add_dynamic_tag(FTB_client_handle_t client_handle, FTB_tag_t tag, const char *tag_data, FTB_tag_len_t data_len)
-{
-    if (tag_data == NULL) {
-        return FTB_ERR_NULL_POINTER;
-    }
-    return ZOID_FTB_Add_dynamic_tag(client_handle, tag, tag_data, data_len);
-}
-
-int FTB_Remove_dynamic_tag(FTB_client_handle_t client_handle, FTB_tag_t tag)
-{
-    return ZOID_FTB_Remove_dynamic_tag(client_handle, tag);
-}
-
-int FTB_Read_dynamic_tag(const FTB_event_t *event, FTB_tag_t tag, char *tag_data, FTB_tag_len_t *data_len)
-{
-    uint8_t tag_count;
-    uint8_t i;
-    int offset;
-    
-    /*No need to forward it to zoid*/
-    memcpy(&tag_count, event->dynamic_data, sizeof(tag_count));
-    offset = 1;
-    for (i=0;i<tag_count;i++) {
-        FTB_tag_t temp_tag;
-        FTB_tag_len_t temp_len;
-        memcpy(&temp_tag, event->dynamic_data + offset, sizeof(FTB_tag_t));
-        offset+=sizeof(FTB_tag_t);
-        memcpy(&temp_len, event->dynamic_data + offset, sizeof(FTB_tag_len_t));
-        offset+=sizeof(FTB_tag_len_t);
-        if (tag == temp_tag) {
-            if (*data_len < temp_len) {
-                return FTB_ERR_TAG_NO_SPACE;
-            }
-            else {
-                *data_len = temp_len;
-                memcpy(tag_data, event->dynamic_data + offset, temp_len);
-                return FTB_SUCCESS;
-            }
-        }
-    }
-
-    return FTB_ERR_TAG_NOT_FOUND;
-}
-#endif
+//#ifdef FTB_TAG
+//int FTB_Add_dynamic_tag(FTB_client_handle_t client_handle, FTB_tag_t tag, const char *tag_data, FTB_tag_len_t data_len)
+//{
+//    if (tag_data == NULL) {
+//        return FTB_ERR_NULL_POINTER;
+//    }
+//    return ZOID_FTB_Add_dynamic_tag(client_handle, tag, tag_data, data_len);
+//}
+//
+//int FTB_Remove_dynamic_tag(FTB_client_handle_t client_handle, FTB_tag_t tag)
+//{
+//    return ZOID_FTB_Remove_dynamic_tag(client_handle, tag);
+//}
+//
+//int FTB_Read_dynamic_tag(const FTB_event_t *event, FTB_tag_t tag, char *tag_data, FTB_tag_len_t *data_len)
+//{
+//    uint8_t tag_count;
+//    uint8_t i;
+//    int offset;
+//    
+//    /*No need to forward it to zoid*/
+//    memcpy(&tag_count, event->dynamic_data, sizeof(tag_count));
+//    offset = 1;
+//    for (i=0;i<tag_count;i++) {
+//        FTB_tag_t temp_tag;
+//        FTB_tag_len_t temp_len;
+//        memcpy(&temp_tag, event->dynamic_data + offset, sizeof(FTB_tag_t));
+//        offset+=sizeof(FTB_tag_t);
+//        memcpy(&temp_len, event->dynamic_data + offset, sizeof(FTB_tag_len_t));
+//        offset+=sizeof(FTB_tag_len_t);
+//        if (tag == temp_tag) {
+//            if (*data_len < temp_len) {
+//                return FTB_ERR_TAG_NO_SPACE;
+//            }
+//            else {
+//                *data_len = temp_len;
+//                memcpy(tag_data, event->dynamic_data + offset, temp_len);
+//                return FTB_SUCCESS;
+//            }
+//        }
+//    }
+//
+//    return FTB_ERR_TAG_NOT_FOUND;
+//}
+//#endif
