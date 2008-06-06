@@ -56,7 +56,7 @@ int ZOID_FTB_Connect(const FTB_client_t *client_info /* in:ptr */,
 
 int ZOID_FTB_Publish(FTB_client_handle_t client_handle /* in:obj */,
                     const char *event_name /* in:str */,
-                    const FTB_event_properties_t *event_properties /* in:ptr */,
+                    const FTB_event_properties_t *event_properties /* in:ptr:nullok */,
                     FTB_event_handle_t *event_handle /* out:ptr */)
 {
     return FTBC_Publish(client_handle, event_name, event_properties, event_handle);

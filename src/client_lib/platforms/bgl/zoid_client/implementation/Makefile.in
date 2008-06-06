@@ -40,8 +40,8 @@ all: $(PREFIX)_impl.so $(FTB_LIB_PATH_SHARED)/$(PREFIX)_impl.so
 $(FTB_LIB_PATH_SHARED)/$(PREFIX)_impl.so: $(PREFIX)_impl.so
 	cp -p $(PREFIX)_impl.so $@
 
-$(PREFIX)_impl.so: $(UTIL_OBJ) ftb_zoid_client.o
-	$(CC) $(CFLAGS_SHARED) $(LDFLAGS) -o $@ $(CLIENT_LIB_OBJ) $(UTIL_OBJ) ftb_zoid_client.o $(MANAGER_LIB_PATH_STATIC)/lib$(MANAGER_LIB_NAME).a
+$(PREFIX)_impl.so: ${abs_top_srcdir}/src/util/ftb_auxil.o $(UTIL_OBJ) ftb_zoid_client.o
+	$(CC) $(CFLAGS_SHARED) $(LDFLAGS) -o $@ $(CLIENT_LIB_OBJ) ${abs_top_srcdir}/src/util/ftb_auxil.o  $(UTIL_OBJ) ftb_zoid_client.o $(MANAGER_LIB_PATH_STATIC)/lib$(MANAGER_LIB_NAME).a
 
 ftb_zoid_client.o: ftb_zoid_client.c
 	$(CC) $(CFLAGS) -c $<
