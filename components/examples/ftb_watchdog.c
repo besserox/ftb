@@ -27,6 +27,7 @@ int main (int argc, char *argv[])
     FTB_client_handle_t handle;
     FTB_subscribe_handle_t shandle;
     int ret = 0;
+    FTB_event_info_t event_info[1] = {{"WATCH_DOG_EVENT", "INFO"}};
 
     if (argc > 1) {
         if (strcasecmp(argv[1], "usage") == 0) { 
@@ -49,8 +50,12 @@ int main (int argc, char *argv[])
 
     /*The schema is present in the watchog_schema file. The watchdog schema
      * file is originally present in the  trunk/components/examples directory
+     * ret = FTB_Declare_publishable_events(handle, "watchdog_schema.ftb", NULL, 0);
      */
-    ret = FTB_Declare_publishable_events(handle, "watchdog_schema.ftb", NULL, 0);
+    /*
+     * Using events declared in the file for now for portability on BGL.
+     */
+    ret = FTB_Declare_publishable_events(handle, 0, event_info, 1);
     if (ret != FTB_SUCCESS) {
         printf("FTB_Declare_Publishable_events is not successful ret=%d\n", ret);
         exit(-1);
