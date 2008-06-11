@@ -1098,7 +1098,7 @@ int FTBC_Publish(FTB_client_handle_t client_handle, const char *event_name,  con
 {
     FTBM_msg_t msg;
     FTBCI_client_info_t *client_info;
-    FTB_event_properties_t *temp_event_properties;
+    FTB_event_properties_t *temp_event_properties = NULL;
     char *event_key = (char *)malloc(sizeof(FTB_eventspace_t) + sizeof(FTB_event_name_t) + 2);
     int ret;
 
