@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 
 extern FILE* FTBU_log_file_fp;
 
@@ -85,24 +86,65 @@ int FTBU_is_equal_clienthandle(const FTB_client_handle_t *lhs, const FTB_client_
 }
 
 #define FTB_BOOTSTRAP_UTIL_MAX_STR_LEN  128
-
 void FTBU_get_output_of_cmd(const char *cmd, char *output, size_t len)
 {
-    /*Not very neat implementation*/
-    char filename[FTB_BOOTSTRAP_UTIL_MAX_STR_LEN];
-    char temp[FTB_BOOTSTRAP_UTIL_MAX_STR_LEN];
-    FILE *fp;
     
-    sprintf(filename,"/tmp/temp_file.%d",getpid());
-    sprintf(temp,"%s > %s",cmd, filename);
-    if (system(temp)) {
-        fprintf(stderr,"execute command failed\n");
+    if (strcasecmp(cmd, "hostname") == 0) {
+   	 char *name = (char *)malloc(len);
+	 if (gethostname(name, len) == 0) {
+		strncpy(output, name, len);
+	 }
+         else {
+	     fprintf(stderr,"gethostname command failed\n");
+    	 }
     }
-    fp = fopen(filename, "r");
-    fscanf(fp,"%s",temp);
-    fclose(fp);
-    unlink(filename);
-    strncpy(output,temp,len);
+    else if (strcasecmp(cmd, "date +%m-%d-%H-%M-%S") == 0) {
+            char *myDate = (char *)malloc(len);
+            time_t myTime = time(NULL);
+            if(strftime(myDate, len, "%m-%d-%H-%M-%S", gmtime(&myTime)) != 0) {
+                strncpy(output, myDate, len);
+            }
+            else {
+                fprintf(stderr,"strftime command failed\n");
+            }
+    }
+   else if (strcasecmp(cmd, "grep ^BGL_IP /proc/personality.sh | cut -f2 -d=") == 0) {
+        FILE *fp;
+        char *pos;
+        char str[32], substr[32];
+        int i=0, index=0;
+
+        fp = fopen("/proc/personality.sh", "r");
+        while (!feof(fp)) {
+                fgets(str, 32, fp);
+                if ((pos=strstr(str, "BGL_IP=")) != NULL) {
+                        index = str-pos;
+                        while (str[index++] != '=');
+                        while (str[index] != '\n') {output[i++]= str[index++];}
+                        output[i]= '\0';
+                        break;
+                }
+                else {
+                   fprintf(stderr, "Could not find BGL_IP parameter in file /proc/personality.sh on the BGL machine");
+                } 
+        }
+        fclose(fp);
+    }
+    else {
+        char filename[FTB_BOOTSTRAP_UTIL_MAX_STR_LEN];
+        char temp[FTB_BOOTSTRAP_UTIL_MAX_STR_LEN];
+        FILE *fp;
+        sprintf(filename,"/tmp/temp_file.%d",getpid());
+        sprintf(temp,"%s > %s",cmd, filename);
+        if (system(temp)) {
+            fprintf(stderr,"execute command failed\n");
+        }
+        fp = fopen(filename, "r");
+        fscanf(fp,"%s",temp);
+        fclose(fp);
+        unlink(filename);
+        strncpy(output,temp,len);
+    }
 }
 
    
