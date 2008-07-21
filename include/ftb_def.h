@@ -54,8 +54,8 @@ extern "C" {
 #define FTB_MAX_CLIENT_JOBID         16
 #define FTB_MAX_EVENT_NAME           32
 #define FTB_MAX_SEVERITY             16
-#define FTB_MAX_HOST_NAME            64
-#define FTB_MAX_PID_STARTTIME        32
+#define FTB_MAX_HOST_ADDR            64
+#define FTB_MAX_PID_TIME        32
 #define FTB_MAX_PAYLOAD_DATA         368
 
 /*
@@ -70,7 +70,7 @@ extern "C" {
         -sizeof(FTB_severity_t)\
         -sizeof(FTB_client_jobid_t)\
         -sizeof(FTB_client_name_t)\
-        -sizeof(FTB_hostname_t)\
+        -sizeof(FTB_hostip_t)\
         -sizeof(int)\
         -sizeof(FTB_tag_len_t)\
         -sizeof(FTB_event_properties_t))
@@ -82,9 +82,9 @@ typedef char FTB_client_schema_ver_t[FTB_MAX_CLIENTSCHEMA_VER];
 typedef char FTB_client_jobid_t[FTB_MAX_CLIENT_JOBID];
 typedef char FTB_severity_t[FTB_MAX_SEVERITY];
 typedef char FTB_event_name_t[FTB_MAX_EVENT_NAME];
-typedef char FTB_hostname_t[FTB_MAX_HOST_NAME];
+typedef char FTB_hostip_t[FTB_MAX_HOST_ADDR];
 typedef char FTB_subscription_style_t[32];     
-typedef char FTB_pid_starttime_t[FTB_MAX_PID_STARTTIME];
+typedef char FTB_pid_starttime_t[FTB_MAX_PID_TIME];
 
 #ifdef FTB_TAG
 typedef uint8_t FTB_tag_t;
@@ -111,7 +111,7 @@ typedef struct FTB_event_properties {
 }FTB_event_properties_t;
 
 typedef struct FTB_location_id {
-    char hostname[FTB_MAX_HOST_NAME];
+    char hostname[FTB_MAX_HOST_ADDR];
     FTB_pid_starttime_t pid_starttime;
     pid_t pid;
 }FTB_location_id_t;

@@ -265,7 +265,7 @@ int FTBCI_check_subscription_value_pair(const char *lhs, const char *rhs, FTB_ev
         if (track & 16) 
             return FTB_ERR_SUBSCRIPTION_STR;
         track = track | 16;
-        if (strlen(rhs) >= FTB_MAX_HOST_NAME) {
+        if (strlen(rhs) >= FTB_MAX_HOST_ADDR) {
             FTB_INFO("Out FTBCI_check_subscription_value_pair");
             return FTB_ERR_FILTER_VALUE;
         }

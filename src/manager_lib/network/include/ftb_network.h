@@ -40,6 +40,8 @@ int FTBN_Recv_msg(FTBM_msg_t *msg, FTB_location_id_t *incoming_src,  int blockin
 
 int FTBN_Disconnect_peer(const FTB_location_id_t *peer_location_id);
 
+int FTBN_Get_my_network_address(char *addr);
+
 int FTBN_Abort(void);
 
 #ifdef __cplusplus

@@ -2,21 +2,24 @@
 #define FTB_NETWORK_TCP_H
 
 #include "config.h"
-
+#include <netdb.h>
+#include <arpa/inet.h>
 #ifdef __cplusplus
 extern "C" {
 #endif 
 
 typedef struct FTBN_addr_sock {
-    char name[FTB_MAX_HOST_NAME];
+    char name[FTB_MAX_HOST_ADDR];
     int port;
 }FTBN_addr_sock_t;
 
 typedef struct FTBNI_config_sock {
     int agent_port;
-    char server_name[FTB_MAX_HOST_NAME];
+    char server_name[FTB_MAX_HOST_ADDR];
     int server_port;
 }FTBNI_config_sock_t;
+
+#define FTBNI_LOCAL_IP  "127.0.0.1"
 
 #define FTBN_CONNECT_RETRY_COUNT                     10
 /*totally try ten times maximum*/
@@ -82,10 +85,10 @@ static inline void FTBNI_util_setup_config_sock(FTBNI_config_sock_t *config)
     }
     
     if ((env = getenv("FTB_BSTRAP_SERVER")) == NULL) {
-        strncpy(config->server_name, FTB_BSTRAP_SERVER, FTB_MAX_HOST_NAME);
+        strncpy(config->server_name, FTB_BSTRAP_SERVER, FTB_MAX_HOST_ADDR);
     }
     else {
-        strncpy(config->server_name, env, FTB_MAX_HOST_NAME);
+        strncpy(config->server_name, env, FTB_MAX_HOST_ADDR);
     }
 
     /*FTB_INFO("agent port=%d, server port=%d and hostname=%s\n", 
@@ -93,9 +96,50 @@ static inline void FTBNI_util_setup_config_sock(FTBNI_config_sock_t *config)
 
     config->agent_port = FTB_AGENT_PORT;
     config->server_port = FTB_BSTRAP_PORT;
-    strncpy(config->server_name, FTB_BSTRAP_SERVER, FTB_MAX_HOST_NAME);
+    strncpy(config->server_name, FTB_BSTRAP_SERVER, FTB_MAX_HOST_ADDR);
     */
 }
+
+/*
+ *  Function FTBNI_gethostbyname written by Hoony Park
+ */  
+static inline struct hostent *FTBNI_gethostbyname(const char *name)
+{
+    static struct hostent *hp = NULL;
+
+    if ( hp == NULL ) {
+        if ( (hp = (struct hostent *)malloc(sizeof(struct hostent))) == NULL ) {
+            exit(1);
+        }
+        hp->h_length = 4;
+
+        if ( (hp->h_addr_list = (char **)malloc(sizeof(char *)*2)) == NULL ) {
+            exit(1);
+        }
+
+        if ( (hp->h_addr_list[0] = (char *)malloc(sizeof(char)*4)) == NULL ) {
+            exit(1);
+        }
+
+        hp->h_addr_list[1] = 0;
+        hp->h_addr = hp->h_addr_list[0];
+   }
+
+   if ( strcmp(name,FTB_BSTRAP_SERVER) == 0 ) {
+       inet_aton(FTB_BSTRAP_SERVER,((struct in_addr*)hp->h_addr));
+   }
+   else if ( strcmp(name,"localhost") == 0 ) {
+       inet_aton(FTBNI_LOCAL_IP,((struct in_addr*)hp->h_addr));
+   }
+   else {
+       /* case when an IP address is passed as
+        * a host name */
+        inet_aton(name,((struct in_addr*)hp->h_addr));
+   }
+
+   return hp;
+}
+
 
 
 #ifdef __cplusplus

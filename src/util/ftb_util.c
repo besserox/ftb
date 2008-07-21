@@ -41,8 +41,8 @@ int FTBU_match_mask(const FTB_event_t *event, const FTB_event_t *mask)
 int FTBU_is_equal_location_id(const FTB_location_id_t *lhs, const FTB_location_id_t *rhs)
 {
     if (lhs->pid == rhs->pid) {
-       if ((strncasecmp(lhs->hostname, rhs->hostname, FTB_MAX_HOST_NAME) == 0)
-            && (strncasecmp(lhs->pid_starttime, rhs->pid_starttime, FTB_MAX_PID_STARTTIME) == 0))
+       if ((strncasecmp(lhs->hostname, rhs->hostname, FTB_MAX_HOST_ADDR) == 0)
+            && (strncasecmp(lhs->pid_starttime, rhs->pid_starttime, FTB_MAX_PID_TIME) == 0))
             return 1;
     }
     return 0;
@@ -111,7 +111,7 @@ void FTBU_get_output_of_cmd(const char *cmd, char *output, size_t len)
    else if (strcasecmp(cmd, "grep ^BGL_IP /proc/personality.sh | cut -f2 -d=") == 0) {
         FILE *fp;
         char *pos;
-        char str[32], substr[32];
+        char str[32];
         int i=0, index=0;
 
         fp = fopen("/proc/personality.sh", "r");
@@ -147,7 +147,6 @@ void FTBU_get_output_of_cmd(const char *cmd, char *output, size_t len)
     }
 }
 
-   
 static inline int util_key_match(const FTBU_map_node_t * headnode, FTBU_map_key_t key1, FTBU_map_key_t key2)
 {
     /*if (headnode->key.key_int == 1)

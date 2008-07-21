@@ -29,13 +29,13 @@ static FTBNI_config_sock_t FTBNI_bootstrap_config;
 static int FTBNI_util_send_bootstrap_msg(const FTBNI_bootstrap_pkt_t *pkt_send)
 {
     struct sockaddr_in server;
-    struct hostent *hp;
+    struct hostent *hp = NULL;
     int fd;
     if ((fd=socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP))==-1)
     {
         FTB_ERR_ABORT("socket failed");
     }
-    hp = gethostbyname(FTBNI_bootstrap_config.server_name);
+    hp = FTBNI_gethostbyname(FTBNI_bootstrap_config.server_name);
     if (hp == NULL) {
         FTB_ERR_ABORT("cannot find database server %s",FTBNI_bootstrap_config.server_name);
     }
@@ -54,7 +54,7 @@ static int FTBNI_util_send_bootstrap_msg(const FTBNI_bootstrap_pkt_t *pkt_send)
 static int FTBNI_util_exchange_bootstrap_msg(const FTBNI_bootstrap_pkt_t *pkt_send, FTBNI_bootstrap_pkt_t* pkt_recv)
 {
     struct sockaddr_in server;
-    struct hostent *hp;
+    struct hostent *hp = NULL;
     int fd;
     unsigned int timeout_milli = FTBNI_BOOTSTRAP_BACKOFF_INIT_TIMEOUT;
     int i;
@@ -64,7 +64,7 @@ static int FTBNI_util_exchange_bootstrap_msg(const FTBNI_bootstrap_pkt_t *pkt_se
     {
         FTB_ERR_ABORT("socket failed");
     }
-    hp = gethostbyname(FTBNI_bootstrap_config.server_name);
+    hp = FTBNI_gethostbyname(FTBNI_bootstrap_config.server_name);
     if (hp == NULL) {
         FTB_ERR_ABORT("cannot find database server %s",FTBNI_bootstrap_config.server_name);
     }
@@ -119,9 +119,10 @@ static void FTBNI_util_get_network_addr(FTBN_addr_sock_t *my_addr)
     /*Setup my hostname*/
     my_addr->port = FTBNI_bootstrap_config.agent_port;
 #ifdef FTB_BGL_ION
-    FTBU_get_output_of_cmd("grep ^BGL_IP /proc/personality.sh | cut -f2 -d=", my_addr->name, FTB_MAX_HOST_NAME);
+    FTBU_get_output_of_cmd("grep ^BGL_IP /proc/personality.sh | cut -f2 -d=", my_addr->name, FTB_MAX_HOST_ADDR);
 #else
-    FTBU_get_output_of_cmd("hostname",my_addr->name,FTB_MAX_HOST_NAME);
+    strcpy(my_addr->name, "localhost");
+    //FTBU_get_output_of_cmd("hostname",my_addr->name,FTB_MAX_HOST_NAME);
 #endif
 }
 

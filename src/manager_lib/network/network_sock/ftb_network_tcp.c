@@ -13,6 +13,8 @@
 #include <netinet/tcp.h>
 #include <errno.h>
 #include <time.h>
+#include <sys/ioctl.h>
+#include <net/if.h>
 
 #include "ftb_def.h"
 #include "ftb_client_lib_defs.h"
@@ -161,7 +163,7 @@ static int FTBNI_util_connect_to(const FTBN_addr_sock_t *addr, const FTBM_msg_t 
 {
     /*Connect to parent at addr, if successful, parent id will be filled*/
     int optval = 1;
-    struct hostent *hp;
+    struct hostent *hp = NULL;
     struct sockaddr_in sa;
     FTB_connection_entry_t *entry = (FTB_connection_entry_t *)malloc(sizeof(FTB_connection_entry_t));
     entry->err_flag = 0;
@@ -172,7 +174,7 @@ static int FTBNI_util_connect_to(const FTBN_addr_sock_t *addr, const FTBM_msg_t 
         return FTB_ERR_NETWORK_GENERAL;
     }
 
-    hp = gethostbyname(addr->name);
+    hp = FTBNI_gethostbyname(addr->name);
     if (hp == NULL) {
         FTB_WARNING("cannot find host %s",addr->name);
         return FTB_ERR_NETWORK_NO_ROUTE;
@@ -535,3 +537,30 @@ int FTBN_Recv_msg(FTBM_msg_t *msg, FTB_location_id_t *incoming_src, int blocking
     FTB_INFO("FTBN_Recv_msg Out");
     return FTBN_NO_MSG;
 }
+
+
+int FTBN_Get_my_network_address(char *ipaddr)
+{
+   int i;
+   int s = socket (PF_INET, SOCK_STREAM, 0); 
+
+   for (i=1;;i++)
+   {
+       struct ifreq ifr;
+       struct sockaddr_in *sin = (struct sockaddr_in *) &ifr.ifr_addr;
+
+       ifr.ifr_ifindex = i;
+       if (ioctl (s, SIOCGIFNAME, &ifr) < 0) break;
+
+       /* now ifr.ifr_name is set */
+       if (ioctl (s, SIOCGIFADDR, &ifr) < 0)    continue;
+
+        sprintf (ipaddr,"%s", inet_ntoa(sin->sin_addr));
+        if ( strcmp(ipaddr,"127.0.0.1") != 0 ) { 
+            close(s);
+            return 1;
+        }
+   }
+   close (s);
+   return -1;
+}    

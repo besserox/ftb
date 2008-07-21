@@ -47,7 +47,7 @@ int FTNI_is_equal_addr_sock(const void* lhs_void, const void* rhs_void)
     FTBN_addr_sock_t *lhs = (FTBN_addr_sock_t *)lhs_void;
     FTBN_addr_sock_t *rhs = (FTBN_addr_sock_t *)rhs_void;
     
-    if (lhs->port == rhs->port && strncmp(lhs->name,rhs->name,FTB_MAX_HOST_NAME) == 0)
+    if (lhs->port == rhs->port && strncmp(lhs->name,rhs->name,FTB_MAX_HOST_ADDR) == 0)
         return 1;
     else
         return 0;
@@ -71,7 +71,7 @@ static inline FTBNI_bootstrap_entry_t *FTBNI_util_find_parent_addr(const FTBNI_b
         temp = (FTBNI_bootstrap_entry_t *)FTBU_map_get_data(iter);
         /*The level should be less than to the level in pkt_req, the addr can't be same as pkt_req*/
         if (temp->level < pkt_req->level && 
-            (pkt_req->addr.port == 0 || strncmp(pkt_req->addr.name,temp->addr.name,FTB_MAX_HOST_NAME) != 0)) {
+            (pkt_req->addr.port == 0 || strncmp(pkt_req->addr.name,temp->addr.name,FTB_MAX_HOST_ADDR) != 0)) {
             entry = temp;
         }
         iter = FTBU_map_next_iterator(iter);
@@ -83,7 +83,7 @@ static inline FTBNI_bootstrap_entry_t *FTBNI_util_find_parent_addr(const FTBNI_b
             temp = (FTBNI_bootstrap_entry_t *)FTBU_map_get_data(iter);
             /*The level should be less than to the level in pkt_req, the addr can't be same as pkt_req*/
             if (temp->level < pkt_req->level && 
-                (pkt_req->addr.port == 0 || strncmp(pkt_req->addr.name,temp->addr.name,FTB_MAX_HOST_NAME) != 0)) {
+                (pkt_req->addr.port == 0 || strncmp(pkt_req->addr.name,temp->addr.name,FTB_MAX_HOST_ADDR) != 0)) {
                 entry = temp;
                 break;
             }
@@ -150,6 +150,8 @@ int main(int argc, char* argv[])
             //FTB_WARNING("recvfrom returns %d when expecting a packet of size %d", ret, sizeof(FTBNI_bootstrap_pkt_t));
             continue;
         }
+	strcpy(pkt.addr.name, inet_ntoa(client.sin_addr));
+
         FTB_INFO("received packet type %d client addr %s:%d",pkt.bootstrap_msg_type, inet_ntoa(client.sin_addr), ntohs(client.sin_port));
         if (pkt.bootstrap_msg_type == FTBNI_BOOTSTRAP_MSG_TYPE_ADDR_REQ) {
             FTBNI_bootstrap_entry_t *entry;
@@ -178,6 +180,7 @@ int main(int argc, char* argv[])
             FTBNI_bootstrap_entry_t *entry = (FTBNI_bootstrap_entry_t*)malloc(sizeof(FTBNI_bootstrap_entry_t));
             memset(&pkt_send, 0, sizeof(FTBNI_bootstrap_pkt_t));
             memcpy(&entry->addr, &pkt.addr, sizeof(FTBN_addr_sock_t));
+            //strcpy(entry->addr.name, inet_ntoa(client.sin_addr));
             entry->level = pkt.level;
             FTB_INFO("received request to register %s, port %d, level %u",
                 pkt.addr.name,pkt.addr.port, pkt.level);
@@ -212,7 +215,6 @@ int main(int argc, char* argv[])
                 FTB_WARNING("deregistering an invalid addr");
                 continue;
             }
-
             iter = FTBU_map_find(FTBNI_bootstrap_addr_map, (FTBU_map_key_t)(void*)&pkt.addr);
             if (iter != FTBU_map_end(FTBNI_bootstrap_addr_map)) {
                 FTBNI_bootstrap_entry_t *entry = (FTBNI_bootstrap_entry_t *)FTBU_map_get_data(iter);

@@ -230,12 +230,25 @@ static void FTBMI_util_get_system_id(uint32_t *system_id)
 
 static void FTBMI_util_get_location_id(FTB_location_id_t *location_id)
 {
-    char cmd[128];
-    location_id->pid = getpid();
-    FTBU_get_output_of_cmd("hostname", location_id->hostname, FTB_MAX_HOST_NAME);
-    sprintf(cmd, "ps -o lstart -p %d |sed /STARTED/d|sed 's/ /_/g'", location_id->pid);
-    FTBU_get_output_of_cmd(cmd, location_id->pid_starttime, FTB_MAX_PID_STARTTIME);
+    time_t raw_time;
+    struct tm timeinfo;
 
+    location_id->pid = getpid();
+    //FTBU_get_output_of_cmd("hostname", location_id->hostname, FTB_MAX_HOST_ADDR);
+    if ( FTBN_Get_my_network_address(location_id->hostname) < 0 ) { 
+        FTB_WARNING("Failed to get the IP address of the localhost.");
+    }   
+
+    //sprintf(cmd, "ps -o lstart -p %d |sed /STARTED/d|sed 's/ /_/g'", location_id->pid);
+    //FTBU_get_output_of_cmd(cmd, location_id->pid_starttime, FTB_MAX_PID_STARTTIME);
+    if (time(&raw_time) != -1) {
+        localtime_r(&raw_time, &timeinfo);
+        strftime(location_id->pid_starttime, FTB_MAX_PID_TIME, "%a_%b_%d_%j_%H:%M:%S", &timeinfo);
+        printf("starttime in location is is %s\n", location_id->pid_starttime);
+    }   
+    else {
+        FTB_WARNING("Failed to get the current time for the process.");
+    }
 }
 
 int FTBM_Get_catcher_comp_list(const FTB_event_t *event, FTB_id_t **list, int *len)

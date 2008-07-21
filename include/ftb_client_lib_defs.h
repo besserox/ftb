@@ -63,7 +63,7 @@ typedef struct FTB_event {
     FTB_severity_t  severity;
     FTB_client_jobid_t client_jobid;
     FTB_client_name_t client_name;
-    FTB_hostname_t hostname;
+    FTB_hostip_t hostname;
     uint16_t seqnum;
     uint8_t event_type;
     char event_payload[FTB_MAX_PAYLOAD_DATA];
