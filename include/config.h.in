@@ -4,6 +4,9 @@
 /* Define if debug should be enabled */
 #undef FTB_DEBUG
 
+/* Debug Log Directory */
+#undef FTB_LOGDIR
+
 #undef FTB_BSTRAP_SERVER
 
 #undef FTB_BSTRAP_PORT

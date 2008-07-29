@@ -5,12 +5,13 @@ abs_top_srcdir=@abs_top_srcdir@
 exec_prefix=@exec_prefix@
 prefix=@prefix@
 clients=@clients@
+PLATFORM=@PLATFORM@
 network=@network@
 TEMPSBIN=@TEMPSBIN@
 TEMPLIB=@TEMPLIB@
 FTB_NETWORK_CFLAG=@FTB_NETWORK_CFLAG@
 ZOID_CLIENT_DIR=@ZOID_CLIENT_DIR@
-FTB_LIB_BGL_CN_NAME=@FTB_LIB_BGL_CN_NAME@
+FTB_LIB_BG_CN_NAME=@FTB_LIB_BG_CN_NAME@
 FTB_LIB_LINUX_NAME=@FTB_LIB_LINUX_NAME@
 FTB_LIB_PATH_SHARED=@FTB_LIB_PATH_SHARED@
 FTB_LIB_PATH_STATIC=@FTB_LIB_PATH_STATIC@
@@ -30,14 +31,14 @@ CC=@CC@
 RANLIB=@RANLIB@
 LIBS_PTHREAD=@LIBS_PTHREAD@
 
-all: ${FTB_LIB_PATH_STATIC}/lib${FTB_LIB_BGL_CN_NAME}.a ftb_zoid_client
+all: ${FTB_LIB_PATH_STATIC}/lib${FTB_LIB_BG_CN_NAME}.a ftb_zoid_client
 
-CFLAGS = -Wall -g -I${INC_DIR} -I${ZOID_CLIENT_DIR} 
+CFLAGS = -Wall -g -I${INC_DIR} -I${ZOID_CLIENT_DIR} -D${PLATFORM}
 
 ZOID_CN_LIB = zoid_client/libftb_zoid_client_blrts.a
 
 clean:
-	rm -f ${FTB_LIB_PATH_STATIC}/lib${FTB_LIB_BGL_CN_NAME}.a
+	rm -f ${FTB_LIB_PATH_STATIC}/lib${FTB_LIB_BG_CN_NAME}.a
 	rm -f ftb_zoid_wrapper.o
 	${MAKE} -C zoid_client $@
 
@@ -46,7 +47,7 @@ ftb_zoid_client:
 	${MAKE} -C zoid_client all
 	
 
-${FTB_LIB_PATH_STATIC}/lib${FTB_LIB_BGL_CN_NAME}.a: ftb_zoid_wrapper.o ftb_zoid_client
+${FTB_LIB_PATH_STATIC}/lib${FTB_LIB_BG_CN_NAME}.a: ftb_zoid_wrapper.o ftb_zoid_client
 	mkdir -p ${FTB_LIB_PATH_STATIC}
 	cp -p ${ZOID_CN_LIB} $@
 	${AR} -rc $@ ftb_zoid_wrapper.o

@@ -29,12 +29,13 @@ abs_top_srcdir=@abs_top_srcdir@
 exec_prefix=@exec_prefix@
 prefix=@prefix@
 clients=@clients@
+PLATFORM=@PLATFORM@
 network=@network@
 TEMPSBIN=@TEMPSBIN@
 TEMPLIB=@TEMPLIB@
 FTB_NETWORK_CFLAG=@FTB_NETWORK_CFLAG@
 ZOID_CLIENT_DIR=@ZOID_CLIENT_DIR@
-FTB_LIB_BGL_CN_NAME=@FTB_LIB_BGL_CN_NAME@
+FTB_LIB_BG_CN_NAME=@FTB_LIB_BG_CN_NAME@
 FTB_LIB_LINUX_NAME=@FTB_LIB_LINUX_NAME@
 FTB_LIB_PATH_SHARED=@FTB_LIB_PATH_SHARED@
 FTB_LIB_PATH_STATIC=@FTB_LIB_PATH_STATIC@
@@ -54,47 +55,16 @@ CC=@CC@
 RANLIB=@RANLIB@
 LIBS_PTHREAD=@LIBS_PTHREAD@
 
-PREFIX = ftb_zoid_client
-SCANNER = $(ZOID_HOME)/scanner.pl
-CFLAGS = -Wall -g -O2  
+CFLAGS = -Wall -g -O2
 CFLAGS_SHARED = -fPIC -mpowerpc -pthread
-LDFLAGS_SHARED = -shared
 
-SUBDIRS= client server implementation
-all: lib$(PREFIX)_blrts.a $(PREFIX)_preload.so implementation $(FTB_LIB_PATH_SHARED)/$(PREFIX)_preload.so
+all: .object_files_built
 
-$(FTB_LIB_PATH_SHARED)/$(PREFIX)_preload.so: $(PREFIX)_preload.so
-	cp -p $(PREFIX)_preload.so $@
-
-lib$(PREFIX)_blrts.a: client/.object_files_built
-	rm -f $@
-	$(AR_BLRTS) -rc $@ client/*.o && $(RANLIB_BLRTS) $@
-
-$(PREFIX)_preload.so: server/.object_files_built $(PREFIX)_dispatch.o
-	$(CC) $(CFLAGS) $(CFLAGS_SHARED) $(LDFLAGS_SHARED) -o $@ \
-	@ZOID_CLIENT_DIR@/server/*.o $(PREFIX)_dispatch.o
-
-client/.object_files_built: $(PREFIX)_defs.h
-	${MAKE} -C client all
-
-server/.object_files_built: $(PREFIX)_defs.h
-	${MAKE} -C server all
-
-
-$(PREFIX)_dispatch.o: $(PREFIX)_defs.h
-	$(CC) -c $(CFLAGS) -I$(ZOID_HOME)/include $(CFLAGS_SHARED) $(PREFIX)_dispatch.c
-
-$(PREFIX)_defs.h: $(PREFIX).h $(SCANNER)
-	$(SCANNER) $<
-
-.PHONY: implementation
-implementation:
-	$(MAKE) -C implementation
+.object_files_built:
+	$(CC) -c $(CFLAGS) $(CFLAGS_SHARED) -I@ZOID_CLIENT_DIR@ -I$(ZOID_HOME)/include -I$(INC_DIR) *.c 
+	touch .object_files_built
 
 clean:
-	for i in ${SUBDIRS}; do ${MAKE} -C $$i $@; done
-	rm -f $(FTB_LIB_PATH_SHARED)/$(PREFIX)_preload.so 
-	rm -f lib$(PREFIX)_blrts.a $(PREFIX)_preload.so 
-	rm -f $(PREFIX)_defs.h $(PREFIX)_dispatch.c $(PREFIX)_dispatch.o *~
+	rm -f *.o  *.c .object_files_built 
 
 distclean: clean

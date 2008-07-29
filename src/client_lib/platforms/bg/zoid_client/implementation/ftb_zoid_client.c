@@ -18,9 +18,9 @@ void ftb_zoid_client_init(int count)
 #ifdef FTB_DEBUG
     {
         char filename[128], IP[32], TIME[32];
-        FTBU_get_output_of_cmd("grep ^BGL_IP /proc/personality.sh | cut -f2 -d=",IP,32);
+        FTBU_get_output_of_cmd("grep ^BG_IP /proc/personality.sh | cut -f2 -d=",IP,32);
         FTBU_get_output_of_cmd("date +%m-%d-%H-%M-%S",TIME,32);
-        sprintf(filename,"%s.%s.%s","/bgl/home1/rgupta/ftb_bgl/zoid_output",IP,TIME);
+        sprintf(filename,"%s/%s.%s.%s",FTB_LOGDIR,"zoid_output",IP,TIME);
         FTBU_log_file_fp = fopen(filename, "w");
         fprintf(FTBU_log_file_fp, "Begin log file\n");
         fflush(FTBU_log_file_fp);

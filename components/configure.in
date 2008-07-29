@@ -20,7 +20,7 @@ dnl	exit 1;
 dnl fi
 
 dnl Expose option for platform type
-AC_ARG_WITH(platform, [  --with-platform=<platform type>        Possible values: bgl, linux],
+AC_ARG_WITH(platform, [  --with-platform=<platform type>        Possible values: bgl, bgp, linux],
 	                          CLIENTS=$withval, CLIENTS=linux)
 AC_MSG_CHECKING(checking platform support)
 AC_MSG_RESULT($CLIENTS)
@@ -28,52 +28,60 @@ AC_MSG_RESULT($CLIENTS)
 FTB_LIB_LINUX_NAME=ftb
 if  test "$CLIENTS" == "linux"; then
 	clients="linux";
-elif test "$CLIENTS" == "bgl"; then
-	clients="bgl linux";
-	unset_var=0;
-	ZOID_CLIENT_DIR='${abs_top_srcdir}/src/client_lib/platforms/bgl/zoid_client';
-	FTB_LIB_BGL_CN_NAME=ftb_blrts
-	if test "$ENVFILE" == ""; then
-		BGL_ENVFILE="bgl_setup_env";
-	else
-		BGL_ENVFILE="$ENVFILE";
+elif [[ "$CLIENTS" == "bgl" ]] || [[ "$CLIENTS" == "bgp" ]]; then
+	if [[ "$CLIENTS" == "bgl" ]]; then
+	    clients="bgl linux";
+	elif [[ "$CLIENTS" == "bgp" ]]; then
+	    clients="bgp linux";
 	fi
-	if test ! -r "$BGL_ENVFILE" ; then
-		echo "error: BGL environment file '$BGL_ENVFILE' does not exist or is not readable";
+	unset_var=0;
+	ZOID_CLIENT_DIR='${abs_top_srcdir}/src/client_lib/platforms/bg/zoid_client';
+	FTB_LIB_BG_CN_NAME=ftb_blrts
+	if [[ -f "$ENVFILE" ]]; then
+		BG_ENVFILE="$ENVFILE";
+	else
+	    if [[ "$CLIENTS" == "bgl" ]]; then
+		BG_ENVFILE="../bgl_setup_env";
+	    elif [[ "$CLIENTS" == "bgp" ]]; then
+		BG_ENVFILE="../bgp_setup_env";
+	    fi
+	fi
+	if test ! -r "$BG_ENVFILE" ; then
+		echo "error: BG environment file '$BG_ENVFILE' does not exist or is not readable";
 		echo "configure script aborting...correct errors first"
 		exit 1;
 	else
-		source $BGL_ENVFILE;
+		source $BG_ENVFILE;
 	fi
 	if test -z "$ZOID_HOME"; then
 		unset_var=1;
-		echo "error: Required environment variable not set: ZOID_HOME. Please check BGL environment variables file." >&2;
+		echo "error: Required environment variable not set: ZOID_HOME. Please check BG environment variables file." >&2;
 	else
 		ZOID_HOME="export ZOID_HOME=$ZOID_HOME";
 	fi
 	if test -z "$ZOID_LIBC_PATH"; then
 		unset_var=1;
-		echo "error: Required environment variable not set: ZOID_LIBC_PATH. Please check BGL environment variables file." >&2;
+		echo "error: Required environment variable not set: ZOID_LIBC_PATH. Please check BG environment variables file." >&2;
 	else
 		ZOID_LIBC_PATH="export ZOID_LIBC_PATH=$ZOID_LIBC_PATH";
 	fi
 	if test -z "$CC_BLRTS"; then
 		unset_var=1;
-		echo "error: Required enviroment variable not ste: CC_BLRTS. Please check BGL environment variables file.";
+		echo "error: Required enviroment variable not ste: CC_BLRTS. Please check BG environment variables file.";
 	else
 		CC_BLRTS="export CC_BLRTS=$CC_BLRTS";
 	fi
 	if test -z "$AR_BLRTS"; then
 		unset_var=1;
-		echo "error: Required enviroment variable not ste: AR_BLRTS. Please check BGL environment variables file.";
+		echo "error: Required enviroment variable not ste: AR_BLRTS. Please check BG environment variables file.";
 	else
 		AR_BLRTS="export AR_BLRTS=$AR_BLRTS";
 	fi
-	if test -z "$BGLSYS_LIB_PATH"; then
+	if test -z "$BGSYS_LIB_PATH"; then
 		unset_var=1;
-		echo "error: Required environment variable not set: BGLSYS_LIB_PATH. Please check BGL environment variables file." >&2;
+		echo "error: Required environment variable not set: BGSYS_LIB_PATH. Please check BG environment variables file." >&2;
 	else
-		BGLSYS_LIB_PATH="export BGLSYS_LIB_PATH=$BGLSYS_LIB_PATH";
+		BGSYS_LIB_PATH="export BGSYS_LIB_PATH=$BGSYS_LIB_PATH";
 	fi
 	if test $unset_var == 1; then
 		echo "configure script aborting...correct errors first" >&2;
@@ -92,7 +100,7 @@ AC_SUBST(ZOID_HOME)
 AC_SUBST(ZOID_LIBC_PATH)
 AC_SUBST(CC_BLRTS)
 AC_SUBST(AR_BLRTS)
-AC_SUBST(BGLSYS_LIB_PATH)
+AC_SUBST(BGSYS_LIB_PATH)
 AC_SUBST(clients)
 AC_SUBST(ZOID_CLIENT_DIR)
 AC_SUBST(FTB_HOME)

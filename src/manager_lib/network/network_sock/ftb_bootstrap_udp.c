@@ -119,7 +119,7 @@ static void FTBNI_util_get_network_addr(FTBN_addr_sock_t *my_addr)
     /*Setup my hostname*/
     my_addr->port = FTBNI_bootstrap_config.agent_port;
 #ifdef FTB_BGL_ION
-    FTBU_get_output_of_cmd("grep ^BGL_IP /proc/personality.sh | cut -f2 -d=", my_addr->name, FTB_MAX_HOST_ADDR);
+    FTBU_get_output_of_cmd("grep ^BG_IP /proc/personality.sh | cut -f2 -d=", my_addr->name, FTB_MAX_HOST_ADDR);
 #else
     strcpy(my_addr->name, "localhost");
     //FTBU_get_output_of_cmd("hostname",my_addr->name,FTB_MAX_HOST_NAME);

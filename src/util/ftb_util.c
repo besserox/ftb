@@ -108,26 +108,35 @@ void FTBU_get_output_of_cmd(const char *cmd, char *output, size_t len)
                 fprintf(stderr,"strftime command failed\n");
             }
     }
-   else if (strcasecmp(cmd, "grep ^BGL_IP /proc/personality.sh | cut -f2 -d=") == 0) {
+   else if (strcasecmp(cmd, "grep ^BG_IP /proc/personality.sh | cut -f2 -d=") == 0) {
         FILE *fp;
         char *pos;
         char str[32];
-        int i=0, index=0;
+        int found =0;
 
         fp = fopen("/proc/personality.sh", "r");
-        while (!feof(fp)) {
-                fgets(str, 32, fp);
-                if ((pos=strstr(str, "BGL_IP=")) != NULL) {
-                        index = str-pos;
-                        while (str[index++] != '=');
-                        while (str[index] != '\n') {output[i++]= str[index++];}
-                        output[i]= '\0';
-                        break;
-                }
-                else {
-                   fprintf(stderr, "Could not find BGL_IP parameter in file /proc/personality.sh on the BGL machine");
-                } 
-        }
+
+	if (!fp) {
+	    fprintf(stderr, "Could not find /proc/personality.sh\n");
+	    return;
+	}
+
+	while (!feof(fp)) {
+	    fgets(str, 32, fp);
+
+	    if ( ((pos=strstr(str, "BG_IP=") ) != NULL) ||
+		 ((pos=strstr(str, "BGL_IP=")) != NULL) )
+	    {
+		while (*pos++ != '=');
+		strcpy(output, pos);
+		found = 1;
+		break;
+	    }
+	}
+
+	if (!found)
+	    fprintf(stderr, "Could not find BG_IP parameter in file /proc/personality.sh on the BG machine");
+
         fclose(fp);
     }
     else {

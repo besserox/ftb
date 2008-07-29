@@ -119,7 +119,7 @@ int main(int argc, char *argv[])
         char filename[128], hostname[32], TIME[32];
         FTBU_get_output_of_cmd("hostname",hostname,32);
         FTBU_get_output_of_cmd("date +%m-%d-%H-%M-%S",TIME,32);
-        sprintf(filename,"%s.%s.%s","/bgl/home1/rgupta/ftb_bgl/IO_agent_output",hostname,TIME);
+        sprintf(filename,"%s/%s.%s.%s",FTB_LOGDIR,"IO_agent_output",hostname,TIME);
         FTBU_log_file_fp = fopen(filename, "w");
         fprintf(FTBU_log_file_fp, "Begin log file\n");
         fflush(FTBU_log_file_fp);

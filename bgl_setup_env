@@ -4,4 +4,4 @@ export BLRTS_PATH=/bgl/BlueLight/ppcfloor/blrts-gnu/powerpc-bgl-blrts-gnu
 export CC_BLRTS=$BLRTS_PATH/bin/gcc
 export AR_BLRTS=$BLRTS_PATH/bin/ar
 export RANLIB_BLRTS=$BLRTS_PATH/bin/ranlib
-export BGLSYS_LIB_PATH=/bgl/BlueLight/V1R3M2_140_2007-070424/ppc/bglsys/lib
+export BGSYS_LIB_PATH=/bgl/BlueLight/V1R3M2_140_2007-070424/ppc/bglsys/lib
