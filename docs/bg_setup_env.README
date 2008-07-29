@@ -1,0 +1,35 @@
+This README briefly describes the environment variables that have to be
+specified in the bg_setup_env file for the BGL & BGP platforms.
+
+ZOID_HOME	- Path to the directory where "scanner.pl" resides.
+
+ZOID_LIBC_PATH	- Path to libzoid_cn.a
+		  On BGL, this is usually
+		    ZeptoOS-1.5-V1R3M2_03/BGL/build/ZeptoOS-1.5-V1R3M2
+		  On BGP, this is usually
+		    $ZOID_HOME/cnl/client
+
+BLRTS_PATH	- Paths to the BG Compiler Toolchain
+		  On BGL, this is usually
+		    /bgl/BlueLight/ppcfloor/blrts-gnu/powerpc-bgl-blrts-gnu
+		  On BGP, this is usually
+		    /bgsys/drivers/ppcfloor/gnu-linux/powerpc-bgp-linux
+
+CC_BLRTS	- Path to gcc.
+		  Usually $BLRTS_PATH/bin/gcc
+
+AR_BLRTS	- Path to ar.
+		  Usually $BLRTS_PATH/bin/ar
+
+RANLIB_BLRTS	- Path to ranlib.
+		  Usually $BLRTS_PATH/bin/ranlib
+
+BGSYS_LIB_PATH	- Path to BG libraries, such as pthread.
+		  On BGL, this is usually
+		    /bgl/BlueLight/V1R3M2_140_2007-070424/ppc/bglsys/lib
+		  On BGP, this is usually
+		    $BLRTS_PATH/lib
+
+Note: The sample paths provided here are based on the Argonne BG systems. Please
+      contact your system administrators to obtain the correct paths for your
+      environment.

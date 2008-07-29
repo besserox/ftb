@@ -45,10 +45,9 @@ AC_MSG_CHECKING(checking platform support)
 AC_MSG_RESULT($CLIENTS)
 
 dnl Expose option for BGL enviroment file
-AC_ARG_WITH(platform-envfile, [  --with-platform-envfile=<bg envfile>	Default file will be
-					    bgl_setup_env for bgl platforms, and
-					    bgp_setup_env for bgp platforms.
-					For all other platforms, this file is ignored.],
+AC_ARG_WITH(platform-envfile, [  --with-platform-envfile=<bg envfile>	Default file is bg_setup_env for BGL and BGP
+					platforms. For all other platforms, this file
+					is ignored.],
 			ENVFILE=$withval, ENVFILE=)
 AC_MSG_CHECKING(user specified platform environment file)
 AC_MSG_RESULT($ENVFILE)

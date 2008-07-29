@@ -32,15 +32,16 @@ Building FTB
 	 FTB agent. This value can be overriden at run-time by
 	 specifying the environment variable FTB_AGENT_PORT
 
-	(c) --enable-debug 
+	(c) --enable-debug=<Log Files Directory>
 	 Default: no debug
 	 This option enables debug messages on the client as well as the FTB side.
+	 The log files will be written in the specified directory.
 
-	(d) --with-platform=<linux or bgl>
+	(d) --with-platform=<linux or bgl or bgp>
 	 Default: linux
 	 This option is used by the user to specify the platform
-	 for this FTB build. Only BGL and linux are supported at
-	 this point.
+	 for this FTB build. Only BGL, BGP and linux are supported
+	 at this point.
 
 	(d) In addition, the user can use other standard options
 	 like --with-prefix etc. ./configure --help will provide
@@ -71,7 +72,7 @@ examples also serve as a starting point for other component developers
 3. Run ./configure --with-ftb=<path_to_ftb_binaries>
 	The default directory to --with-ftb is /usr/local/ftb.
    Other options to above are:
-	(a) --with-platform=<linux,bgl>
+	(a) --with-platform=<linux,bgl,bgp>
 	 Default: linux
 	 This option is used to specify the platform for which the
 	 components are to be built for
@@ -116,14 +117,14 @@ o All the below examples work on linux. Some examples may require the MPI librar
 
 (1) ftb_simple_publisher and ftb_simple_subscriber
  Demonstrates: Connecting to FTB and publish event, Connecting to FTB and catching specific events using polling
-	     : This is the only working example on BGL for now.
+	       This example works on the BGL and BGP platforms as well.
  Description : Start the ftb_simple_subscriber and ftb_simple_publisher on two different machines. 
 	       ftb_simple_subscriber subscribes and polls events published by ftb_simple_publisher 
 
 
 (2) ftb_watchdog
- Demonstrates: Connecting to FTB, Declare publishable events using a schema 
-	       file, Subscribe (using polling) and Publish an event
+ Demonstrates: Connecting to FTB, Declare publishable events using a schema file, Subscribe (using polling)
+	       and Publish an event. This example works on the BGP platform as well.
  Description : This component publishes the watch_dog_event and subscribes to catch the same event. 
 	       This can be used to confirm the working of FTB
 
