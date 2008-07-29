@@ -40,11 +40,7 @@ elif [[ "$CLIENTS" == "bgl" ]] || [[ "$CLIENTS" == "bgp" ]]; then
 	if [[ -f "$ENVFILE" ]]; then
 		BG_ENVFILE="$ENVFILE";
 	else
-	    if [[ "$CLIENTS" == "bgl" ]]; then
-		BG_ENVFILE="../bgl_setup_env";
-	    elif [[ "$CLIENTS" == "bgp" ]]; then
-		BG_ENVFILE="../bgp_setup_env";
-	    fi
+		BG_ENVFILE="../bg_setup_env";
 	fi
 	if test ! -r "$BG_ENVFILE" ; then
 		echo "error: BG environment file '$BG_ENVFILE' does not exist or is not readable";

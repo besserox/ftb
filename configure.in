@@ -71,11 +71,7 @@ elif [[ "$CLIENTS" == "bgl" ]] || [[ "$CLIENTS" == "bgp" ]]; then
 	ZOID_CLIENT_DIR='${abs_top_srcdir}/src/client_lib/platforms/bg/zoid_client';
 	FTB_LIB_BG_CN_NAME=ftb_blrts
 	if test "$ENVFILE" == ""; then
-	    if [[ "$CLIENTS" == "bgl" ]]; then
-		BG_ENVFILE="bgl_setup_env";
-	    elif [[ "$CLIENTS" == "bgp" ]]; then
-		BG_ENVFILE="bgp_setup_env";
-	    fi
+		BG_ENVFILE="bg_setup_env";
 	else
 		BG_ENVFILE="$ENVFILE";
 	fi
