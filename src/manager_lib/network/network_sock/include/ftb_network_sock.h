@@ -1,12 +1,15 @@
 #ifndef FTB_NETWORK_TCP_H
 #define FTB_NETWORK_TCP_H
 
+#include "ftb_util.h"
 #include "config.h"
 #include <netdb.h>
 #include <arpa/inet.h>
 #ifdef __cplusplus
 extern "C" {
 #endif 
+
+extern FILE *FTBU_log_file_fp;
 
 typedef struct FTBN_addr_sock {
     char name[FTB_MAX_HOST_ADDR];
@@ -20,6 +23,8 @@ typedef struct FTBNI_config_sock {
 }FTBNI_config_sock_t;
 
 #define FTBNI_LOCAL_IP  "127.0.0.1"
+
+#define FTBNI_CONFIG_FILE_VAL 128
 
 #define FTBN_CONNECT_RETRY_COUNT                     10
 /*totally try ten times maximum*/
@@ -66,38 +71,106 @@ int FTBNI_Bootstrap_finalize(void);
 
 int FTBNI_Bootstrap_abort(void);
 
+static inline void FTBNI_get_data_from_config_file(char *str, char *file, char *output_val, int *retval) {
+    FILE *fp;
+    char *pos;
+    char line[FTBNI_CONFIG_FILE_VAL];
+    int found = 0;
+
+    fp = fopen(file, "r");
+    if (!fp) {
+        *retval = -1; 
+        return;
+    } while (!feof(fp)) {
+        fgets(line, FTBNI_CONFIG_FILE_VAL, fp);
+        if ((pos = strstr(line, str)) != NULL) {
+            while (*pos++ != '=');
+            strcpy(output_val, pos);
+            found = 1;
+            break;
+        }
+    }   
+    fclose(fp);
+    if (!found)
+        *retval = -1; 
+    return;
+}   
+
 static inline void FTBNI_util_setup_config_sock(FTBNI_config_sock_t *config)
 {
     char *env;
+    int found_error = 0;
 
-    if ((env = getenv("FTB_AGENT_PORT")) == NULL) {
-        config->agent_port =  FTB_AGENT_PORT;
-    }
-    else {
+    if ((env = getenv("FTB_AGENT_PORT")) != NULL) {
         config->agent_port = atoi(env);
-    }
+    }   
+    else if ((env = getenv("FTB_CONFIG_FILE")) != NULL) {
+        char output_val[FTBNI_CONFIG_FILE_VAL];
+        int retval = 0;
+        FTBNI_get_data_from_config_file("FTB_AGENT_PORT", env, output_val, &retval);
+        if (retval == -1) {
+            config->agent_port = FTB_AGENT_PORT;
+            FTB_INFO("Error in accessing agent port information from config file %s. Assigning default port to the agent %d\n", env, config->agent_port);
+        }
+        else {
+            config->agent_port = atoi(output_val);
+        }
+    }   
+    else {
+        config->agent_port = FTB_AGENT_PORT;
+        FTB_INFO("Assigning default port to the agent: %d", config->agent_port);
+    }   
 
-    if ((env = getenv("FTB_BSTRAP_PORT")) == NULL) {
+    if ((env = getenv("FTB_BSTRAP_PORT")) != NULL) {
+        config->server_port = atoi(env);
+    }   
+    else if ((env = getenv("FTB_CONFIG_FILE")) != NULL) {
+        char output_val[FTBNI_CONFIG_FILE_VAL];
+        int retval = 0;
+        FTBNI_get_data_from_config_file("FTB_BSTRAP_PORT", env, output_val, &retval);
+        if (retval == -1) {
+            config->server_port = FTB_BSTRAP_PORT;
+            FTB_INFO("Error in accessing server port information from config file %s. Assigning default port for bootstrap server : %d", env, config->server_port);
+        }
+        else {
+            config->server_port = atoi(output_val);
+        }
+    }   
+    else {
         config->server_port = FTB_BSTRAP_PORT;
     }
-    else {
-        config->server_port = atoi(env);
-    }
-    
-    if ((env = getenv("FTB_BSTRAP_SERVER")) == NULL) {
-        strncpy(config->server_name, FTB_BSTRAP_SERVER, FTB_MAX_HOST_ADDR);
-    }
-    else {
+
+    if ((env = getenv("FTB_BSTRAP_SERVER")) != NULL) {
         strncpy(config->server_name, env, FTB_MAX_HOST_ADDR);
     }
+    else if ((env = getenv("FTB_CONFIG_FILE")) != NULL) {
+        char output_val[FTBNI_CONFIG_FILE_VAL];
+        int retval = 0;
+        FTBNI_get_data_from_config_file("FTB_BSTRAP_SERVER", env, output_val, &retval);
+        if (retval == -1) {
+#ifdef FTB_BSTRAP_SERVER
+            strncpy(config->server_name, FTB_BSTRAP_SERVER, FTB_MAX_HOST_ADDR);
+            FTB_INFO("Error in accessing bootstrap server name information from config file %s. Assigning configure time server information:i %s", env, config->server_name);
+#else
+            found_error = -1;
+#endif
+        }
+        else {
+            strncpy(config->server_name, output_val, FTB_MAX_HOST_ADDR);
+        }
+    }
+    else {
+#ifdef FTB_BSTRAP_SERVER
+        strncpy(config->server_name, FTB_BSTRAP_SERVER, FTB_MAX_HOST_ADDR);
+#else
+        fprintf(stderr, "Could not get bootstrap server ip information\n");
+        found_error = -1;
+#endif
+    }
 
-    /*FTB_INFO("agent port=%d, server port=%d and hostname=%s\n", 
-            config->agent_port, config->server_port, config->server_name);
-
-    config->agent_port = FTB_AGENT_PORT;
-    config->server_port = FTB_BSTRAP_PORT;
-    strncpy(config->server_name, FTB_BSTRAP_SERVER, FTB_MAX_HOST_ADDR);
-    */
+    if (found_error == -1) {
+        fprintf(stderr, "Bootstrap server or agent port information not found\n");
+    }
 }
 
 /*
@@ -124,11 +197,13 @@ static inline struct hostent *FTBNI_gethostbyname(const char *name)
         hp->h_addr_list[1] = 0;
         hp->h_addr = hp->h_addr_list[0];
    }
-
+   /*
    if ( strcmp(name,FTB_BSTRAP_SERVER) == 0 ) {
        inet_aton(FTB_BSTRAP_SERVER,((struct in_addr*)hp->h_addr));
    }
-   else if ( strcmp(name,"localhost") == 0 ) {
+   else 
+    */
+   if ( strcmp(name,"localhost") == 0 ) {
        inet_aton(FTBNI_LOCAL_IP,((struct in_addr*)hp->h_addr));
    }
    else {

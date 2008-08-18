@@ -83,7 +83,7 @@ int main (int argc, char *argv[])
     /*
      * Connect to FTB
      */
-    ret = FTB_Connect(&cinfo, &handle);
+    ret = FTB_Connect(&cinfo,  &handle);
     if (ret != FTB_SUCCESS) {
         printf("FTB_Connect failed \n");
         exit(-1);

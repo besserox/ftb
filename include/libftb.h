@@ -9,7 +9,7 @@
 extern "C" {
 #endif 
 
-int FTB_Connect(const FTB_client_t *client_info,  FTB_client_handle_t *client_handle);
+int FTB_Connect(const FTB_client_t *client_info, FTB_client_handle_t *client_handle);
 
 int FTB_Publish(FTB_client_handle_t client_handle, const char *event_name, const FTB_event_properties_t *event_properties, FTB_event_handle_t *event_handle);
 
