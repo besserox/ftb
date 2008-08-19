@@ -37,7 +37,7 @@ static int FTBNI_util_send_bootstrap_msg(const FTBNI_bootstrap_pkt_t *pkt_send)
     }
     hp = FTBNI_gethostbyname(FTBNI_bootstrap_config.server_name);
     if (hp == NULL) {
-        FTB_ERR_ABORT("cannot find database server %s",FTBNI_bootstrap_config.server_name);
+        FTB_ERR_ABORT("Cannot find database server %s",FTBNI_bootstrap_config.server_name);
     }
     memset( (void *)&server, 0, sizeof(server) );
     memcpy( (void *)&server.sin_addr, (void *)hp->h_addr, hp->h_length);

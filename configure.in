@@ -15,8 +15,9 @@ AC_ARG_WITH(bstrap-server, [  --with-bstrap-server=<IP Address>     IP Address o
 	                 FTB_BSTRAP_SERVER=$withval)
 AC_MSG_CHECKING(checking bootstrap server IP Address)
 AC_MSG_RESULT($FTB_BSTRAP_SERVER)
-AC_DEFINE_UNQUOTED(FTB_BSTRAP_SERVER, "${FTB_BSTRAP_SERVER}", [Hostname for the FTB bootstrap server])
-
+if test "$FTB_BSTRAP_SERVER" != ""; then
+	AC_DEFINE_UNQUOTED(FTB_BSTRAP_SERVER, "${FTB_BSTRAP_SERVER}", [Hostname for the FTB bootstrap server])
+fi
 
 dnl Get bootstrap server port number
 AC_ARG_WITH(bstrap-port, [  --with-bstrap-port=<port number>	Port number of Bootstrapping server <14455>],
