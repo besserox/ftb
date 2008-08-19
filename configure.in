@@ -12,7 +12,7 @@ AC_PROG_RANLIB
 
 dnl Get bootstrap server name
 AC_ARG_WITH(bstrap-server, [  --with-bstrap-server=<IP Address>     IP Address of Bootstrapping server <no default>],
-	                 FTB_BSTRAP_SERVER=$withval, FTB_BSTRAP_SERVER='')
+	                 FTB_BSTRAP_SERVER=$withval)
 AC_MSG_CHECKING(checking bootstrap server IP Address)
 AC_MSG_RESULT($FTB_BSTRAP_SERVER)
 AC_DEFINE_UNQUOTED(FTB_BSTRAP_SERVER, "${FTB_BSTRAP_SERVER}", [Hostname for the FTB bootstrap server])
