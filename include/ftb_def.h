@@ -8,9 +8,9 @@
 
 #ifdef __cplusplus
 extern "C" {
-#endif 
-/*#define FTB_TAG*/
+#endif
 
+/* #define FTB_TAG */
 
 #define FTB_SUCCESS                             0
 #define FTB_ERR_GENERAL                         (-1)
@@ -41,15 +41,17 @@ extern "C" {
 #endif
 
 /* If client will subscribe to any events */
-#define FTB_SUBSCRIPTION_NONE               0x0                        
+#define FTB_SUBSCRIPTION_NONE               0x0
+
 /* If client plans to poll - a polling queue is created */
-#define FTB_SUBSCRIPTION_POLLING            0x1                        
+#define FTB_SUBSCRIPTION_POLLING            0x1
+
 /* If client plans to use callback handlers */
-#define FTB_SUBSCRIPTION_NOTIFY             0x2           
+#define FTB_SUBSCRIPTION_NOTIFY             0x2
 
 #define FTB_DEFAULT_POLLING_Q_LEN    64
 #define FTB_MAX_CLIENTSCHEMA_VER     8
-#define FTB_MAX_EVENTSPACE           64 
+#define FTB_MAX_EVENTSPACE           64
 #define FTB_MAX_CLIENT_NAME          16
 #define FTB_MAX_CLIENT_JOBID         16
 #define FTB_MAX_EVENT_NAME           32
@@ -59,9 +61,9 @@ extern "C" {
 #define FTB_MAX_PAYLOAD_DATA         368
 
 /*
-* The FTB_EVENT_SIZE field size is just sufficient for the event +
-* event_handle (and event_type), if needed
-*/
+ * The FTB_EVENT_SIZE field size is just sufficient for the event +
+ * event_handle (and event_type), if needed
+ */
 #define FTB_EVENT_SIZE               720
 
 #ifdef FTB_TAG
@@ -83,7 +85,7 @@ typedef char FTB_client_jobid_t[FTB_MAX_CLIENT_JOBID];
 typedef char FTB_severity_t[FTB_MAX_SEVERITY];
 typedef char FTB_event_name_t[FTB_MAX_EVENT_NAME];
 typedef char FTB_hostip_t[FTB_MAX_HOST_ADDR];
-typedef char FTB_subscription_style_t[32];     
+typedef char FTB_subscription_style_t[32];
 typedef char FTB_pid_starttime_t[FTB_MAX_PID_TIME];
 
 #ifdef FTB_TAG
@@ -96,30 +98,30 @@ typedef struct FTB_client {
     FTB_eventspace_t event_space;
     FTB_client_name_t client_name;
     FTB_client_jobid_t client_jobid;
-    FTB_subscription_style_t client_subscription_style; 
+    FTB_subscription_style_t client_subscription_style;
     unsigned int client_polling_queue_len;
-}FTB_client_t;
+} FTB_client_t;
 
 typedef struct FTB_event_info {
     FTB_event_name_t event_name;
     FTB_severity_t severity;
-}FTB_event_info_t;
+} FTB_event_info_t;
 
 typedef struct FTB_event_properties {
     char event_type;
     char event_payload[FTB_MAX_PAYLOAD_DATA];
-}FTB_event_properties_t;
+} FTB_event_properties_t;
 
 typedef struct FTB_location_id {
     char hostname[FTB_MAX_HOST_ADDR];
     FTB_pid_starttime_t pid_starttime;
     pid_t pid;
-}FTB_location_id_t;
+} FTB_location_id_t;
 
 typedef struct FTB_receive_event_info {
     FTB_eventspace_t event_space;
     FTB_event_name_t event_name;
-    FTB_severity_t  severity;
+    FTB_severity_t severity;
     FTB_client_jobid_t client_jobid;
     FTB_client_name_t client_name;
     uint8_t client_extension;
@@ -127,12 +129,11 @@ typedef struct FTB_receive_event_info {
     FTB_location_id_t incoming_src;
     uint8_t event_type;
     char event_payload[FTB_MAX_PAYLOAD_DATA];
-    //FTB_event_properties_t event_properties;
 #ifdef FTB_TAG
     FTB_tag_len_t len;
     char dynamic_data[FTB_MAX_DYNAMIC_DATA_SIZE];
 #endif
-}FTB_receive_event_t;
+} FTB_receive_event_t;
 
 typedef struct FTB_client_handle FTB_client_handle_t;
 typedef struct FTB_subscribe_handle FTB_subscribe_handle_t;
@@ -140,6 +141,6 @@ typedef struct FTB_event_handle FTB_event_handle_t;
 
 #ifdef __cplusplus
 } /*extern "C"*/
-#endif 
+#endif
 
-#endif /*FTB_DEF_H*/
+#endif /*FTB_DEF_H */
