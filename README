@@ -1,52 +1,91 @@
-					FTB Release 0.5
+					FTB Release 0.6
+
+Table of Contents
+=======================
+
+(0.0) FTB 0.6 Release information
+(1.0) Getting Started
+    (1a) Building FTB and FTB examples for Linux
+    (1b) Building FTB and FTB examples for BGL or BGP
+    (1c) Building FTB and FTB examples for Crays
+(2.0) Launching and Running FTB and FTB examples
+    (2a) Running FTB examples on Linux machines
+    (2b) Running FTB examples on IBM BG machines
+    (2c) Running FTB examples on Cray machines
 
 
-Getting started 
-===============
+Section 0.0: FTB 0.6 RELEASE INFORMATION
+==========================================
+* This code release conforms to the "Fault Tolerance Backplane API 0.5". This
+			API can be found at
+			http://www.mcs.anl.gov/research/cifts/
 
-Building FTB
+* Platforms supported : Ubuntu Linux (2.6), IBM BG/L (with ZeptoOS/ZOID
+			on compute nodes), IBM BG/P (with ZeptoOS/ZOID
+			on compute nodes), Cray XT
+
+* Required packages for IBM BG/L :  To run FTB on the compute nodes,
+			the user needs to install the open-source
+			ZeptoOS and ZOID packages.  This release of
+			FTB supports ZeptoOS 1.5-V1R3M2 with ZOID 1.0.
+			Please note that you can run FTB on the login
+			nodes (and I/O nodes) without ZeptoOD and ZOID.
+			For further information on ZeptoOS:
+			http://www.mcs.anl.gov/zeptoos/
+
+
+Section 1.0 : GETTING STARTED 
+===============================
+
+Section 1a : BUILDING FTB AND FTB EXAMPLES FOR LINUX
+----------------------------------------------------
+TO BUILD FTB:
 -------------
-1. Download the FTB code from the CIFTS SVN trunk at: https://svn.mcs.anl.gov/repos/cifts/ftb/trunk/
+1. Download the FTB code from the CIFTS SVN. For ex: to download the code from the trunk
 	svn co https://svn.mcs.anl.gov/repos/cifts/ftb/trunk
 
 2. Run ./autogen.sh
 
-3. Run ./configure --with-bstrap-server=<server_name>
-   	The --with-bstrap-server=<server_name> is used to specify the
-   	hostname of the bootstrap server. This is a required option to
-   	./configure. The user can override this value and specify a new
-   	hostname for the bootstrap server using the FTB_BSTRAP_SERVER
-   	environment variable during runtime.
-
+3. Run ./configure 
    Other options to ./configure in addition to above:
-	(a) --with-bstrap-port=<port_number>
-	 Default value: 14455 
-	 This is the port used by the FTB agent and perhaps the FTB
-	 clients to communicate to the bootstrap server. This value
-	 can be overridden at run-time by specifying the environment
-	 variable FTB_BSTRAP_PORT
+	(a) --with-bstrap-server=<server_ipaddress>
+        	The --with-bstrap-server=<server_ipaddress> is used to specify
+        	the ip address of the bootstrap server. Please note that the
+        	bootstrap server is required by FTB during run-time. If it is
+        	not passed as a parameter to configure, then it can be specified
+       		as an environment variable or can  be specified in a config
+        	file. Please refer to Section XXXXX in this file for more
+        	information on this topic.
 
-	(b) --with-agent-port=<port_number>
-	 Default value: 10809 
-	 This is the port used by the FTB clients to connect to an
-	 FTB agent. This value can be overriden at run-time by
-	 specifying the environment variable FTB_AGENT_PORT
+	(b) --with-bstrap-port=<port_number>
+	 	Default value: 14455 
+	 	This is the port used by the FTB agent and perhaps the FTB
+	 	clients to communicate to the bootstrap server. This value
+	 	can be overridden at run-time by specifying the environment
+	 	variable FTB_BSTRAP_PORT. Please refer to Section XXXXX in this
+	 	file for more information on this topic.
 
-	(c) --enable-debug=<Log Files Directory>
-	 Default: no debug
-	 This option enables debug messages on the client as well as the FTB side.
-	 The log files will be written in the specified directory.
+	(c) --with-agent-port=<port_number>
+	 	Default value: 10809 
+	 	This is the port used by the FTB clients to connect to an FTB
+	 	agent. This value can be overriden at run-time by specifying
+	 	the environment variable FTB_AGENT_PORT. Please refer to Section
+	 	XXXXX in this file for more information on this topic.
 
-	(d) --with-platform=<linux or bgl or bgp>
-	 Default: linux
-	 This option is used by the user to specify the platform
-	 for this FTB build. Only BGL, BGP and linux are supported
-	 at this point.
+	(d) --enable-debug=<Log Files Directory>
+		Default: no debug 
+	 	This option enables debug messages on the client as well as
+	 	the FTB side.	The log files will be written in the specified
+	 	directory.
+
+	(e) --with-platform=<linux or bgl or bgp>
+	 	Default: linux
+	 	This option is used by the user to specify the platform for this
+	 	FTB build. Only BGL, BGP and linux are supported at this point.
 
 	(d) In addition, the user can use other standard options
-	 like --with-prefix etc. ./configure --help will provide
-	 more options
-
+	 	like --with-prefix etc. ./configure --help will provide
+	 	more options
 4. Run make
 	This builds the FTB
 
@@ -57,37 +96,49 @@ Building FTB
 
 6. The FTB is built and ready to go.
 
-
-Building FTB components
------------------------
-
+TO BUILD FTB EXAMPLES FOR LINUX:
+--------------------------------
 The current release of FTB comes with some sample components, which
 can be used to test the FTB and establish its working status. These
 examples also serve as a starting point for other component developers
 
-1. Cd to the components directory
+1. CD to the components directory
 
 2. Run ./autogen.sh
 
 3. Run ./configure --with-ftb=<path_to_ftb_binaries>
 	The default directory to --with-ftb is /usr/local/ftb.
-   Other options to above are:
+   	Other options to above are:
+
 	(a) --with-platform=<linux,bgl,bgp>
-	 Default: linux
-	 This option is used to specify the platform for which the
-	 components are to be built for
+	 	Default: linux
+	 	This option is used to specify the platform for which the
+	 	components are to be built for.
 
 	(b) In addition, the user can use other standard option
-	 like --with-prefix etc. ./configure --help will provide
-	 more options
+	 	like --with-prefix etc. ./configure --help will provide
+	 	more options
 
 4. Run make
 
 5. Run make install (default prefix=/usr/local)
 
+Section 1b : BUIDLING FTB AND FTB EXAMPLES FOR IBM BG MACHINES
+---------------------------------------------------------------
+1. Refer to README.BG_SERIES for getting started with FTB on IBM BG machines. 
 
-Running FTB and an FTB-enabled component
-----------------------------------------
+
+
+Section 1c : BUIDLING FTB AND FTB EXAMPLES FOR CRAY MACHINES
+---------------------------------------------------------------
+1. Refer to README.CRAY for getting started with FTB on CRAY machines. 
+
+
+Section 2.0:  LAUNCHING AND RUNNING FTB AND FTB EXAMPLES
+===========================================================
+
+Section 2a: RUNNING FTB AND FTB EXAMPLES on LINUX
+-------------------------------------------------
 
 1. Cd to ftb_home which contains the binaries, on the bootstrap
    server mentioned during ./configure.
@@ -103,71 +154,19 @@ Running FTB and an FTB-enabled component
 
 3. Cd to the examples directory.
    Ensure that LD_LIBRARY_PATH environment variable points to the lib directory in FTB_HOME. 
+   For ex: export LD_LIBRARY_PATH=/use/local/ftb/lib
 
-   Run ./ftb_watchdog. Ensure that the file watchdog_schema.ftb is
-present in the directory from where ./ftb_watchdog is launched.
-
-
-Understanding FTB Examples 
-==========================
-o Examples can be found in the ftb source code in the components/examples directory
-o Please use the format "./example_name usage" to get the usage for the example
-o All the below examples work on linux. Some examples may require the MPI library 
-  or the OFED InfiniBand software stack
-
-(1) ftb_simple_publisher and ftb_simple_subscriber
- Demonstrates: Connecting to FTB and publish event, Connecting to FTB and catching specific events using polling
-	       This example works on the BGL and BGP platforms as well.
- Description : Start the ftb_simple_subscriber and ftb_simple_publisher on two different machines. 
-	       ftb_simple_subscriber subscribes and polls events published by ftb_simple_publisher 
+4. To run an FTB example,go to the examples directory.
+   Run ./ftb_watchdog.
 
 
-(2) ftb_watchdog
- Demonstrates: Connecting to FTB, Declare publishable events using a schema file, Subscribe (using polling)
-	       and Publish an event. This example works on the BGP platform as well.
- Description : This component publishes the watch_dog_event and subscribes to catch the same event. 
-	       This can be used to confirm the working of FTB
+
+Section 2b: RUNNING FTB AND FTB EXAMPLES ON IBM BG MACHINES
+------------------------------------------------------------
+1. Refer to README.BGL and components/README.components.
 
 
-(3) ftb_polling_logger
- Demonstrates: Subscribe to all events and record them,  using polling mechanism
- Description : This component calls and records *every* event sent to the FTB 
-
-
-(4) ftb_notify_logger
- Demonstrates: Subscribe to all events and record them, using callback mechanism
- Description : This component calls and records *every* event sent to the FTB 
-
-
-(5) ftb_pingpong
- Demonstrates: Multi-threading: Publish an event from the callback function, 
-	       which is called when an subscribed event arrives
- Description : This example is composed of the server and the client components. 
-               The client publishes an event, the server recives the event and responds
-               with its own events. The client receives the server events and throws its
-               own event. Events, thus, pingpong between the client and the server
-
-(6) ftb_multiplecomp
- Demonstrates: Multiple FTB-enabled components in a single software stack
- Description : Refer to the code documentation for an understanding of how this example works
-
-(7) ftb_example_callback_unsubscribe
- Demonstrates: Multi-threading: Calling unsubscribe from the callback
- 		function, triggered when a specific event, matching subscription
- 		string arrives.  
- Description : Refer to the code documentation for an understanding of how this example works
-
-(8) ftb_eventhandle_example
- Demonstrates: Multithreading and Event association using event responses
- Description : Refer to the code documentation for an understanding of how this example works
-
-(9) ftb_ib_port_status_publisher
- Demonstrates: An example of an FTB-enabled InfiniBand network library
- Description : This example throws an event when the InfiniBand port becomes active. The example
-	       needs the OFED stack to be present
-
-(10) ftb_throw_delay_mpi
- Demonstrates: An example of how to FTb-enabled MPI application
- Description : This example calculates the amount of time needed to publish events. The example
-               needs the MPI software to be present
+Section 2c: RUNNING FTB AND FTB EXAMPLES ON CRAY MACHINES
+------------------------------------------------------------
+1. Refer to README.Cray and components/README.components.
 
