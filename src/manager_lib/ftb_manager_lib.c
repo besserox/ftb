@@ -413,7 +413,7 @@ int FTBM_Init(int leaf)
 }
 
 
-/ *Called when the ftb node get disconnected */
+/* Called when the ftb node get disconnected */
 int FTBM_Finalize()
 {
     FTB_INFO("FTBM_Finalize In");
