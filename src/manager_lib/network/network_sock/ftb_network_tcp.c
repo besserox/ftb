@@ -472,8 +472,8 @@ int FTBN_Recv_msg(FTBM_msg_t * msg, FTB_location_id_t * incoming_src, int blocki
 	    entry->ref_count = 0;
 	    entry->fd = accept(FTBNI_listen_fd, NULL, NULL);
 	    if (entry->fd < 0) {
-		printf("%d\n", (errno == EINVAL));
-		perror("accpet");
+		//printf("%d\n", (errno == EINVAL));
+		perror("accept");
 		free(entry);
 		FTB_ERR_ABORT("accept failed");
 	    }
