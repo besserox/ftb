@@ -8,20 +8,22 @@
 
 #ifdef __cplusplus
 extern "C" {
-#endif 
+#endif
 
 /*
  * In case of some error, that FTB client just stop functioning,
- * all subsequent FTB calls will take no effect and return 
- * FTB_ERR_GENERAL immediately 
+ * all subsequent FTB calls will take no effect and return
+ * FTB_ERR_GENERAL immediately
  */
 #define FTB_ERR_HANDLE_NONE                      0x0
+
 /*
- * If some error happened, FTB will generate an event and next 
- * time when FTB_Catch is called, that event will be caught by 
+ * If some error happened, FTB will generate an event and next
+ * time when FTB_Catch is called, that event will be caught by
  * client.
  */
 #define FTB_ERR_HANDLE_NOTIFICATION              0x1
+
 /*
  * If some error happened, FTB will try to recover, but this option
  * will cause more resource usage and an additional thread in client
@@ -34,12 +36,12 @@ extern "C" {
  * which is very inefficient.
  */
 typedef struct FTB_client_id {
-    FTB_eventspace_t region; 
+    FTB_eventspace_t region;
     FTB_eventspace_t comp_cat;
     FTB_eventspace_t comp;
     FTB_client_name_t client_name;
     uint8_t ext;
-}FTB_client_id_t;
+} FTB_client_id_t;
 
 struct FTB_client_handle {
     uint8_t valid;
@@ -49,18 +51,18 @@ struct FTB_client_handle {
 typedef struct FTB_id {
     FTB_location_id_t location_id;
     FTB_client_id_t client_id;
-}FTB_id_t;
+} FTB_id_t;
 
 /*
  * region, comp_cat and comp is set to FTB_eventspace_t,
  * which is very inefficient.
  */
 typedef struct FTB_event {
-    FTB_eventspace_t region; 
+    FTB_eventspace_t region;
     FTB_eventspace_t comp_cat;
     FTB_eventspace_t comp;
     FTB_event_name_t event_name;
-    FTB_severity_t  severity;
+    FTB_severity_t severity;
     FTB_client_jobid_t client_jobid;
     FTB_client_name_t client_name;
     FTB_hostip_t hostname;
@@ -69,9 +71,9 @@ typedef struct FTB_event {
     char event_payload[FTB_MAX_PAYLOAD_DATA];
 #ifdef FTB_TAG
     FTB_tag_len_t len;
-/   char dynamic_data[FTB_MAX_DYNAMIC_DATA_SIZE];
+    char dynamic_data[FTB_MAX_DYNAMIC_DATA_SIZE];
 #endif
-}FTB_event_t;
+} FTB_event_t;
 
 struct FTB_subscribe_handle {
     FTB_client_handle_t client_handle;
@@ -81,16 +83,16 @@ struct FTB_subscribe_handle {
 };
 
 struct FTB_event_handle {
-    FTB_event_name_t event_name;    
-    FTB_severity_t  severity;       
-    FTB_client_id_t client_id;      
-    uint16_t seqnum;                    
-    FTB_location_id_t location_id;  
-};                                  
+    FTB_event_name_t event_name;
+    FTB_severity_t severity;
+    FTB_client_id_t client_id;
+    uint16_t seqnum;
+    FTB_location_id_t location_id;
+};
 
 
 #ifdef __cplusplus
 } /*extern "C"*/
-#endif 
+#endif
 
-#endif /*FTB_CLIENT_LIB_DEFS_H*/
+#endif /*FTB_CLIENT_LIB_DEFS_H */
