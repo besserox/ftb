@@ -568,7 +568,7 @@ int FTBN_Get_my_network_address(char *ipaddr)
 	    continue;
 
 	sprintf(ipaddr, "%s", inet_ntoa(sin->sin_addr));
-	if (strcmp(ipaddr, "127.0.0.1") != 0) {
+	if (strcmp(ipaddr, "127.0.0.1") == 0) {
 	    close(s);
 	    return 1;
 	}

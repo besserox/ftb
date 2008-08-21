@@ -5,9 +5,12 @@
 #include "config.h"
 #include <netdb.h>
 #include <arpa/inet.h>
+
+/* *INDENT-OFF* */
 #ifdef __cplusplus
 extern "C" {
 #endif
+/* *INDENT-ON* */
 
 extern FILE *FTBU_log_file_fp;
 
@@ -226,10 +229,10 @@ static inline struct hostent *FTBNI_gethostbyname(const char *name)
     return hp;
 }
 
-
-
+/* *INDENT-OFF* */
 #ifdef __cplusplus
 } /* extern "C" */
 #endif
+/* *INDENT-ON* */
 
 #endif /*FTB_NETWORK_TCP_H */

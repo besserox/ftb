@@ -6,9 +6,11 @@
 #include <sys/types.h>
 #include "ftb_def.h"
 
+/* *INDENT-OFF* */
 #ifdef __cplusplus
 extern "C" {
 #endif
+/* *INDENT-ON* */
 
 /*
  * In case of some error, that FTB client just stop functioning,
@@ -90,9 +92,9 @@ struct FTB_event_handle {
     FTB_location_id_t location_id;
 };
 
-
+/* *INDENT-OFF* */
 #ifdef __cplusplus
-} /*extern "C"*/
+}				/*extern "C" */
 #endif
-
+/* *INDENT-ON* */
 #endif /*FTB_CLIENT_LIB_DEFS_H */

@@ -253,7 +253,7 @@ static void FTBMI_util_get_location_id(FTB_location_id_t * location_id)
 
     location_id->pid = getpid();
     if (FTBN_Get_my_network_address(location_id->hostname) < 0) {
-	FTB_WARNING("Failed to get the IP address of the localhost.");
+	FTB_WARNING("Failed to get the IP address of the %s.", location_id->hostname);
     }
 
     if (time(&raw_time) != -1) {
@@ -276,9 +276,9 @@ int FTBM_Get_catcher_comp_list(const FTB_event_t * event, FTB_id_t ** list, int 
     if (!FTBMI_initialized)
 	return FTB_ERR_GENERAL;
 
-    /* 
+    /*
      * Contruct a deliver set to keep track which components have already
-     * gotten the event and which are not, to avoid duplication 
+     * gotten the event and which are not, to avoid duplication
      */
     FTB_INFO("FTBM_Get_catcher_comp_list In");
     catcher_set = (FTBMI_map_ftb_id_2_comp_info_t *) FTBU_map_init(FTBMI_util_is_equal_ftb_id);

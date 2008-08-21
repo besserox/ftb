@@ -1,3 +1,4 @@
+
 /*
  * This file provides a set of utility routines that are used
  * throughout the FTB code. All routines in this file start
@@ -177,7 +178,8 @@ void FTBU_get_output_of_cmd(const char *cmd, char *output, size_t len)
 	}
 
 	if (!found)
-	    fprintf(stderr, "Could not find BG_IP parameter in file /proc/personality.sh on the BG machine");
+	    fprintf(stderr,
+		    "Could not find BG_IP parameter in file /proc/personality.sh on the BG machine");
 
 	fclose(fp);
     }
@@ -203,7 +205,8 @@ void FTBU_get_output_of_cmd(const char *cmd, char *output, size_t len)
 /*
  * Checks if the keys for the internal maps (organized as linked lists) match
  */
-static inline int util_key_match(const FTBU_map_node_t * headnode, FTBU_map_key_t key1, FTBU_map_key_t key2)
+static inline int util_key_match(const FTBU_map_node_t * headnode, FTBU_map_key_t key1,
+				 FTBU_map_key_t key2)
 {
     int (*is_equal) (const void *, const void *) = (int (*)(const void *, const void *)) headnode->data;
     assert(is_equal != NULL);

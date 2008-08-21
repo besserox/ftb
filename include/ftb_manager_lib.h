@@ -3,9 +3,11 @@
 
 #include "ftb_def.h"
 
+/* *INDENT-OFF* */
 #ifdef __cplusplus
 extern "C" {
 #endif
+/* *INDENT-ON* */
 
 /*Event delivery message*/
 #define FTBM_MSG_TYPE_NOTIFY                     0x01
@@ -62,8 +64,10 @@ int FTBM_Get_catcher_comp_list(const FTB_event_t * event, FTB_id_t ** list, int 
 
 int FTBM_Release_comp_list(FTB_id_t * list);
 
+/* *INDENT-OFF* */
 #ifdef __cplusplus
 } /*extern "C"*/
 #endif
+/* *INDENT-ON* */
 
 #endif /*FTB_MANAGER_H */

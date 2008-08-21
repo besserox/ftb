@@ -454,7 +454,8 @@ int FTBCI_populate_hashtable_with_events(const char *region, const char *comp_ca
 	}
 	char *event_key = (char *) malloc(sizeof(FTB_eventspace_t) + sizeof(FTB_event_name_t) + 2);
 	event_entry = (FTBCI_publish_event_entry_t *) malloc(sizeof(FTBCI_publish_event_entry_t));
-	concatenate_strings(event_key, region, "_", comp_cat, "_", comp, "_", event_table[i].event_name, NULL);
+	concatenate_strings(event_key, region, "_", comp_cat, "_", comp, "_", event_table[i].event_name,
+			    NULL);
 	int j = 0;
 	for (j = 0; j < strlen(event_key); j++)
 	    event_key[j] = toupper(event_key[j]);
@@ -508,10 +509,10 @@ int FTBCI_get_event_by_name(const char *key, FTB_event_t * e)
 
 static void FTBCI_util_push_to_comp_polling_list(FTBCI_client_info_t * client_info,
 						 FTBCI_event_inst_list_t * entry)
-{	
+{
     /*Assumes it holds the lock of that comp */
     FTBCI_event_inst_list_t *temp;
-    
+
     if (client_info->subscription_type & FTB_SUBSCRIPTION_POLLING) {
 	if (client_info->event_queue_size == client_info->max_polling_queue_len) {
 	    FTB_WARNING("Event queue is full");
@@ -1086,7 +1087,7 @@ int FTBC_Subscribe_with_callback(FTB_subscribe_handle_t * subscribe_handle,
     if ((ret = FTBCI_parse_subscription_string(subscription_str, subscription_event)) != FTB_SUCCESS)
 	return ret;
 
-    /* 
+    /*
      * Set the subscribe_handle to correct parameters in case the arg for
      * callback is using the subscribe handle itself
      */
@@ -1141,7 +1142,8 @@ int FTBC_Compare_event_handles(const FTB_event_handle_t event_handle1,
 	&& (event_handle1.client_id.ext == event_handle2.client_id.ext)
 	&& (strcasecmp(event_handle1.location_id.hostname, event_handle2.location_id.hostname) == 0)
 	&& (event_handle1.location_id.pid == event_handle2.location_id.pid)
-	&& (strcasecmp(event_handle1.location_id.pid_starttime, event_handle2.location_id.pid_starttime) == 0)
+	&& (strcasecmp(event_handle1.location_id.pid_starttime, event_handle2.location_id.pid_starttime)
+	    == 0)
 	&& (strcasecmp(event_handle1.event_name, event_handle2.event_name) == 0)
 	&& (strcasecmp(event_handle1.severity, event_handle2.severity) == 0)
 	&& (event_handle1.seqnum == event_handle2.seqnum)) {

@@ -6,9 +6,11 @@
 #include <sys/types.h>
 #include "config.h"
 
+/* *INDENT-OFF* */
 #ifdef __cplusplus
 extern "C" {
 #endif
+/* *INDENT-ON* */
 
 /* #define FTB_TAG */
 
@@ -34,6 +36,7 @@ extern "C" {
 #define FTB_ERR_INVALID_PARAMETER               (-19)
 #define FTB_ERR_NETWORK_GENERAL                 (-20)
 #define FTB_ERR_NETWORK_NO_ROUTE                (-21)
+
 #ifdef FTB_TAG
 #define FTB_ERR_TAG_NO_SPACE                    (-22)
 #define FTB_ERR_TAG_CONFLICT                    (-23)
@@ -57,7 +60,7 @@ extern "C" {
 #define FTB_MAX_EVENT_NAME           32
 #define FTB_MAX_SEVERITY             16
 #define FTB_MAX_HOST_ADDR            64
-#define FTB_MAX_PID_TIME        32
+#define FTB_MAX_PID_TIME             32
 #define FTB_MAX_PAYLOAD_DATA         368
 
 /*
@@ -139,8 +142,10 @@ typedef struct FTB_client_handle FTB_client_handle_t;
 typedef struct FTB_subscribe_handle FTB_subscribe_handle_t;
 typedef struct FTB_event_handle FTB_event_handle_t;
 
+/* *INDENT-OFF* */
 #ifdef __cplusplus
-} /*extern "C"*/
+}				/*extern "C" */
 #endif
+/* *INDENT-ON* */
 
 #endif /*FTB_DEF_H */

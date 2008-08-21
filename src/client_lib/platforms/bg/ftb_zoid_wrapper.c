@@ -1,3 +1,4 @@
+
 /*Compute node libftb wrapper based on ZOID for BG/L*/
 #include <string.h>
 #include "libftb.h"
@@ -80,10 +81,11 @@ int FTB_Compare_event_handles(const FTB_event_handle_t event_handle1,
 
 #ifdef FTB_TAG
 
-int FTB_Add_dynamic_tag(FTB_client_handle_t client_handle, FTB_tag_t tag, const char *tag_data, FTB_tag_len_t data_len)
+int FTB_Add_dynamic_tag(FTB_client_handle_t client_handle, FTB_tag_t tag, const char *tag_data,
+			FTB_tag_len_t data_len)
 {
     if (tag_data == NULL) {
-        return FTB_ERR_NULL_POINTER;
+	return FTB_ERR_NULL_POINTER;
     }
     return ZOID_FTB_Add_dynamic_tag(client_handle, tag, tag_data, data_len);
 }
@@ -94,32 +96,33 @@ int FTB_Remove_dynamic_tag(FTB_client_handle_t client_handle, FTB_tag_t tag)
     return ZOID_FTB_Remove_dynamic_tag(client_handle, tag);
 }
 
-int FTB_Read_dynamic_tag(const FTB_event_t *event, FTB_tag_t tag, char *tag_data, FTB_tag_len_t *data_len)
+int FTB_Read_dynamic_tag(const FTB_event_t * event, FTB_tag_t tag, char *tag_data,
+			 FTB_tag_len_t * data_len)
 {
     uint8_t tag_count;
     uint8_t i;
     int offset;
 
-    /*No need to forward it to zoid*/
+    /*No need to forward it to zoid */
     memcpy(&tag_count, event->dynamic_data, sizeof(tag_count));
     offset = 1;
-    for (i=0;i<tag_count;i++) {
-        FTB_tag_t temp_tag;
-        FTB_tag_len_t temp_len;
-        memcpy(&temp_tag, event->dynamic_data + offset, sizeof(FTB_tag_t));
-        offset+=sizeof(FTB_tag_t);
-        memcpy(&temp_len, event->dynamic_data + offset, sizeof(FTB_tag_len_t));
-        offset+=sizeof(FTB_tag_len_t);
-        if (tag == temp_tag) {
-            if (*data_len < temp_len) {
-                return FTB_ERR_TAG_NO_SPACE;
-            }
-            else {
-                *data_len = temp_len;
-                memcpy(tag_data, event->dynamic_data + offset, temp_len);
-                return FTB_SUCCESS;
-            }
-        }
+    for (i = 0; i < tag_count; i++) {
+	FTB_tag_t temp_tag;
+	FTB_tag_len_t temp_len;
+	memcpy(&temp_tag, event->dynamic_data + offset, sizeof(FTB_tag_t));
+	offset += sizeof(FTB_tag_t);
+	memcpy(&temp_len, event->dynamic_data + offset, sizeof(FTB_tag_len_t));
+	offset += sizeof(FTB_tag_len_t);
+	if (tag == temp_tag) {
+	    if (*data_len < temp_len) {
+		return FTB_ERR_TAG_NO_SPACE;
+	    }
+	    else {
+		*data_len = temp_len;
+		memcpy(tag_data, event->dynamic_data + offset, temp_len);
+		return FTB_SUCCESS;
+	    }
+	}
     }
 
     return FTB_ERR_TAG_NOT_FOUND;

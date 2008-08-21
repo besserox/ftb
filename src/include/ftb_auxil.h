@@ -1,3 +1,4 @@
+
 /*
  * This file contains some auxillary functions useful for FTB
  * The functions in this file are independent of FTB
@@ -6,9 +7,11 @@
 #ifndef FTB_AUXIL_H
 #define FTB_AUXIL_H
 
+/* *INDENT-OFF* */
 #ifdef __cplusplus
 extern "C" {
 #endif
+/* *INDENT-ON* */
 
 
 /* Remove the spaces from the start and end of string */
@@ -30,8 +33,10 @@ int concatenate_strings(char *str1, ...);
  */
 int check_alphanumeric_underscore_format(const char *str);
 
+/* *INDENT-OFF* */
 #ifdef __cplusplus
 } /*extern "C"*/
 #endif
+/* *INDENT-ON* */
 
 #endif

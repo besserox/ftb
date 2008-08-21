@@ -1,3 +1,4 @@
+
 /*
  * This file contains the code for the bootstrap server
  * All FTB agents and possibly FTB clients contact the bootstrap server
@@ -81,9 +82,9 @@ static inline FTBNI_bootstrap_entry_t *FTBNI_util_find_parent_addr(const
     for (i = 0; i <= x; i++) {
 	temp = (FTBNI_bootstrap_entry_t *) FTBU_map_get_data(iter);
 
-	/* 
+	/*
 	 * The level should be less than to the level in pkt_req, the
-	 *  addr can't be same as pkt_req 
+	 *  addr can't be same as pkt_req
 	 */
 	if (temp->level < pkt_req->level &&
 	    (pkt_req->addr.port == 0 ||
@@ -98,12 +99,12 @@ static inline FTBNI_bootstrap_entry_t *FTBNI_util_find_parent_addr(const
 	while (iter != FTBU_map_end(FTBNI_bootstrap_addr_map)) {
 	    temp = (FTBNI_bootstrap_entry_t *) FTBU_map_get_data(iter);
 	    /*
-	     *	The level should be less than to the level in pkt_req,
-	     *	the addr can't be same as pkt_req
+	     *  The level should be less than to the level in pkt_req,
+	     *  the addr can't be same as pkt_req
 	     */
-	    if (temp->level < pkt_req->level 
+	    if (temp->level < pkt_req->level
 		&& (pkt_req->addr.port == 0
-		 	|| strncmp(pkt_req->addr.name, temp->addr.name, FTB_MAX_HOST_ADDR) != 0)) {
+		    || strncmp(pkt_req->addr.name, temp->addr.name, FTB_MAX_HOST_ADDR) != 0)) {
 		entry = temp;
 		break;
 	    }

@@ -71,10 +71,10 @@ int check_alphanumeric_underscore_format(const char *str)
 {
     int i = 0;
     for (i = 0; i < strlen(str); i++) {
-	if ((str[i] >= 'A' && str[i] <= 'Z') 
-		|| (str[i] >= 'a' && str[i] <= 'z') 
-		|| (str[i] == '_') 
-		|| (str[i] >= '0' && str[i] <= '9'))
+	if ((str[i] >= 'A' && str[i] <= 'Z')
+	    || (str[i] >= 'a' && str[i] <= 'z')
+	    || (str[i] == '_')
+	    || (str[i] >= '0' && str[i] <= '9'))
 	    continue;
 	else
 	    return 0;

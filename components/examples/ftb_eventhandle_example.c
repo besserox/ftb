@@ -1,3 +1,4 @@
+
 /*
  * Usage: Server: ./ftb_eventhandles_example server
  *        Client: ./ftb_eventhandles_example client
@@ -160,7 +161,9 @@ int main(int argc, char *argv[])
      * This component will publish two events, as defined in the event_info
      * structure below
      */
-    FTB_event_info_t event_info[2] = { {"everything_ok", "info"}, {"unknown_error", "fatal"} };
+    FTB_event_info_t event_info[2] = { {"everything_ok", "info"}
+    , {"unknown_error", "fatal"}
+    };
     ret = FTB_Declare_publishable_events(handle, 0, event_info, 2);
     if (ret != FTB_SUCCESS) {
 	printf("FTB_Declare_publishable_events failed ret=%d!\n", ret);

@@ -4,9 +4,9 @@
 #include "ftb_def.h"
 #include "ftb_manager_lib.h"
 
-/* 
+/*
  * Generic information common for all network, used for authentication
- * and topology management 
+ * and topology management
  */
 typedef struct FTBN_config_info {
     uint32_t FTB_system_id;
@@ -16,16 +16,20 @@ typedef struct FTBN_config_info {
 #if defined(FTB_NETWORK_SOCK)
 #include "ftb_network_sock.h"
 #elif defined(FTB_NETWORK_SOME_OTHER_NETWORK)
+
 /* FILLME: some other header file for other networks */
 #endif
 
+/* *INDENT-OFF* */
 #ifdef __cplusplus
 extern "C" {
 #endif
+/* *INDENT-ON* */
 
 #if defined(FTB_NETWORK_SOCK)
 typedef FTBN_addr_sock_t FTBN_addr_t;
 #elif defined(FTB_NETWORK_SOME_OTHER_NETWORK)
+
 /* FILLME: some other header file for other networks */
 #endif
 
@@ -37,7 +41,7 @@ int FTBN_Finalize(void);
 
 int FTBN_Send_msg(const FTBM_msg_t * msg);
 
-/* 
+/*
  * If blocking == 0, it returns FTBN_NO_MSG indicating no new message,
  * or FTB_SUCCESS indicating new message received
  */
@@ -51,8 +55,10 @@ int FTBN_Get_my_network_address(char *addr);
 
 int FTBN_Abort(void);
 
+/* *INDENT-OFF* */
 #ifdef __cplusplus
 } /*extern "C"*/
 #endif
+/* *INDENT-ON* */
 
 #endif /* FTB_NETWORK_H */
