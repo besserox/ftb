@@ -584,7 +584,7 @@ int FTBM_Client_deregister(const FTB_id_t * id)
     lock_manager();
     FTBMI_util_clean_component(comp);
     if ((strcmp(comp->id.client_id.comp_cat, "FTB_COMP_CAT_BACKPLANE") == 0)
-	&& (strcmp(comp->id.client_id.comp, "FTB_COMP_MANAGER"))) {
+	&& (strcmp(comp->id.client_id.comp, "FTB_COMP_MANAGER") == 0)) {
 	FTB_INFO("Disconnect component");
 	FTBN_Disconnect_peer(&comp->id.location_id);
 	if (FTBU_is_equal_location_id(&FTBMI_info.parent, &comp->id.location_id))

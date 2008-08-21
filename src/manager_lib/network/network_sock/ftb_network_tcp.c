@@ -560,6 +560,12 @@ int FTBN_Get_my_network_address(char *ipaddr)
 	struct sockaddr_in *sin = (struct sockaddr_in *) &ifr.ifr_addr;
 
 	ifr.ifr_ifindex = i;
+
+	/*
+	 * FIXME: Remove references to ioctl since it is not
+	 * portable! Figure out a different solution to get the ipaddress
+	 * of the network 
+         */
 	if (ioctl(s, SIOCGIFNAME, &ifr) < 0)
 	    break;
 
