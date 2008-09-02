@@ -329,7 +329,7 @@ int FTBCI_parse_subscription_string(const char *subscription_str, FTB_event_t * 
     ret = FTBCI_check_subscription_value_pair("", "", subscription_event);
 
     if ((subscriptionstr_len = strlen(tempstr)) == 0)
-	return FTB_ERR_SUBSCRIPTION_STR;
+	return ret;
 
     while (tempstr != NULL) {
 	if ((pair[i++] = strsep(&tempstr, ",")) == NULL) {
