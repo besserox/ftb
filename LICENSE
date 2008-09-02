@@ -1,0 +1,35 @@
+LICENSING:
+
+Short Answer: Everything is GPL and LGPL where appropriate.  See the
+directories and individual source files for the specific license.
+
+Rather than carry around all the license headers in each file, FTB
+software contains a short comment at the top of the file providing the
+license type and version number.  For example:
+
+# License:  LGPL (see license.LGPL for details)
+
+or
+
+# License:  GPL (see license.GPL for details)
+
+Those  license files can  be found  in FTB/misc.   If you  are not
+familiar with  LGPL or GPL licensing,  please see the  files above and
+also visit www.gnu.org.
+
+Long Answer: As always, this is a tricky issue.  As a general rule, I
+like to release software BSD, since it provides the most freedom to
+end users and companies.  However, in recent months, it has become
+clear that several companies that produce HPC systems are very happy
+to take Open Source BSD code from the community, but reluctant to
+distribute their modified changes back to the community.  In other
+words, they have taken BSD code from the community and handed the HPC
+community back proprietary code that cannot be improved, debugged, or
+changed.  This behaviour cripples the relationship with HPC scientists
+and the vendors.  To remedy this obviously very bad situation, we have
+decided to release all code under GPL or LPGL licenses, so we can
+partner with those vendors who actually want to collaborate on shared,
+Open Source code created by the HPC community.
+
+-Pete
+
