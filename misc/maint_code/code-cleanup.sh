@@ -18,6 +18,7 @@ indent_code()
 usage()
 {
     echo "Usage: $1 [filename | --all] {--recursive} {--debug}"
+    echo "Note:This script has only been tested with indent version 2.2.9"
 }
 
 # Check usage
