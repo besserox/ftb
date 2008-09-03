@@ -4,6 +4,7 @@ Table of Contents
 =======================
 
 (0.0) FTB 0.6 Release information
+
 (1.0) Getting Started
     (1a) Building FTB and FTB examples for Linux
     (1b) Building FTB and FTB examples for BGL or BGP
@@ -43,21 +44,37 @@ Section 1a : BUILDING FTB AND FTB EXAMPLES FOR LINUX
 ----------------------------------------------------
 TO BUILD FTB:
 -------------
-1. Download the FTB code from the CIFTS SVN. For ex: to download the code from the trunk
-	svn co https://svn.mcs.anl.gov/repos/cifts/ftb/trunk
+1. Download the FTB software. You can download the FTB software from the following locations
+	(a) CIFTS website: http://www.mcs.anl.gov/research/cifts
+	(b) SVN Tags: https://svn.mcs.anl.gov/repos/cifts/ftb/tags
+	(c) SVN Trunk: https://svn.mcs.anl.gov/repos/cifts/ftb/trunk
 
-2. Run ./autogen.sh
+	Note that FTB software downloaded from the SVN trunk will
+	be development software. For stable softwares, the reliable
+	soure of download is the CIFTS website.
 
-3. Run ./configure 
-   Other options to ./configure in addition to above:
+
+2. Change to the downloaded FTB directory and Run ./autogen.sh
+	The autogen script creates the configure and other additonal scripts
+   	Other options to ./autogen.sh
+	(a) clean
+		This removes the configure scripts, Makefiles and
+		other additional files and provides you with a clean
+		working environment
+
+
+3. Run./configure 
+   Options to ./configure are:
 	(a) --with-bstrap-server=<server_ipaddress>
-        	The --with-bstrap-server=<server_ipaddress> is used to specify
-        	the ip address of the bootstrap server. Please note that the
-        	bootstrap server is required by FTB during run-time. If it is
-        	not passed as a parameter to configure, then it can be specified
-       		as an environment variable or can  be specified in a config
-        	file. Please refer to Section XXXXX in this file for more
-        	information on this topic.
+		The --with-bstrap-server=<server_ipaddress> is used
+		to specify the ip address of the bootstrap server.
+		Please note that the bootstrap server is REQUIRED
+		by FTB during run-time.
+
+		You also have a choice of specifying the bootstrap
+		server ip address in a config file or through an
+		environment variable, which are accessed during
+		run-time.
 
 	(b) --with-bstrap-port=<port_number>
 	 	Default value: 14455 

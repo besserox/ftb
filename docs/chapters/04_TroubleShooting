@@ -1,0 +1,31 @@
+6.0 TROUBLE-SHOOTING
+=====================
+We will keep adding trouble shooting issues in here. You are free to email cifts_discuss@googlegroups.com for any issues.
+
+
+1) Nothing is happening! ftb_database_server is launched, ftb_agent
+	is launched and the examples have been launched! But, nothing
+	can be seen on the screen.
+	
+A)	There might be multiple reasons why things may not be working.
+	(a) Check if you specified the IP address of the boot-strap server and not the HOSTNAME
+
+	(b) Did you change the boot-strap port or agent port information?
+
+	(c) Before launching the FTB-enabled software, ensure that
+	the ftb_database_server and ftb_agent can communicate. You
+	can do this by configuring FTB with --enable-debug and
+	seeing the messages that pop on the screen
+
+
+2) ftb_database_server and ftb_agent cannot communicate?
+A)	(a) Multiple ftb_database_server have been launched on the system?
+	(b) There can be multiple other reasons incuding some mentioned in (1)
+
+
+3) On launching the FTB-enabled software example, you get the
+	message: "error while loading shared libraries: libftb.so: cannot
+		open shared object file: No such file or directory"
+A) You need to set the path to the FTB shared library. Use the
+	LD_LIBARY_PATH environment variable or modify ld.so.conf
+
