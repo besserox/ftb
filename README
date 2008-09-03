@@ -23,12 +23,15 @@ FTB 0.6 RELEASE INFORMATION
         be development software. For stable softwares, the reliable
         soure of download is the CIFTS website.
 
+
+CONFIGURING AND INSTALLING FTB
+=========================
 * FTB is supported on many platforms. Please refer to the following
 documentation files to proceed with FTB installation and configuration
 for a system of your choice.
 
 All the below files are located in the docs/chapters directory
-	(a) For Ubuntu Linux systems: 03_FTB_on_Linux.txt 
-	(b) For IBM BG/L and BG/P systems: 03_FTB_on_BG.txt
-	(c) For Cray XT4 systems: 03_FTB_on_Crays.txt
+	(a) For Ubuntu Linux systems: 01_FTB_on_Linux.txt 
+	(b) For IBM BG/L and BG/P systems: 01_FTB_on_BlueGenes.txt
+	(c) For Cray XT4 systems: 01_FTB_on_Crays.txt
 
