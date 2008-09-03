@@ -1,23 +1,9 @@
 					FTB Release 0.6
 
-Table of Contents
-=======================
-
-(0.0) FTB 0.6 Release information
-(1.0) Getting Started
-    (1a) Building FTB and FTB examples for Linux
-    (1b) Building FTB and FTB examples for BGL or BGP
-    (1c) Building FTB and FTB examples for Crays
-(2.0) Launching and Running FTB and FTB examples
-    (2a) Running FTB examples on Linux machines
-    (2b) Running FTB examples on IBM BG machines
-    (2c) Running FTB examples on Cray machines
-
-
-Section 0.0: FTB 0.6 RELEASE INFORMATION
+FTB 0.6 RELEASE INFORMATION
 ==========================================
-* This code release conforms to the "Fault Tolerance Backplane API 0.5". This
-			API can be found at
+* This code release conforms to the "Fault Tolerance Backplane API 0.5". 
+			This FTB API 0.5 can be found on the CIFTS website at
 			http://www.mcs.anl.gov/research/cifts/
 			It can also be found in the 'docs' directory of this software.
 
@@ -26,149 +12,23 @@ Section 0.0: FTB 0.6 RELEASE INFORMATION
 			(3) IBM BG/P (with ZeptoOS/ZOID on compute nodes), 
 			(4) Cray XT4
 
-* Required packages for IBM BG/L :  To run FTB on the compute nodes,
-			the user needs to install the open-source
-			ZeptoOS and ZOID packages.  This release of
-			FTB supports ZeptoOS 1.5-V1R3M2 with ZOID 1.0.
-			Please note that you can run FTB on the login
-			nodes (and I/O nodes) without ZeptoOS and ZOID.
-			For further information on ZeptoOS:
-			http://www.mcs.anl.gov/zeptoos/
+* Networking Protocols supported: TCP/IP
 
+* Links to downloaded FTB code: You can download the FTB software from the following locations:
+	(a) CIFTS website: http://www.mcs.anl.gov/research/cifts
+        (b) SVN Tags: https://svn.mcs.anl.gov/repos/cifts/ftb/tags
+        (c) SVN Trunk: https://svn.mcs.anl.gov/repos/cifts/ftb/trunk
 
-Section 1.0 : GETTING STARTED 
-===============================
+        Note that FTB software downloaded from the SVN trunk will
+        be development software. For stable softwares, the reliable
+        soure of download is the CIFTS website.
 
-Section 1a : BUILDING FTB AND FTB EXAMPLES FOR LINUX
-----------------------------------------------------
-TO BUILD FTB:
--------------
-1. Download the FTB code from the CIFTS SVN. For ex: to download the code from the trunk
-	svn co https://svn.mcs.anl.gov/repos/cifts/ftb/trunk
+* FTB is supported on many platforms. Please refer to the following
+documentation files to proceed with FTB installation and configuration
+for a system of your choice.
 
-2. Run ./autogen.sh
-
-3. Run ./configure 
-   Other options to ./configure in addition to above:
-	(a) --with-bstrap-server=<server_ipaddress>
-        	The --with-bstrap-server=<server_ipaddress> is used to specify
-        	the ip address of the bootstrap server. Please note that the
-        	bootstrap server is required by FTB during run-time. If it is
-        	not passed as a parameter to configure, then it can be specified
-       		as an environment variable or can  be specified in a config
-        	file. Please refer to Section XXXXX in this file for more
-        	information on this topic.
-
-	(b) --with-bstrap-port=<port_number>
-	 	Default value: 14455 
-	 	This is the port used by the FTB agent and perhaps the FTB
-	 	clients to communicate to the bootstrap server. This value
-	 	can be overridden at run-time by specifying the environment
-	 	variable FTB_BSTRAP_PORT. Please refer to Section XXXXX in this
-	 	file for more information on this topic.
-
-	(c) --with-agent-port=<port_number>
-	 	Default value: 10809 
-	 	This is the port used by the FTB clients to connect to an FTB
-	 	agent. This value can be overriden at run-time by specifying
-	 	the environment variable FTB_AGENT_PORT. Please refer to Section
-	 	XXXXX in this file for more information on this topic.
-
-	(d) --enable-debug=<Log Files Directory>
-		Default: no debug 
-	 	This option enables debug messages on the client as well as
-	 	the FTB side.	The log files will be written in the specified
-	 	directory.
-
-	(e) --with-platform=<linux or bgl or bgp>
-	 	Default: linux
-	 	This option is used by the user to specify the platform for this
-	 	FTB build. Only BGL, BGP and linux are supported at this point.
-
-	(d) In addition, the user can use other standard options
-	 	like --with-prefix etc. ./configure --help will provide
-	 	more options
-4. Run make
-	This builds the FTB
-
-5. Run make install
-	This installs the FTB binaries (which include the lib, sbin
-	and include files) in the directory specified by --prefix
-	during ./configure. Default prefix is /usr/local
-
-6. The FTB is built and ready to go.
-
-TO BUILD FTB EXAMPLES FOR LINUX:
---------------------------------
-The current release of FTB comes with some sample components, which
-can be used to test the FTB and establish its working status. These
-examples also serve as a starting point for other component developers
-
-1. CD to the components directory
-
-2. Run ./autogen.sh
-
-3. Run ./configure --with-ftb=<path_to_ftb_binaries>
-	The default directory to --with-ftb is /usr/local/ftb.
-   	Other options to above are:
-
-	(a) --with-platform=<linux,bgl,bgp>
-	 	Default: linux
-	 	This option is used to specify the platform for which the
-	 	components are to be built for.
-
-	(b) In addition, the user can use other standard option
-	 	like --with-prefix etc. ./configure --help will provide
-	 	more options
-
-4. Run make
-
-5. Run make install (default prefix=/usr/local)
-
-Section 1b : BUIDLING FTB AND FTB EXAMPLES FOR IBM BG MACHINES
----------------------------------------------------------------
-1. Refer to README.BG_SERIES for getting started with FTB on IBM BG machines. 
-
-
-
-Section 1c : BUIDLING FTB AND FTB EXAMPLES FOR CRAY MACHINES
----------------------------------------------------------------
-1. Refer to README.CRAY for getting started with FTB on CRAY machines. 
-
-
-Section 2.0:  LAUNCHING AND RUNNING FTB AND FTB EXAMPLES
-===========================================================
-
-Section 2a: RUNNING FTB AND FTB EXAMPLES on LINUX
--------------------------------------------------
-
-1. Cd to ftb_home which contains the binaries, on the bootstrap
-   server mentioned during ./configure.
-
-   If you want to change the bootstrap server, bootstrap server
-   port or FTB agent port, you can do so by specifying the
-   FTB_BSTRAP_SERVER, FTB_BSTRAP_PORT and FTB_AGENT_PORT variables
-   on all nodes
-
-   Run ./sbin/ftb_database_server &
-
-2. Start the FTB agent by running ./sbin/ftb_agent &
-
-3. Cd to the examples directory.
-   Ensure that LD_LIBRARY_PATH environment variable points to the lib directory in FTB_HOME. 
-   For ex: export LD_LIBRARY_PATH=/use/local/ftb/lib
-
-4. To run an FTB example,go to the examples directory.
-   Run ./ftb_watchdog.
-
-
-
-Section 2b: RUNNING FTB AND FTB EXAMPLES ON IBM BG MACHINES
-------------------------------------------------------------
-1. Refer to README.BGL and components/README.components.
-
-
-Section 2c: RUNNING FTB AND FTB EXAMPLES ON CRAY MACHINES
-------------------------------------------------------------
-1. Refer to README.Cray and components/README.components.
+All the below files are located in the docs/chapters directory
+	(a) For Ubuntu Linux systems: 03_FTB_on_Linux.txt 
+	(b) For IBM BG/L and BG/P systems: 03_FTB_on_BG.txt
+	(c) For Cray XT4 systems: 03_FTB_on_Crays.txt
 
