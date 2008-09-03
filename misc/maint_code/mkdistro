@@ -1,0 +1,11 @@
+#!/bin/csh
+
+cd /sandbox/zeptoos
+
+cvs export -r $argv[1] ZeptoOS
+
+mv ZeptoOS ZeptoOS-$argv[2]
+
+tar cf - ZeptoOS-$argv[2] | bzip2 -cz > ZeptoOS-$argv[2].tar.bz2
+
+
