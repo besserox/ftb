@@ -11,12 +11,11 @@ Table of Contents
 5.0 Trying out FTB examples
 	5.1: Configure and Make the FTB examples
 	5.2: Run the FTB examples
-6.0 Tricks and Caveats
 
 
 Section 1.0 : INTRODUCTION 
 ===============================
-This release of FTB has been developed and tested on Ubuntu Hardy and Fiesty systems.
+This release of FTB has been developed and tested on Ubuntu Hardy and Fiesty system for Linux, IBM BG/L and IBM BG/P machines
 
 
 Section 2.0: DOWNLOADING AND CONFIGURING FTB
@@ -110,7 +109,7 @@ Section 4.0: RUNNING FTB
 The first step towards getting FTB up and running is to get the
 bootstrap server and the ftb agents - up and running.
 
-2. Launch the ftb_database_server in the background
+1. Launch the ftb_database_server in the background
 	This binary will be found in your 'sbin' directory. If you
 	used --prefix option at configure time, the sbin directory
 	would be located under the --prefix directory.
@@ -128,7 +127,7 @@ bootstrap server and the ftb agents - up and running.
 	you have used the --enable-debug option during configure
 	time.
 
-3. Launch the ftb_agent
+2. Launch the ftb_agent
 	Similar to the ftb_database_server, the ftb_agent can be
 	found in the sbin directory.
 
@@ -247,15 +246,7 @@ Section 5.2: RUN THE FTB EXAMPLES
 3. Ensure that LD_LIBRARY_PATH environment variable points to the
 	lib directory in FTB_HOME(or whenever the compiled FTB libraries
 	are present).
-   For ex: export LD_LIBRARY_PATH=/use/local/ftb/lib
 
 4. Launch the software
    Run ./ftb_watchdog.
 
-
-6.0 TROUBLE-SHOOTING
-=====================
-
-1) Nothing is happening! ftb_database_server is launched, ftb_agent
-	is launched and the examples have been launched! But, nothing is
-	happening.

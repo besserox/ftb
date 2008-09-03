@@ -1,0 +1,7 @@
+Default configuration (Linux) should suffice to build and launch FTB 0.6
+under Cray XT series that run Compute Node Linux (CNL). However, depending
+on the environment setup, some adjustments may be required during the
+installation. For more details or information about the FTB installation at
+Cray XT4 (Jaguar) at ORNL, send an inquiry to parkbh@ornl.gov.
+
+Please refer to the 03_FTB_on_Linux.txt file for more instructions.
