@@ -366,7 +366,6 @@ sub insert_block_into {
     # Is this the first line?
     if ($first) {
       $first = 0;
-      $filetype=2;
       
       # take this opportunity to guess at the file type:
       if (/^\/\//) {
