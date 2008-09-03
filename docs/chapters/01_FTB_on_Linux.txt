@@ -15,7 +15,7 @@ Table of Contents
 
 Section 1.0 : INTRODUCTION 
 ===============================
-This release of FTB has been developed and tested on Ubuntu Hardy and Fiesty system for Linux, IBM BG/L and IBM BG/P machines
+This release of FTB has been developed and tested on Ubuntu (Hardy and Fiesty) for Linux, IBM BG/L and IBM BG/P machines and Cray XT4 machines
 
 
 Section 2.0: DOWNLOADING AND CONFIGURING FTB
