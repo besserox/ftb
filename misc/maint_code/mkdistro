@@ -1,9 +1,11 @@
 #!/bin/csh
 
-cvs export -r $argv[1] FTB
+# Arg 1: name of branch tag to check out
+# Arg 2: Version number to call the whole tar ball
 
-mv FTB FTB-$argv[2]
+svn export https://svn.mcs.anl.gov/repos/cifts/ftb/trunk -r $argv[1]
 
-tar cf - FTB-$argv[2] | bzip2 -cz > FTB-$argv[2].tar.bz2
+mv trunk FTB-$argv[2]
 
+tar czf FTB-$argv[2].tgz FTB-$argv[2]
 
