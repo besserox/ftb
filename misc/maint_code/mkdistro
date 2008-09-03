@@ -1,11 +1,9 @@
 #!/bin/csh
 
-cd /sandbox/zeptoos
+cvs export -r $argv[1] FTB
 
-cvs export -r $argv[1] ZeptoOS
+mv FTB FTB-$argv[2]
 
-mv ZeptoOS ZeptoOS-$argv[2]
-
-tar cf - ZeptoOS-$argv[2] | bzip2 -cz > ZeptoOS-$argv[2].tar.bz2
+tar cf - FTB-$argv[2] | bzip2 -cz > FTB-$argv[2].tar.bz2
 
 
