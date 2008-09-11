@@ -168,8 +168,8 @@ For BG/L machines
 (b) Copy startup scripts as per below steps
     (0) Set the log file path to point to correct directory in init.d scripts for ftb agent
 	
-    (1) copy ftb/src/client_lid/platforms/bgl/extras/ftb_agent to
-        /ZeptoOS/BGL_SITEDIST/dist/etc/rc.d/init.d
+    (1) copy src/client_lib/platforms/bg/init_scripts/ftb_agent_bgl to
+        /ZeptoOS/BGL_SITEDIST/dist/etc/rc.d/init.d/ftb_agent
  
     (2) cd /ZeptoOS/BGL_SITEDIST/dist/etc/rc.d/rc3.d
   
@@ -193,7 +193,7 @@ For BG/P machines
 (b) Copy the FTB Zoid Client Libraries form /FTB/lib/ftb_zoid_client* to /ZeptoOS/ramdisk/BGP/ION/ramdisk-add/lib/
 
 (c) Copy the FTB Agent startup script from
-	/FTB/src/client_lib/platforms/bgp/init_scripts/ftb_agent to
+	src/client_lib/platforms/bg/init_scripts/ftb_agent_bgp to
 	/ZeptoOS/ramdisk/BGP/ION/ramdisk-add/etc/init.d/S66FTB_Agent
 
 (d) Edit Zoid startup script
@@ -238,7 +238,7 @@ The current release of FTB comes with some sample components, which
 can be used to test the FTB and establish its working status. These
 examples also serve as a starting point for other FTB-enabled developers
 
-Section 5.1: CONFIGURE AND MAKE THE FTB EXAMPLES
+Section 7.1: CONFIGURE AND MAKE THE FTB EXAMPLES
 -----------------------------------------------
 
 1. CD to the components directory. This directory is present under the main FTB directory
@@ -267,7 +267,7 @@ Section 5.1: CONFIGURE AND MAKE THE FTB EXAMPLES
 At this stage, your examples should be built. 
 
 
-Section 5.2: RUN THE FTB EXAMPLES
+Section 7.2: RUN THE FTB EXAMPLES
 ---------------------------------------
 1. Submit your examples using your job scheduler.
 

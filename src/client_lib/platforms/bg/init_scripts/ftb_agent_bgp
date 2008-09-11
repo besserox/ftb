@@ -1,0 +1,3 @@
+#!/bin/sh
+echo "Starting FTB Agent"
+ftb_agent ION_AGENT
