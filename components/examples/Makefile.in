@@ -39,7 +39,7 @@ linux: ftb_watchdog ftb_polling_logger ftb_simple_publisher ftb_simple_subscribe
 
 bgl: ftb_simple_publisher_bgl ftb_simple_subscriber_bgl
 
-bgp: ftb_simple_publisher_bgp ftb_simple_subscriber_bgp ftb_watchdog_bgp ftb_ringtest_bgp ftb_throw_loop_bgp
+bgp: ftb_simple_publisher_bgp ftb_simple_subscriber_bgp ftb_watchdog_bgp
 
 CFLAGS_LINUX  = -Wall -g -I${FTB_INC_DIR}
 LDFLAGS_LINUX = -L${FTB_LIB_PATH_SHARED}
@@ -53,7 +53,7 @@ LIBS_CN_BGP   = -lftb_blrts -lzoid_cn -lpthread -lrt
 clean:
 	rm -f ftb_watchdog ftb_polling_logger ftb_simple_publisher ftb_simple_subscriber ftb_notify_logger ftb_multiplecomp ftb_pingpong ftb_example_callback_unsubscribe ftb_eventhandle_example  ftb_ib_port_status_publisher
 	rm -f ftb_simple_publisher_bgl ftb_simple_subscriber_bgl .bgl_env_test
-	rm -f ftb_simple_publisher_bgp ftb_simple_subscriber_bgp ftb_watchdog_bgp ftb_ringtest_bgp ftb_throw_loop_bgp .bgp_env_test
+	rm -f ftb_simple_publisher_bgp ftb_simple_subscriber_bgp ftb_watchdog_bgp .bgp_env_test
 
 .bgl_env_test:
 	touch .bgl_env_test
@@ -84,12 +84,6 @@ ftb_watchdog: ftb_watchdog.c
 
 ftb_watchdog_bgp: .bgp_env_test ftb_watchdog.c
 	${CC_BLRTS} ${CFLAGS_BG} ${LDFLAGS_CN} -o $@ ftb_watchdog.c ${LIBS_CN_BGP}
-
-ftb_ringtest_bgp: .bgp_env_test ftb_ringtest.c
-	${CC_BLRTS} ${CFLAGS_BG} ${LDFLAGS_CN} -o $@ ftb_ringtest.c ${LIBS_CN_BGP}
-
-ftb_throw_loop_bgp: .bgp_env_test ftb_throw_loop.c
-	${CC_BLRTS} ${CFLAGS_BG} ${LDFLAGS_CN} -o $@ ftb_throw_loop.c ${LIBS_CN_BGP}
 
 ftb_polling_logger: ftb_polling_logger.c
 	${CC} ${CFLAGS_LINUX} ${LDFLAGS_LINUX} -o $@ $< ${LIBS_LINUX}
