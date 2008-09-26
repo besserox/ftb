@@ -61,6 +61,15 @@ ZOID: Zoid 1.0
 BG/P Machines
 -------------
 ZeptoOS and ZOID: Based on the Preview version released on 19th May 2008.
+Here are the steps to get started.
+
+(a) Preparing Zoid
+Download the Zoid source from SVN and make it
+# cd ~
+# mkdir zoid
+# cd zoid
+# svn co https://svn.mcs.anl.gov/repos/ZeptoOS/trunk/BGP/zoid/ .
+# make 
 
 
 Section 3.0: DOWNLOADING AND CONFIGURING FTB
@@ -188,18 +197,33 @@ For BG/L machines
 
 For BG/P machines
 ------------------
-(a) Copy the FTB Agent from /FTB/sbin/ftb_agent to /ZeptoOS/ramdisk/BGP/ION/ramdisk-add/bin/
 
-(b) Copy the FTB Zoid Client Libraries form /FTB/lib/ftb_zoid_client* to /ZeptoOS/ramdisk/BGP/ION/ramdisk-add/lib/
+(a) Download ZeptoOS
+# cd ~
+# mkdir ZeptoOS
+# cd ZeptoOS
+# svn co https://svn.mcs.anl.gov/repos/ZeptoOS/trunk/BGP/zepto-kernel/ .
 
-(c) Copy the FTB Agent startup script from
+(b) Copy the FTB Agent from /FTB/sbin/ftb_agent to /ZeptoOS/ramdisk/BGP/ION/ramdisk-add/bin/
+
+(c) Copy the FTB Zoid Client Libraries form /FTB/lib/ftb_zoid_client* to /ZeptoOS/ramdisk/BGP/ION/ramdisk-add/lib/
+
+(d) Copy the FTB Agent startup script from
 	src/client_lib/platforms/bg/init_scripts/ftb_agent_bgp to
 	/ZeptoOS/ramdisk/BGP/ION/ramdisk-add/etc/init.d/S66FTB_Agent
+and
+	src/client_lib/platforms/bg/init_scripts/ftb_agent_bgp to
+	/ZeptoOS/ramdisk/BGP/ION/ramdisk-add/etc/init.d/rc3.d/S66FTB_Agent
+
 
 (d) Edit Zoid startup script
 	"/ZeptoOS/ramdisk/BGP/ION/ramdisk-add/etc/init.d/rc3.d/S51zoid" to include the FTB libraries.  
 	Append 'ftb_zoid_client_impl.so:ftb_zoid_client_preload.so' to the list of libraries.
 
+(e) Make the Zeptoos kernel images
+make bgp-cn-linux
+make bgp-ion-ramdisk-cnl
+make bgp-ion-linux
 
 Section 6.0: RUNNING FTB
 ==========================
