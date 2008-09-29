@@ -49,6 +49,8 @@ int FTBU_match_mask(const FTB_event_t * event, const FTB_event_t * mask)
 	 || (strcasecmp(mask->region, "ALL") == 0))
 	&& ((strcasecmp(event->client_jobid, mask->client_jobid) == 0)
 	    || (strcasecmp(mask->client_jobid, "ALL") == 0))
+	&& ((strcasecmp(event->client_name, mask->client_name) == 0)
+	    || (strcasecmp(mask->client_name, "ALL") == 0))
 	&& ((strcasecmp(event->hostname, mask->hostname) == 0)
 	    || (strcasecmp(mask->hostname, "ALL") == 0))) {
 

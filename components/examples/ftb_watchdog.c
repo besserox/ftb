@@ -132,8 +132,8 @@ int main(int argc, char *argv[])
 	    fprintf(stderr, "Watchdog: No event caught Error code is %d!\n", ret);
 	    break;
 	}
-	printf
-	    ("Received event details: Event space=%s, Severity=%s, Event name=%s, Client name=%s, Hostname=%s, Seqnum=%d\n",
+	fprintf
+	    (stderr, "Received event details: Event space=%s, Severity=%s, Event name=%s, Client name=%s, Hostname=%s, Seqnum=%d\n",
 	     caught_event.event_space, caught_event.severity, caught_event.event_name,
 	     caught_event.client_name, caught_event.incoming_src.hostname, caught_event.seqnum);
 	if (done)

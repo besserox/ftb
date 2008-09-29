@@ -251,6 +251,7 @@ int FTBCI_check_subscription_value_pair(const char *lhs, const char *rhs,
 	strcpy(subscription_event->event_name, "all");
 	strcpy(subscription_event->client_jobid, "all");
 	strcpy(subscription_event->hostname, "all");
+	strcpy(subscription_event->client_name, "all");
     }
     else if (strcasecmp(lhs, "severity") == 0) {
 	if (track & 2)
@@ -316,6 +317,17 @@ int FTBCI_check_subscription_value_pair(const char *lhs, const char *rhs,
 	    return FTB_ERR_FILTER_VALUE;
 	}
 	strcpy(subscription_event->event_name, rhs);
+    }
+    else if (strcasecmp(lhs, "client_name") == 0) {
+	if (track & 64)
+	    return FTB_ERR_SUBSCRIPTION_STR;
+	track = track | 64;
+	if ((strlen(rhs) >= FTB_MAX_CLIENT_NAME)
+	    || (!check_alphanumeric_underscore_format(lhs))) {
+	    FTB_INFO("Out FTBCI_check_subscription_value_pair");
+	    return FTB_ERR_FILTER_VALUE;
+	}
+	strcpy(subscription_event->client_name, rhs);
     }
     else {
 	FTB_INFO("Out FTBCI_check_subscription_value_pair");
@@ -482,8 +494,9 @@ int FTBCI_populate_hashtable_with_events(const char *region, const char *comp_ca
 	for (j = 0; j < strlen(event_key); j++)
 	    event_key[j] = toupper(event_key[j]);
 	if (FTBCI_search_hash(event_key) != NULL) {
-	    FTB_INFO("Out FTBCI_populate_hashtable_with_events : Duplicate event");
-	    return FTB_ERR_DUP_EVENT;
+	    FTB_INFO("Out FTBCI_populate_hashtable_with_events : Duplicate event. Ignoring!");
+	    return FTB_SUCCESS;
+	    //return FTB_ERR_DUP_EVENT;
 	}
 	strcpy(event_entry->event_name, event_table[i].event_name);
 	strcpy(event_entry->comp_cat, comp_cat);

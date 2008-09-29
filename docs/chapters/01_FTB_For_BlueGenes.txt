@@ -69,7 +69,7 @@ Download the Zoid source from SVN and make it
 # mkdir zoid
 # cd zoid
 # svn co https://svn.mcs.anl.gov/repos/ZeptoOS/trunk/BGP/zoid/ .
-# make 
+# cd cnl/client; make 
 
 
 Section 3.0: DOWNLOADING AND CONFIGURING FTB
