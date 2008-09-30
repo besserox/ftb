@@ -132,7 +132,7 @@ static int FTBNI_util_exchange_bootstrap_msg(const FTBNI_bootstrap_pkt_t * pkt_s
 	    if (recvfrom(fd, pkt_recv, sizeof(FTBNI_bootstrap_pkt_t), 0, NULL, 0) !=
 		sizeof(FTBNI_bootstrap_pkt_t)) {
 		close(fd);
-		FTB_ERR_ABORT("sendto failed");
+		FTB_ERR_ABORT("recvfrom failed");
 	    }
 	    flag = 1;
 	    break;

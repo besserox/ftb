@@ -122,9 +122,9 @@ int main(int argc, char *argv[])
 	else {
 	    time_t current = time(NULL);
 	    fprintf(log_fp, "%s\t", asctime(localtime(&current)));
-	    fprintf(log_fp, "Caught eventspace: %s , severity: %s,  event_name: %s, client_name: %s from host %s \
-                   client_jobid: %s ", event.event_space, event.severity, event.event_name,
-		    event.client_name, event.client_jobid, event.incoming_src.hostname);
+	    fprintf(log_fp, "Caught eventspace: %s , severity: %s,  event_name: %s, client_name:--%s-- from host %s \
+                   client_jobid: %s seqnum: %d \n", event.event_space, event.severity, event.event_name,
+		    event.client_name, event.incoming_src.hostname, event.client_jobid, event.seqnum);
 	    fflush(log_fp);
 	}
 	if (done)
