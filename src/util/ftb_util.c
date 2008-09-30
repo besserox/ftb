@@ -45,6 +45,12 @@ int FTBU_match_mask(const FTB_event_t * event, const FTB_event_t * mask)
 {
     FTB_INFO("In FTBU_match_mask");
 
+    FTB_INFO("FTBU_match_mask: event->client_name=%s and mask->client_name=%s", event->client_name, mask->client_name);
+    FTB_INFO("FTBU_match_mask: event->region=%s and mask->region=%s", event->region, mask->region);
+    FTB_INFO("FTBU_match_mask: event->hostname=%s and mask->hostname=%s", event->hostname, mask->hostname);
+    FTB_INFO("FTBU_match_mask: event->event_name=%s and mask->event_name=%s", event->event_name, mask->event_name);
+
+
     if (((strcasecmp(event->region, mask->region) == 0)
 	 || (strcasecmp(mask->region, "ALL") == 0))
 	&& ((strcasecmp(event->client_jobid, mask->client_jobid) == 0)
@@ -126,6 +132,30 @@ int FTBU_is_equal_event(const FTB_event_t * lhs, const FTB_event_t * rhs)
     if ((strcasecmp(lhs->severity, rhs->severity) == 0)
 	&& (strcasecmp(lhs->comp_cat, rhs->comp_cat) == 0)
 	&& (strcasecmp(lhs->comp, rhs->comp) == 0)
+	&& (strcasecmp(lhs->event_name, rhs->event_name) == 0)) {
+	return 1;
+    }
+    else
+	return 0;
+}
+
+
+/*
+ * FTBU_is_equal_event checks if two event masks match
+ */
+int FTBU_is_equal_event_mask(const FTB_event_t * lhs, const FTB_event_t * rhs)
+{
+
+   printf("lhs->severity=%s, lhs->comp_cat=%s, lhs->comp=%s, lhs->client_name=%s, lhs->client_jobid=%s, lhs->hostname=%s, lhs->region=%s, lhs->event_name=%s\n",lhs->severity, lhs->comp_cat, lhs->comp, lhs->client_name, lhs->client_jobid, lhs->hostname, lhs->region, lhs->event_name);
+   printf("rhs->severity=%s, rhs->comp_cat=%s, rhs->comp=%s, rhs->client_name=%s, rhs->client_jobid=%s, rhs->hostname=%s, rhs->region=%s, rhs->event_name=%s\n",rhs->severity, rhs->comp_cat, rhs->comp, rhs->client_name, rhs->client_jobid, rhs->hostname, rhs->region, rhs->event_name);
+ 
+    if ((strcasecmp(lhs->severity, rhs->severity) == 0)
+	&& (strcasecmp(lhs->comp_cat, rhs->comp_cat) == 0)
+	&& (strcasecmp(lhs->comp, rhs->comp) == 0)
+	&& (strcasecmp(lhs->client_name, rhs->client_name) == 0)
+	&& (strcasecmp(lhs->client_jobid, rhs->client_jobid) == 0)
+	&& (strcasecmp(lhs->hostname, rhs->hostname) == 0)
+	&& (strcasecmp(lhs->region, rhs->region) == 0)
 	&& (strcasecmp(lhs->event_name, rhs->event_name) == 0)) {
 	return 1;
     }

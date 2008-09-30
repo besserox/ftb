@@ -870,6 +870,7 @@ int FTBC_Connect(FTB_client_t * cinfo, uint8_t extension, FTB_client_handle_t * 
 
     pthread_mutex_init(&client_info->lock, NULL);
     if (client_info->subscription_type & FTB_SUBSCRIPTION_NOTIFY) {
+	/* should this point to init and compare with equal_mask*/
 	client_info->callback_map = FTBU_map_init(FTBCI_util_is_equal_event);
 	client_info->callback_event_queue = (FTBU_list_node_t *) malloc(sizeof(FTBU_list_node_t));
 	FTBU_list_init(client_info->callback_event_queue);

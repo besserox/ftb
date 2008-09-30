@@ -113,6 +113,14 @@ int FTBMI_util_is_equal_event(const void *lhs_void, const void *rhs_void)
     return FTBU_is_equal_event(lhs, rhs);
 }
 
+int FTBMI_util_is_equal_event_mask(const void *lhs_void, const void *rhs_void)
+{
+    FTB_event_t *lhs = (FTB_event_t *) lhs_void;
+    FTB_event_t *rhs = (FTB_event_t *) rhs_void;
+    return FTBU_is_equal_event_mask(lhs, rhs);
+    //return FTBU_is_equal_event(lhs, rhs);
+}
+
 static void FTBMI_util_reg_propagation(int msg_type, const FTB_event_t * event,
 				       const FTB_location_id_t * incoming)
 {
@@ -239,7 +247,8 @@ static void FTBMI_util_reconnect()
 	strcpy(comp->id.client_id.comp, "FTB_COMP_MANAGER");
 	comp->id.client_id.ext = 0;
 	pthread_mutex_init(&comp->lock, NULL);
-	comp->catch_event_set = (FTBMI_set_event_mask_t *) FTBU_map_init(FTBMI_util_is_equal_event);
+	//comp->catch_event_set = (FTBMI_set_event_mask_t *) FTBU_map_init(FTBMI_util_is_equal_event);
+	comp->catch_event_set = (FTBMI_set_event_mask_t *) FTBU_map_init(FTBMI_util_is_equal_event_mask);
 
 	if (FTBU_map_insert(FTBMI_info.peers, FTBU_MAP_PTR_KEY(&comp->id), (void *) comp) == FTBU_EXIST) {
 	    return;
@@ -383,8 +392,8 @@ int FTBM_Init(int leaf)
     FTBMI_info.leaf = leaf;
     if (!leaf) {
 	FTBMI_info.peers = (FTBMI_map_ftb_id_2_comp_info_t *) FTBU_map_init(FTBMI_util_is_equal_ftb_id);
-	FTBMI_info.catch_event_map =
-	    (FTBMI_map_event_mask_2_comp_info_map_t *) FTBU_map_init(FTBMI_util_is_equal_event);
+	FTBMI_info.catch_event_map =(FTBMI_map_event_mask_2_comp_info_map_t *) FTBU_map_init(FTBMI_util_is_equal_event_mask);
+	//FTBMI_info.catch_event_map =(FTBMI_map_event_mask_2_comp_info_map_t *) FTBU_map_init(FTBMI_util_is_equal_event);
 	FTBMI_info.err_handling = FTB_ERR_HANDLE_RECOVER;
     }
     else {
@@ -399,6 +408,7 @@ int FTBM_Init(int leaf)
     strcpy(FTBMI_info.self.client_id.comp, "FTB_COMP_MANAGER");
     strcpy(FTBMI_info.self.client_id.comp_cat, "FTB_COMP_CAT_BACKPLANE");
     FTBMI_info.self.client_id.ext = leaf;
+
     FTBN_Init(&FTBMI_info.self.location_id, &config);
     memcpy(&msg.src, &FTBMI_info.self, sizeof(FTB_id_t));
     msg.msg_type = FTBM_MSG_TYPE_CLIENT_REG;
@@ -419,7 +429,8 @@ int FTBM_Init(int leaf)
 	strcpy(comp->id.client_id.comp, "FTB_COMP_MANAGER");
 	comp->id.client_id.ext = 0;
 	pthread_mutex_init(&comp->lock, NULL);
-	comp->catch_event_set = (FTBMI_set_event_mask_t *) FTBU_map_init(FTBMI_util_is_equal_event);
+	//comp->catch_event_set = (FTBMI_set_event_mask_t *) FTBU_map_init(FTBMI_util_is_equal_event);
+	comp->catch_event_set = (FTBMI_set_event_mask_t *) FTBU_map_init(FTBMI_util_is_equal_event_mask);
 
 	if (FTBU_map_insert(FTBMI_info.peers, FTBU_MAP_PTR_KEY(&comp->id), (void *) comp) == FTBU_EXIST) {
 	    return FTB_ERR_GENERAL;
@@ -534,7 +545,8 @@ int FTBM_Client_register(const FTB_id_t * id)
     comp = (FTBMI_comp_info_t *) malloc(sizeof(FTBMI_comp_info_t));
     memcpy(&comp->id, id, sizeof(FTB_id_t));
     pthread_mutex_init(&comp->lock, NULL);
-    comp->catch_event_set = (FTBMI_set_event_mask_t *) FTBU_map_init(FTBMI_util_is_equal_event);
+    //comp->catch_event_set = (FTBMI_set_event_mask_t *) FTBU_map_init(FTBMI_util_is_equal_event);
+    comp->catch_event_set = (FTBMI_set_event_mask_t *) FTBU_map_init(FTBMI_util_is_equal_event_mask);
 
     lock_manager();
 
@@ -673,7 +685,7 @@ int FTBM_Register_subscription(const FTB_id_t * id, FTB_event_t * event)
 	return FTB_ERR_INVALID_PARAMETER;
     }
 
-    /*Add to component structure */
+    /* Add to component structure */
     new_mask_comp = (FTB_event_t *) malloc(sizeof(FTB_event_t));
     memcpy(new_mask_comp, event, sizeof(FTB_event_t));
     lock_comp(comp);
@@ -685,7 +697,7 @@ int FTBM_Register_subscription(const FTB_id_t * id, FTB_event_t * event)
 	return FTB_SUCCESS;
     }
 
-    /*Add to node structure if needed */
+    /* Add to node structure if needed */
     lock_manager();
     iter = FTBU_map_find(FTBMI_info.catch_event_map, FTBU_MAP_PTR_KEY(new_mask_comp));
     if (iter == FTBU_map_end(FTBMI_info.catch_event_map)) {
