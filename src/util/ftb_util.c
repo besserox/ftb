@@ -146,9 +146,6 @@ int FTBU_is_equal_event(const FTB_event_t * lhs, const FTB_event_t * rhs)
 int FTBU_is_equal_event_mask(const FTB_event_t * lhs, const FTB_event_t * rhs)
 {
 
-   printf("lhs->severity=%s, lhs->comp_cat=%s, lhs->comp=%s, lhs->client_name=%s, lhs->client_jobid=%s, lhs->hostname=%s, lhs->region=%s, lhs->event_name=%s\n",lhs->severity, lhs->comp_cat, lhs->comp, lhs->client_name, lhs->client_jobid, lhs->hostname, lhs->region, lhs->event_name);
-   printf("rhs->severity=%s, rhs->comp_cat=%s, rhs->comp=%s, rhs->client_name=%s, rhs->client_jobid=%s, rhs->hostname=%s, rhs->region=%s, rhs->event_name=%s\n",rhs->severity, rhs->comp_cat, rhs->comp, rhs->client_name, rhs->client_jobid, rhs->hostname, rhs->region, rhs->event_name);
- 
     if ((strcasecmp(lhs->severity, rhs->severity) == 0)
 	&& (strcasecmp(lhs->comp_cat, rhs->comp_cat) == 0)
 	&& (strcasecmp(lhs->comp, rhs->comp) == 0)

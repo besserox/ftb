@@ -201,7 +201,7 @@ int main(int argc, char *argv[])
     if (!is_server) {
 	event_latency = (end.tv_sec - begin.tv_sec) * 1000000 + (end.tv_usec - begin.tv_usec);
 	event_latency /= iter;
-	printf("Latency: %.3f\n", event_latency);
+	printf("Latency: %.3f microseconds\n", event_latency);
     }
 
     FTB_Disconnect(handle);

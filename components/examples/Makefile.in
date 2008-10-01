@@ -35,7 +35,7 @@ LIBS_PTHREAD=@LIBS_PTHREAD@
 
 all: ${clients}
 
-linux: ftb_watchdog ftb_polling_logger ftb_simple_publisher ftb_simple_subscriber ftb_notify_logger ftb_multiplecomp ftb_pingpong ftb_example_callback_unsubscribe ftb_eventhandle_example ftb_ib_port_status_publisher ftb_throw_delay_mpi
+linux: ftb_watchdog ftb_polling_logger ftb_simple_publisher ftb_simple_subscriber ftb_notify_logger ftb_multiplecomp ftb_pingpong ftb_example_callback_unsubscribe ftb_eventhandle_example ftb_ib_port_status_publisher ftb_throw_delay_mpi ftb_alltoall
 
 bgl: ftb_simple_publisher_bgl ftb_simple_subscriber_bgl
 
@@ -116,9 +116,17 @@ else
 endif
 
 ftb_throw_delay_mpi: ftb_throw_delay_mpi.c
-ifeq ($(shell  find . -name mpicc -print ), )
+ifeq ($(shell  which mpicc ), )
 	$(warning MPI library not present. Not compiling ftb_throw_delay_mpi)
 else
 	mpicc ${CFLAGS_LINUX} ${LDFLAGS_LINUX} -o $@ $< ${LIBS_LINUX}
 endif
+
+ftb_alltoall: ftb_alltoall.c
+ifeq ($(shell  which mpicc ), )
+	$(warning MPI library not present. Not compiling ftb_throw_delay_mpi)
+else
+	mpicc ${CFLAGS_LINUX} ${LDFLAGS_LINUX} -o $@ $< ${LIBS_LINUX}
+endif
+
 

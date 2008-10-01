@@ -145,6 +145,7 @@ static void FTBMI_util_reg_propagation(int msg_type, const FTB_event_t * event,
 	    || FTBU_is_equal_location_id(&id->location_id, incoming))
 	    continue;
 
+
 	memcpy(&msg.dst, id, sizeof(FTB_id_t));
 
 	ret = FTBN_Send_msg(&msg);
@@ -226,6 +227,7 @@ static void FTBMI_util_reconnect()
 {
     FTBM_msg_t msg;
     int ret;
+    FTB_INFO("In FTBMI_util_reconnect");
 
     memcpy(&msg.src, &FTBMI_info.self, sizeof(FTB_id_t));
     msg.msg_type = FTBM_MSG_TYPE_CLIENT_REG;
@@ -234,13 +236,14 @@ static void FTBMI_util_reconnect()
     if (FTBMI_info.leaf && FTBMI_info.parent.pid == 0) {
 	FTB_WARNING("Can not connect to any ftb agent");
 	FTBMI_initialized = 0;
+        FTB_INFO("Out FTBMI_util_reconnect - could not connect to ftb agent");
 	return;
     }
     if (!FTBMI_info.leaf && FTBMI_info.parent.pid != 0) {
 	FTBMI_comp_info_t *comp;
 	FTBU_map_iterator_t iter;
 
-	FTB_INFO("Adding parent to peers");
+	FTB_INFO("Adding parent to peers while reconecting");
 	comp = (FTBMI_comp_info_t *) malloc(sizeof(FTBMI_comp_info_t));
 	memcpy(&comp->id.location_id, &FTBMI_info.parent, sizeof(FTB_location_id_t));
 	strcpy(comp->id.client_id.comp_cat, "FTB_COMP_CAT_BACKPLANE");
@@ -250,7 +253,9 @@ static void FTBMI_util_reconnect()
 	//comp->catch_event_set = (FTBMI_set_event_mask_t *) FTBU_map_init(FTBMI_util_is_equal_event);
 	comp->catch_event_set = (FTBMI_set_event_mask_t *) FTBU_map_init(FTBMI_util_is_equal_event_mask);
 
+        FTB_INFO("Going to call FTBU_map_insert() to insert as key=client_info->comp_info->id (parents id), data=comp_info (parents backplane) map=FTBMI_info.peers");
 	if (FTBU_map_insert(FTBMI_info.peers, FTBU_MAP_PTR_KEY(&comp->id), (void *) comp) == FTBU_EXIST) {
+            FTB_INFO("Out FTBMI_util_reconnect - new client already present in peer list");
 	    return;
 	}
 	FTB_INFO("Register all catches");
@@ -268,6 +273,8 @@ static void FTBMI_util_reconnect()
 	    }
 	}
     }
+    return;
+    FTB_INFO("Out FTBMI_util_reconnect - successfully");
 }
 
 
@@ -315,23 +322,55 @@ int FTBM_Get_catcher_comp_list(const FTB_event_t * event, FTB_id_t ** list, int 
     catcher_set = (FTBMI_map_ftb_id_2_comp_info_t *) FTBU_map_init(FTBMI_util_is_equal_ftb_id);
 
     lock_manager();
+
+    FTB_INFO("****Going through the list of catcher components");
+
+    /* 
+     * Masks are stored in my catch_event_map. Go through my
+     * catch_event_map to check if (1) Event matches the mask and 
+     * (2) Who all are interested in getting this event that matched the mask 
+     */
+
     for (iter_mask = FTBU_map_begin(FTBMI_info.catch_event_map);
 	 iter_mask != FTBU_map_end(FTBMI_info.catch_event_map);
 	 iter_mask = FTBU_map_next_iterator(iter_mask)) {
 	FTB_event_t *mask = (FTB_event_t *) FTBU_map_get_key(iter_mask).key_ptr;
+
 	if (FTBU_match_mask(event, mask)) {
-	    FTB_INFO("Get the map of components");
+
+	    FTB_INFO("This event has matched a mask stored in my catch_event_map. Get the list of clients who are interested in this event");
+
 	    FTBU_map_node_t *map = (FTBU_map_node_t *) FTBU_map_get_data(iter_mask);
-	    for (iter_comp = FTBU_map_begin(map); iter_comp != FTBU_map_end(map);
+
+	    /* 
+	     * The data part of the catch_event map is another linked
+	     * list that contains the list of destinations interested in
+	     * receiving this event
+	     */
+
+	    for (iter_comp = FTBU_map_begin(map); iter_comp !=FTBU_map_end(map);
 		 iter_comp = FTBU_map_next_iterator(iter_comp)) {
 		FTBMI_comp_info_t *comp = (FTBMI_comp_info_t *) FTBU_map_get_data(iter_comp);
+
+		/*
+ 		 * This event could have matched many masks registered by the same client. 
+ 		 * Check and see if this component/client was already selected and put in the 
+ 		 * catcher list in one of the previous iterations of these for loops
+ 		 */
+
 		FTB_INFO("Test whether component is already in catcher set");
+
 		if (FTBU_map_find(catcher_set, FTBU_MAP_PTR_KEY(&comp->id)) !=
 		    FTBU_map_end(catcher_set)) {
-		    FTB_INFO("already counted in");
+		    FTB_INFO("Component has already counted in to receive this event. ");
 		    continue;
 		}
 		temp_len++;
+
+		/*
+ 		 * If compnent/client is not a part of the catcher list, then make it a part now by adding its FTB_idS
+ 		 */
+                FTB_INFO("Going to call FTBU_map_insert() to insert as key=comp->id, data=comp->id map=catcher_set");
 		FTBU_map_insert(catcher_set, FTBU_MAP_PTR_KEY(&comp->id), (void *) &comp->id);
 	    }
 	}
@@ -341,13 +380,22 @@ int FTBM_Get_catcher_comp_list(const FTB_event_t * event, FTB_id_t ** list, int 
     *list = (FTB_id_t *) malloc(sizeof(FTB_id_t) * temp_len);
     *len = temp_len;
 
+    /*
+     * Go through the catcher_set that was created - and copy the entire list in the calleefunction-passed argument for the list. The list
+     * is a collection of FTB_ids.
+     * Also get the total number of destinations, to pass it back to the callee function
+     */
     for (iter_comp = FTBU_map_begin(catcher_set); iter_comp != FTBU_map_end(catcher_set);
 	 iter_comp = FTBU_map_next_iterator(iter_comp)) {
 	FTB_id_t *id = (FTB_id_t *) FTBU_map_get_data(iter_comp);
 	temp_len--;
 	memcpy(&((*list)[temp_len]), id, sizeof(FTB_id_t));
+	FTB_INFO("For this mask - send events to destination=%s client_name=%s\n", id->location_id.hostname, id->client_id.client_name);
     }
 
+    /*
+     * Destroy the catcher_set map for now
+     */
     FTBU_map_finalize(catcher_set);
 
     FTB_INFO("FTBM_Get_catcher_comp_list Out");
@@ -416,7 +464,7 @@ int FTBM_Init(int leaf)
     FTBN_Connect(&msg, &FTBMI_info.parent);
     if (leaf && FTBMI_info.parent.pid == 0) {
 	FTB_WARNING("Can not connect to any ftb agent");
-	FTB_INFO("FTBM_Init Out");
+	FTB_INFO("FTBM_Init Out - could not connect to any ftb agent");
 	return FTB_ERR_GENERAL;
     }
 
@@ -432,7 +480,9 @@ int FTBM_Init(int leaf)
 	//comp->catch_event_set = (FTBMI_set_event_mask_t *) FTBU_map_init(FTBMI_util_is_equal_event);
 	comp->catch_event_set = (FTBMI_set_event_mask_t *) FTBU_map_init(FTBMI_util_is_equal_event_mask);
 
+        FTB_INFO("Agent is going to call FTBU_map_insert() to insert as key=comp_id, data=comp(parents) map=FTBMI_info.peers");
 	if (FTBU_map_insert(FTBMI_info.peers, FTBU_MAP_PTR_KEY(&comp->id), (void *) comp) == FTBU_EXIST) {
+            FTB_INFO("FTBM_Init Out - client already present in the peer list");
 	    return FTB_ERR_GENERAL;
 	}
     }
@@ -441,7 +491,7 @@ int FTBM_Init(int leaf)
     lock_manager();
     FTBMI_initialized = 1;
     unlock_manager();
-    FTB_INFO("FTBM_Init Out");
+    FTB_INFO("FTBM_Init Out - success");
     return FTB_SUCCESS;
 }
 
@@ -550,8 +600,10 @@ int FTBM_Client_register(const FTB_id_t * id)
 
     lock_manager();
 
+    FTB_INFO("Going to call FTBU_map_insert() to insert as key=comp_id, data=comp and map=FTBMI_info.peers -- for the new Client_register request");
+
     if (FTBU_map_insert(FTBMI_info.peers, FTBU_MAP_PTR_KEY(&comp->id), (void *) comp) == FTBU_EXIST) {
-	FTB_WARNING("Already registered");
+	FTB_WARNING("Client already registered as a peer");
 	unlock_manager();
 	FTB_INFO("FTBM_Client_register Out");
 	return FTB_ERR_INVALID_PARAMETER;
@@ -676,12 +728,12 @@ int FTBM_Register_subscription(const FTB_id_t * id, FTB_event_t * event)
 	return FTB_ERR_GENERAL;
     FTB_INFO("FTBM_Register_subscription In");
     if (FTBMI_info.leaf) {
-	FTB_INFO("FTBM_Register_subscription Out");
+	FTB_INFO("FTBM_Register_subscription Out - Not supported error");
 	return FTB_ERR_NOT_SUPPORTED;
     }
     comp = FTBMI_lookup_component(id);
     if (comp == NULL) {
-	FTB_INFO("FTBM_Register_subscription Out");
+	FTB_INFO("FTBM_Register_subscription Out - Invalid parameter error");
 	return FTB_ERR_INVALID_PARAMETER;
     }
 
@@ -689,26 +741,55 @@ int FTBM_Register_subscription(const FTB_id_t * id, FTB_event_t * event)
     new_mask_comp = (FTB_event_t *) malloc(sizeof(FTB_event_t));
     memcpy(new_mask_comp, event, sizeof(FTB_event_t));
     lock_comp(comp);
+
+
+    /*
+     * This event variable(which is a mask) is added to the      
+     * catch_event_set map, which is a linked list consisting of all the
+     * masks available with this agent.
+     */
+
+    FTB_INFO("Going to call FTBU_map_insert() to insert as key=new_mask, data=new_mask, map=catch_event_set");
     if (FTBU_map_insert(comp->catch_event_set, FTBU_MAP_PTR_KEY(new_mask_comp), (void *) new_mask_comp)
 	== FTBU_EXIST) {
-	FTB_WARNING("Already registered same event mask");
 	free(new_mask_comp);
 	FTB_INFO("FTBM_Register_subscription Out");
-	return FTB_SUCCESS;
     }
 
-    /* Add to node structure if needed */
+    /*
+     * Every mask in the catch_event_set is also present in the catch_event_map map.
+     * The catch_event_map map uses the 'mask' as the key and points to a map of 'FTB_ids'. 
+     * These FTB_ids is the collection of ftb-ids keys who are interested in receiving an event that
+     * matches this mask
+     *
+     * First, this new mask is checked to see if it is already present in the catch_event_map map.
+     * If it is, then the source FTB_id of this subscription request is added to the list of 
+     * the 'FTB_ids' map
+     *
+     * If this mask is not present as a 'key' in the catch_event_map map, then add it to the 
+     * catch_event_map map. Also create the intial map of FTB_ids for this mask and add the source
+     * FTB-id of this request to it.
+     */
+
     lock_manager();
     iter = FTBU_map_find(FTBMI_info.catch_event_map, FTBU_MAP_PTR_KEY(new_mask_comp));
+
     if (iter == FTBU_map_end(FTBMI_info.catch_event_map)) {
 	FTBMI_map_ftb_id_2_comp_info_t *new_map;
+
 	FTB_INFO("New event to catch for the manager");
 	new_mask_manager = (FTB_event_t *) malloc(sizeof(FTB_event_t));
 	memcpy(new_mask_manager, new_mask_comp, sizeof(FTB_event_t));
+
 	new_map = (FTBMI_map_ftb_id_2_comp_info_t *) FTBU_map_init(FTBMI_util_is_equal_ftb_id);
+        
+	FTB_INFO("Going to call FTBU_map_insert() to insert as key=new_mask_manager(which is alias for new_mask), data=new_map(potential list of FTB_ids interested in this mask in the future), map=catch_event_map");
 	FTBU_map_insert(FTBMI_info.catch_event_map, FTBU_MAP_PTR_KEY(new_mask_manager),
 			(void *) new_map);
+
+        FTB_INFO("Going to call FTBU_map_insert() to insert key=comp->id (of my above first client), data=comp, map=new_map(collection of ftb_ids).");
 	FTBU_map_insert(new_map, FTBU_MAP_PTR_KEY(&comp->id), (void *) comp);
+
 	/*notify other FTB nodes about catch */
 	FTBMI_util_reg_propagation(FTBM_MSG_TYPE_REG_SUBSCRIPTION, event, &id->location_id);
     }
@@ -716,8 +797,12 @@ int FTBM_Register_subscription(const FTB_id_t * id, FTB_event_t * event)
 	FTBMI_map_ftb_id_2_comp_info_t *map;
 	FTB_INFO("The manager is already catching the event, adding the component");
 	map = (FTBMI_map_ftb_id_2_comp_info_t *) FTBU_map_get_data(iter);
-	FTBU_map_insert(map, FTBU_MAP_PTR_KEY(&comp->id), (void *) comp);
+	FTB_INFO("Going to call FTBU_map_insert() to insert key=comp_id, data=comp, map=FTB_id map which is present in the data part of the catch_event_map");
+	if (FTBU_map_insert(map, FTBU_MAP_PTR_KEY(&comp->id), (void *) comp) == FTBU_EXIST) {
+		FTB_WARNING("This Mask already registered");
+	}
     }
+
     unlock_manager();
     unlock_comp(comp);
 

@@ -570,13 +570,16 @@ static void FTBCI_util_add_to_callback_map(FTBCI_client_info_t * client_info, co
 {
     FTBCI_callback_entry_t *entry = (FTBCI_callback_entry_t *) malloc(sizeof(FTBCI_callback_entry_t));
     entry->mask = (FTB_event_t *) malloc(sizeof(FTB_event_t));
+    FTB_INFO("In FTBCI_util_add_to_callback_map");
 
     memcpy(entry->mask, event, sizeof(FTB_event_t));
     entry->callback = callback;
     entry->arg = arg;
     FTBCI_lock_client(client_info);
+    FTB_INFO("Going to call FTBU_map_insert() to insert as key=callback_entry->mask, data=callback_entry map=client_info->callback_map");
     FTBU_map_insert(client_info->callback_map, FTBU_MAP_PTR_KEY(entry->mask), (void *) entry);
     FTBCI_unlock_client(client_info);
+    FTB_INFO("Out FTBCI_util_add_to_callback_map");
 }
 
 
@@ -894,6 +897,8 @@ int FTBC_Connect(FTB_client_t * cinfo, uint8_t extension, FTB_client_handle_t * 
 	client_info->callback_map = NULL;
     }
     FTBCI_lock_client_lib();
+    FTB_INFO("Going to call FTBU_map_insert() to insert as key=client_info->client_handle, data=client_info map=FTBCI_client_info_map");
+
     if (FTBU_map_insert
 	(FTBCI_client_info_map, FTBU_MAP_PTR_KEY(&client_info->client_handle),
 	 (void *) client_info) == FTBU_EXIST) {
@@ -1616,6 +1621,8 @@ int FTBC_Add_dynamic_tag(FTB_client_handle_t handle, FTB_tag_t tag, const char *
 	entry->owner = handle;
 	entry->data_len = data_len;
 	memcpy(entry->data, tag_data, data_len);
+        FTB_INFO("Going to call FTBU_map_insert() to insert as key=tag_entry->tag data=tag_entry map=FTBCI_tag_map");
+
 	FTBU_map_insert(FTBCI_tag_map, FTBU_MAP_PTR_KEY(&entry->tag), (void *) entry);
 	tag_count++;
     }
