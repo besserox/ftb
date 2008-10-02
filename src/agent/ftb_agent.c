@@ -73,6 +73,7 @@ void *progress_loop(void *arg)
 		    /*not send same msg back in case incoming source is another agent */
 		    continue;
 		}
+		FTB_INFO("FTBM_MSG_TYPE_NOTIFY : Sending the message to destination =%s \n", ids[i].location_id.hostname);
 		memcpy(&msg_send.dst, &ids[i], sizeof(FTB_id_t));
 		ret = FTBM_Send(&msg_send);
 		if (ret != FTB_SUCCESS) {
@@ -136,6 +137,10 @@ void handler(int sig)
 int main(int argc, char *argv[])
 {
     int ret;
+    int pid;
+
+    pid=fork();
+    if (pid != 0) return 0;
 
 #ifdef FTB_DEBUG
     if (argc >= 2 && strcmp("ION_AGENT", argv[1]) == 0) {

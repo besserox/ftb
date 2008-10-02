@@ -147,7 +147,7 @@ static void FTBMI_util_reg_propagation(int msg_type, const FTB_event_t * event,
 
 
 	memcpy(&msg.dst, id, sizeof(FTB_id_t));
-
+	FTB_INFO("FTBMI_util_reg_propagation - Sending msg type=%d to destination %d\n", msg.msg_type, msg.dst.location_id.hostname);
 	ret = FTBN_Send_msg(&msg);
 	if (ret != FTB_SUCCESS) {
 	    FTB_INFO("Out FTBMI_util_reg_propagation\n");
@@ -492,6 +492,7 @@ int FTBM_Init(int leaf)
     FTBMI_initialized = 1;
     unlock_manager();
     FTB_INFO("FTBM_Init Out - success");
+    fprintf(stderr, "My location is %s and my parent is %s\n", FTBMI_info.self.location_id.hostname, FTBMI_info.parent.hostname);
     return FTB_SUCCESS;
 }
 
@@ -782,6 +783,8 @@ int FTBM_Register_subscription(const FTB_id_t * id, FTB_event_t * event)
 	memcpy(new_mask_manager, new_mask_comp, sizeof(FTB_event_t));
 
 	new_map = (FTBMI_map_ftb_id_2_comp_info_t *) FTBU_map_init(FTBMI_util_is_equal_ftb_id);
+
+	FTB_INFO("I have a new mask from %s. I will add it to the catch_map and also add the source\n", comp->id.location_id.hostname);
         
 	FTB_INFO("Going to call FTBU_map_insert() to insert as key=new_mask_manager(which is alias for new_mask), data=new_map(potential list of FTB_ids interested in this mask in the future), map=catch_event_map");
 	FTBU_map_insert(FTBMI_info.catch_event_map, FTBU_MAP_PTR_KEY(new_mask_manager),
@@ -797,10 +800,12 @@ int FTBM_Register_subscription(const FTB_id_t * id, FTB_event_t * event)
 	FTBMI_map_ftb_id_2_comp_info_t *map;
 	FTB_INFO("The manager is already catching the event, adding the component");
 	map = (FTBMI_map_ftb_id_2_comp_info_t *) FTBU_map_get_data(iter);
+	FTB_INFO("The mask was present. But, a new location = %s is registering it.", comp->id.location_id.hostname);
 	FTB_INFO("Going to call FTBU_map_insert() to insert key=comp_id, data=comp, map=FTB_id map which is present in the data part of the catch_event_map");
 	if (FTBU_map_insert(map, FTBU_MAP_PTR_KEY(&comp->id), (void *) comp) == FTBU_EXIST) {
-		FTB_WARNING("This Mask already registered");
+		//FTB_WARNING("This Mask already registered");
 	}
+	FTBMI_util_reg_propagation(FTBM_MSG_TYPE_REG_SUBSCRIPTION, event, &id->location_id);
     }
 
     unlock_manager();
