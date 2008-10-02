@@ -35,7 +35,7 @@ LIBS_PTHREAD=@LIBS_PTHREAD@
 
 all: ${clients}
 
-linux: ftb_watchdog ftb_polling_logger ftb_simple_publisher ftb_simple_subscriber ftb_notify_logger ftb_multiplecomp ftb_pingpong ftb_example_callback_unsubscribe ftb_eventhandle_example ftb_ib_port_status_publisher ftb_throw_delay_mpi ftb_alltoall
+linux: ftb_watchdog ftb_polling_logger ftb_simple_publisher ftb_simple_subscriber ftb_notify_logger ftb_multiplecomp ftb_pingpong ftb_example_callback_unsubscribe ftb_eventhandle_example ftb_ib_port_status_publisher ftb_throw_delay_mpi ftb_alltoall ftb_grouping
 
 bgl: ftb_simple_publisher_bgl ftb_simple_subscriber_bgl
 
@@ -51,7 +51,7 @@ LIBS_CN_BGL   = -lftb_blrts -lc -lmsglayer.rts -ldevices.rts -lrts.rts
 LIBS_CN_BGP   = -lftb_blrts -lzoid_cn -lpthread -lrt
 
 clean:
-	rm -f ftb_watchdog ftb_polling_logger ftb_simple_publisher ftb_simple_subscriber ftb_notify_logger ftb_multiplecomp ftb_pingpong ftb_example_callback_unsubscribe ftb_eventhandle_example  ftb_ib_port_status_publisher
+	rm -f ftb_watchdog ftb_polling_logger ftb_simple_publisher ftb_simple_subscriber ftb_notify_logger ftb_multiplecomp ftb_pingpong ftb_example_callback_unsubscribe ftb_eventhandle_example  ftb_ib_port_status_publisher ftb_throw_delay_mpi ftb_alltoall ftb_grouping
 	rm -f ftb_simple_publisher_bgl ftb_simple_subscriber_bgl .bgl_env_test
 	rm -f ftb_simple_publisher_bgp ftb_simple_subscriber_bgp ftb_watchdog_bgp .bgp_env_test
 
@@ -129,4 +129,10 @@ else
 	mpicc ${CFLAGS_LINUX} ${LDFLAGS_LINUX} -o $@ $< ${LIBS_LINUX}
 endif
 
+ftb_grouping: ftb_grouping.c
+ifeq ($(shell  which mpicc ), )
+	$(warning MPI library not present. Not compiling ftb_throw_delay_mpi)
+else
+	mpicc ${CFLAGS_LINUX} ${LDFLAGS_LINUX} -o $@ $< ${LIBS_LINUX}
+endif
 
