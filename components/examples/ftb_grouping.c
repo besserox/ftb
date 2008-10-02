@@ -49,7 +49,7 @@ int main(int argc, char *argv[])
     if (getenv("NUM_EVENTS"))
             NUM_EVENTS = atoi(getenv("NUM_EVENTS"));
     else
-            NUM_EVENTS = 1;
+            NUM_EVENTS = 100;
 
     if (getenv("GRP_SIZE"))
             GRP_SIZE = atoi(getenv("GRP_SIZE"));

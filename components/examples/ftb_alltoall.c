@@ -21,10 +21,9 @@
 /* FTB:ftb-bsd */
 /*********************************************************************************/
 
-/*
- * A sample MPI application.
- * This calculates the amount of time it takes to run the FTB_Publish
- * routine
+/* A sample MPI application.
+ * This calculates the amount of time it takes for a client to publish all its events and catch all
+ * events being published by everyone, including itself. This is like an all-to-all test
  */
 
 #include <stdio.h>
@@ -32,30 +31,18 @@
 #include <signal.h>
 #include <string.h>
 #include "mpi.h"
-
 #include "libftb.h"
-
-static volatile int done = 0;
-
-void Int_handler(int sig)
-{
-    if (sig == SIGINT)
-        done = 1;
-}
-
-
 
 int main(int argc, char *argv[])
 {
     FTB_client_handle_t handle;
     FTB_client_t cinfo;
     FTB_event_handle_t ehandle;
-    int i, NUM_EVENTS;
-    int rank, size, ret = 0;
-    double begin, end, delay;
-    double min, max, avg;
     FTB_subscribe_handle_t shandle;
-    int k = 0;
+    int i=0, NUM_EVENTS=0, k=0, rank=0, size=0, ret = 0;
+    double begin, end, delay;
+    FTB_event_info_t event_info[1] = { {"MPI_SIMPLE_EVENT", "INFO"} };
+    double min, max, avg;
 
     if (getenv("NUM_EVENTS"))
             NUM_EVENTS = atoi(getenv("NUM_EVENTS"));
@@ -79,9 +66,6 @@ int main(int argc, char *argv[])
 	exit(-1);
     }
 
-    FTB_event_info_t event_info[1] = { {"MPI_SIMPLE_EVENT", "INFO"}
-    };
-
     ret = FTB_Declare_publishable_events(handle, 0, event_info, 1);
     if (ret != FTB_SUCCESS) {
 	printf("FTB_Declare_publishable_events failed ret=%d!\n", ret);
@@ -95,7 +79,6 @@ int main(int argc, char *argv[])
         exit(-1);
     }
     sleep(5);
-
 
     begin = MPI_Wtime();
     k=0;
@@ -113,21 +96,22 @@ int main(int argc, char *argv[])
 		continue;
         }
 	else {
-	 k++;
-//         printf ("%d : Received event details: Event space=%s, Severity=%s, Event name=%s, Client name=%s, Hostname=%s, Seqnum=%d\n",rank, caught_event.event_space, caught_event.severity, caught_event.event_name, caught_event.client_name, caught_event.incoming_src.hostname, caught_event.seqnum);
+	 	k++;
+//         	printf ("%d : Received event details: Event space=%s, Severity=%s, Event name=%s, Client name=%s, Hostname=%s, Seqnum=%d\n",rank, caught_event.event_space, caught_event.severity, caught_event.event_name, caught_event.client_name, caught_event.incoming_src.hostname, caught_event.seqnum);
 	}
     }
     end = MPI_Wtime();
     delay = end - begin;
+
     MPI_Reduce(&delay, &max, 1, MPI_DOUBLE, MPI_MAX, 0, MPI_COMM_WORLD);
     MPI_Reduce(&delay, &min, 1, MPI_DOUBLE, MPI_MIN, 0, MPI_COMM_WORLD);
     MPI_Reduce(&delay, &avg, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
     avg /= size;
 
-    //printf("%d: delay %.5f\n", rank, delay);
+//  printf("%d: delay %.5f\n", rank, delay);
     if (rank == 0) {
-	printf("Average Maximum Minumum Count\n");
-	printf("%.5f %.5f %.5f %d\n", avg, max, min, NUM_EVENTS);
+//	printf("Average Maximum Minumum Num_Events Cluster_Size\n");
+	printf("%.5f %.5f %.5f %d %d\n", avg, max, min, NUM_EVENTS, size);
 /*
 	printf("***** AVG delay: %.5f for %d throws *****\n", avg, NUM_EVENTS);
 	printf("***** MAX delay: %.5f for %d throws *****\n", max, NUM_EVENTS);
@@ -136,9 +120,6 @@ int main(int argc, char *argv[])
 */
    }
     FTB_Disconnect(handle);
-
     MPI_Finalize();
-
-
     return 0;
 }
