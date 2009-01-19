@@ -37,6 +37,7 @@
 #include <time.h>
 #include <sys/ioctl.h>
 #include <net/if.h>
+#include <fcntl.h>
 
 #include "ftb_def.h"
 #include "ftb_client_lib_defs.h"
@@ -208,11 +209,20 @@ static int FTBNI_util_connect_to(const FTBN_addr_sock_t * addr, const FTBM_msg_t
     sa.sin_family = AF_INET;
     sa.sin_port = htons(addr->port);
     if (setsockopt(entry->fd, IPPROTO_TCP, TCP_NODELAY, (char *) &optval, sizeof(optval))) {
-	return FTB_ERR_NETWORK_GENERAL;
+		return FTB_ERR_NETWORK_GENERAL;
     }
     if (connect(entry->fd, (struct sockaddr *) &sa, sizeof(sa)) < 0) {
-	return FTB_ERR_NETWORK_NO_ROUTE;
+		return FTB_ERR_NETWORK_NO_ROUTE;
     }
+#ifdef FD_CLOEXEC
+	else {
+		int rc = fcntl(entry->fd, F_GETFD);
+		if ((rc < 0) || (fcntl(entry->fd, F_SETFD, rc | FD_CLOEXEC) < 0)) {
+			FTB_WARNING("Failed to set FD_CLOEXEC");
+			/* non-fatal */
+		}
+	}
+#endif
     entry->dst = (FTB_location_id_t *) malloc(sizeof(FTB_location_id_t));
     FTBNI_UTIL_WRITE(entry, &(FTBN_config_location.FTB_system_id), sizeof(uint32_t));
     FTBNI_UTIL_WRITE(entry, &FTBN_my_location_id, sizeof(FTB_location_id_t));
