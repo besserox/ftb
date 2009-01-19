@@ -355,6 +355,7 @@ int FTBN_Finalize()
 
     FTBU_list_for_each(pos, FTBNI_connection_table, temp) {
 	FTB_connection_entry_t *entry = (FTB_connection_entry_t *) pos;
+	close(entry->fd);
 	free(entry->dst);
 	free(entry);
     }
