@@ -202,6 +202,7 @@ static int FTBNI_util_connect_to(const FTBN_addr_sock_t * addr, const FTBM_msg_t
     hp = FTBNI_gethostbyname(addr->name);
     if (hp == NULL) {
         FTB_WARNING("cannot find host %s", addr->name);
+		close(entry->fd);
         return FTB_ERR_NETWORK_NO_ROUTE;
     }
     memset((void *) &sa, 0, sizeof(sa));
@@ -209,9 +210,11 @@ static int FTBNI_util_connect_to(const FTBN_addr_sock_t * addr, const FTBM_msg_t
     sa.sin_family = AF_INET;
     sa.sin_port = htons(addr->port);
     if (setsockopt(entry->fd, IPPROTO_TCP, TCP_NODELAY, (char *) &optval, sizeof(optval))) {
+		close(entry->fd);
         return FTB_ERR_NETWORK_GENERAL;
     }
     if (connect(entry->fd, (struct sockaddr *) &sa, sizeof(sa)) < 0) {
+		close(entry->fd);
         return FTB_ERR_NETWORK_NO_ROUTE;
     }
 #ifdef FD_CLOEXEC
