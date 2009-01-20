@@ -23,8 +23,8 @@
 /*
  * The pingpong component is an example of FTB-enabled multi-threading component
  *
- * Usage: Server: ./ftb_pingong
- *        Client: ./ftb_pingpong iterations
+ * Usage: Server: ./ftb_pingong server
+ *        Client: ./ftb_pingpong client iterations
  *
  * Description:
  * In this example, the server side and the client side exchange events
@@ -111,20 +111,56 @@ int main(int argc, char *argv[])
     int ret = 0;
 
     if (argc >= 2) {
-        if (strcasecmp(argv[1], "usage") == 0) {
-            printf
-                ("For pingpong server: ./ftb_pingpong\nFor pingpong client: ./ftb_pingpong iterations\n");
-            exit(0);
+        if (strcasecmp(argv[1], "server") == 0) {
+            if (argc > 2) {
+                fprintf(stderr, "Starting pingpong server. Ignoring additional arguments.\n");
+            }
+            else {
+                fprintf(stderr, "Starting pingpong server\n");
+                is_server = 1;
+            }
+        }
+        else if (strcasecmp(argv[1], "client") == 0) {
+            if (argc >= 3) {
+                is_server = 0;
+                int i = 0;
+                for (i = 0; i < strlen(argv[2]); i++) {
+                    if ((argv[2][i] >= '0') && (argv[2][i] <= '9'))
+                        continue;
+                    else {
+                        printf("Pingpong iterations not a valid number\n");
+                        exit(0);
+                    }
+                }
+                iter = atoi(argv[2]);
+                if (iter < 1) {
+                    printf("Pingpong iterations cannot be less than 1\n");
+                    exit(0);
+                }
+                if (argc > 3) {
+                    fprintf(stderr,
+                            "Starting pingpong client with iterations %d. Ignoring additional arguments\n",
+                            iter);
+                }
+                else {
+                    fprintf(stderr, "Starting pingpong client with iterations %d\n", iter);
+                }
+            }
+            else if (argc < 3) {
+                fprintf(stderr, "Number of iterations missing from the client pingpong program\n");
+                exit(0);
+            }
         }
         else {
-            is_server = 0;
-            iter = atoi(argv[1]);
-            fprintf(stderr, "Starting pingpong client with iterations %d\n", iter);
+            printf
+                ("For pingpong server: ./ftb_pingpong server\nFor pingpong client: ./ftb_pingpong client <number of iterations>\n");
+            exit(0);
         }
     }
     else {
-        fprintf(stderr, "Starting pingpong server\n");
-        is_server = 1;
+        printf
+            ("For pingpong server: ./ftb_pingpong server\nFor pingpong client: ./ftb_pingpong client <number of iterations>\n");
+        exit(0);
     }
 
     /*
