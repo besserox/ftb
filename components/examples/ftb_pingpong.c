@@ -2,7 +2,7 @@
 /* FTB:ftb-info */
 /* This file is part of FTB (Fault Tolerance Backplance) - the core of CIFTS
  * (Co-ordinated Infrastructure for Fault Tolerant Systems)
- * 
+ *
  * See http://www.mcs.anl.gov/research/cifts for more information.
  * 	
  */
@@ -57,7 +57,7 @@ static int iter = 0;
 void Sig_handler(int sig)
 {
     if (sig == SIGINT || sig == SIGTERM)
-	done = 1;
+        done = 1;
 }
 
 
@@ -86,9 +86,9 @@ int pingpong_client(FTB_receive_event_t * evt, void *arg)
     count++;
     printf("pingpong_client callback handler received event (%d)\n", count);
     if (count >= iter) {
-	gettimeofday(&end, NULL);
-	done = 1;
-	return 0;
+        gettimeofday(&end, NULL);
+        done = 1;
+        return 0;
     }
     FTB_client_handle_t *handle = (FTB_client_handle_t *) arg;
 
@@ -111,20 +111,20 @@ int main(int argc, char *argv[])
     int ret = 0;
 
     if (argc >= 2) {
-	if (strcasecmp(argv[1], "usage") == 0) {
-	    printf
-		("For pingpong server: ./ftb_pingpong\nFor pingpong client: ./ftb_pingpong iterations\n");
-	    exit(0);
-	}
-	else {
-	    is_server = 0;
-	    iter = atoi(argv[1]);
-	    fprintf(stderr, "Starting pingpong client with iterations %d\n", iter);
-	}
+        if (strcasecmp(argv[1], "usage") == 0) {
+            printf
+                ("For pingpong server: ./ftb_pingpong\nFor pingpong client: ./ftb_pingpong iterations\n");
+            exit(0);
+        }
+        else {
+            is_server = 0;
+            iter = atoi(argv[1]);
+            fprintf(stderr, "Starting pingpong client with iterations %d\n", iter);
+        }
     }
     else {
-	fprintf(stderr, "Starting pingpong server\n");
-	is_server = 1;
+        fprintf(stderr, "Starting pingpong server\n");
+        is_server = 1;
     }
 
     /*
@@ -138,8 +138,8 @@ int main(int argc, char *argv[])
     strcpy(cinfo.client_subscription_style, "FTB_SUBSCRIPTION_NOTIFY");
     ret = FTB_Connect(&cinfo, &handle);
     if (ret != FTB_SUCCESS) {
-	printf("FTB_Connect is not successful ret=%d\n", ret);
-	exit(-1);
+        printf("FTB_Connect is not successful ret=%d\n", ret);
+        exit(-1);
     }
 
     /*
@@ -151,57 +151,57 @@ int main(int argc, char *argv[])
     };
     ret = FTB_Declare_publishable_events(handle, 0, event_info, 2);
     if (ret != FTB_SUCCESS) {
-	printf("FTB_Declare_publishable_events failed ret=%d!\n", ret);
-	exit(-1);
+        printf("FTB_Declare_publishable_events failed ret=%d!\n", ret);
+        exit(-1);
     }
 
     if (is_server) {
-	/*
-	 * The pingong server subscribes for all event of name
-	 * PINGPONG_EVENT_CLI and calls the pingpong_server function to
-	 * handle these events
-	 */
-	ret =
-	    FTB_Subscribe(&shandle, handle, "event_name=PINGPONG_EVENT_CLI", pingpong_server,
-			  (void *) &handle);
-	if (ret != FTB_SUCCESS) {
-	    printf("FTB_Subscribe failed!\n");
-	    exit(-1);
-	}
-	signal(SIGINT, Sig_handler);
-	signal(SIGTERM, Sig_handler);
+        /*
+         * The pingong server subscribes for all event of name
+         * PINGPONG_EVENT_CLI and calls the pingpong_server function to
+         * handle these events
+         */
+        ret =
+            FTB_Subscribe(&shandle, handle, "event_name=PINGPONG_EVENT_CLI", pingpong_server,
+                          (void *) &handle);
+        if (ret != FTB_SUCCESS) {
+            printf("FTB_Subscribe failed!\n");
+            exit(-1);
+        }
+        signal(SIGINT, Sig_handler);
+        signal(SIGTERM, Sig_handler);
     }
     else {
-	/*
-	 * The pingpong client subscribes to all events of event name
-	 * PINGPONG_EVENT_SRV and calls a function pingpong_client callback
-	 * function to handle these events
-	 */
-	ret =
-	    FTB_Subscribe(&shandle, handle, "event_name=PINGPONG_EVENT_SRV", pingpong_client,
-			  (void *) &handle);
-	if (ret != FTB_SUCCESS) {
-	    printf("FTB_Subscribe failed!\n");
-	    exit(-1);
-	}
-	gettimeofday(&begin, NULL);
-	/*
-	 * After subscription, the client throws the first PINGPONG_EVENT_CLI
-	 * event. Subsequent events will be thrown by the client and server
-	 * callback function
-	 */
-	FTB_Publish(handle, "PINGPONG_EVENT_CLI", NULL, &ehandle);
+        /*
+         * The pingpong client subscribes to all events of event name
+         * PINGPONG_EVENT_SRV and calls a function pingpong_client callback
+         * function to handle these events
+         */
+        ret =
+            FTB_Subscribe(&shandle, handle, "event_name=PINGPONG_EVENT_SRV", pingpong_client,
+                          (void *) &handle);
+        if (ret != FTB_SUCCESS) {
+            printf("FTB_Subscribe failed!\n");
+            exit(-1);
+        }
+        gettimeofday(&begin, NULL);
+        /*
+         * After subscription, the client throws the first PINGPONG_EVENT_CLI
+         * event. Subsequent events will be thrown by the client and server
+         * callback function
+         */
+        FTB_Publish(handle, "PINGPONG_EVENT_CLI", NULL, &ehandle);
     }
 
     while (!done) {
-	sleep(1);
+        sleep(1);
     }
 
     /* Calculate the latency at the client side */
     if (!is_server) {
-	event_latency = (end.tv_sec - begin.tv_sec) * 1000000 + (end.tv_usec - begin.tv_usec);
-	event_latency /= iter;
-	printf("Latency: %.3f microseconds\n", event_latency);
+        event_latency = (end.tv_sec - begin.tv_sec) * 1000000 + (end.tv_usec - begin.tv_usec);
+        event_latency /= iter;
+        printf("Latency: %.3f microseconds\n", event_latency);
     }
 
     FTB_Disconnect(handle);

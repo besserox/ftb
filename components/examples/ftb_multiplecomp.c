@@ -2,7 +2,7 @@
 /* FTB:ftb-info */
 /* This file is part of FTB (Fault Tolerance Backplance) - the core of CIFTS
  * (Co-ordinated Infrastructure for Fault Tolerant Systems)
- * 
+ *
  * See http://www.mcs.anl.gov/research/cifts for more information.
  * 	
  */
@@ -59,8 +59,8 @@ int Client3_Finalize()
 int Client3_evt_handler(FTB_receive_event_t * evt, void *arg)
 {
     printf("Client3 caught event: event_space: %s, severity: %s, event_name %s, from host %s, pid %d\n",
-	   evt->event_space, evt->severity, evt->event_name,
-	   evt->incoming_src.hostname, evt->incoming_src.pid);
+           evt->event_space, evt->severity, evt->event_name,
+           evt->incoming_src.hostname, evt->incoming_src.pid);
     return 0;
 }
 
@@ -87,16 +87,16 @@ int Client3_Init()
     printf("Client3: FTB_Connect\n");
     ret = FTB_Connect(&cinfo, &Client3_ftb_handle);
     if (ret != FTB_SUCCESS) {
-	printf("FTB_Connect failed\n");
-	exit(-1);
+        printf("FTB_Connect failed\n");
+        exit(-1);
     }
 
     /* Client3 subscribes to events of severity info */
     printf("Client3: FTB_Subscribe \n");
     ret = FTB_Subscribe(&shandle3, Client3_ftb_handle, "severity=info", Client3_evt_handler, NULL);
     if (ret != FTB_SUCCESS) {
-	printf("FTB_Subscribe failed!\n");
-	exit(-1);
+        printf("FTB_Subscribe failed!\n");
+        exit(-1);
     }
 
     return 0;
@@ -137,14 +137,14 @@ int Client2_PollandPublish()
 
     Client3_Func();
     while (1) {
-	ret = FTB_Poll_event(shandle2, &evt);
-	if (ret == FTB_GOT_NO_EVENT) {
-	    break;
-	}
-	printf
-	    ("Client2 caught event: event_space: %s, severity: %s, event_name %s from host %s, pid %d \n",
-	     evt.event_space, evt.severity, evt.event_name, evt.incoming_src.hostname,
-	     evt.incoming_src.pid);
+        ret = FTB_Poll_event(shandle2, &evt);
+        if (ret == FTB_GOT_NO_EVENT) {
+            break;
+        }
+        printf
+            ("Client2 caught event: event_space: %s, severity: %s, event_name %s from host %s, pid %d \n",
+             evt.event_space, evt.severity, evt.event_name, evt.incoming_src.hostname,
+             evt.incoming_src.pid);
     }
     printf("Client2: FTB_Publish\n");
     FTB_Publish(Client2_ftb_handle, "TEST_EVENT_2", NULL, &ehandle);
@@ -167,23 +167,23 @@ int Client2_Init()
 
     ret = FTB_Connect(&cinfo, &Client2_ftb_handle);
     if (ret != FTB_SUCCESS) {
-	printf("FTB_Connect failed\n");
-	exit(-1);
+        printf("FTB_Connect failed\n");
+        exit(-1);
     }
 
     /* Client2 declares its publishable event */
     ret = FTB_Declare_publishable_events(Client2_ftb_handle, 0, event_info, 1);
     if (ret != FTB_SUCCESS) {
-	printf("FTB_Declare_publishable_events failed ret=%d!\n", ret);
-	exit(-1);
+        printf("FTB_Declare_publishable_events failed ret=%d!\n", ret);
+        exit(-1);
     }
 
     /* Client2 subscribes to event */
     printf("Client2: FTB_Subscribe via polling\n");
     ret = FTB_Subscribe(&shandle2, Client2_ftb_handle, "event_name=TEST_EVENT_1", NULL, NULL);
     if (ret != FTB_SUCCESS) {
-	printf("FTB_Subscribe failed!\n");
-	exit(-1);
+        printf("FTB_Subscribe failed!\n");
+        exit(-1);
     }
     Client3_Init();
     return 0;
@@ -221,7 +221,7 @@ int Client1_Finalize()
 int Client1_evt_handler(FTB_receive_event_t * evt, void *arg)
 {
     printf("Client1 caught event: event_space: %s, severity: %s, event_name %s ",
-	   evt->event_space, evt->severity, evt->event_name);
+           evt->event_space, evt->severity, evt->event_name);
     printf("from hostname %s, pid %d \n", evt->incoming_src.hostname, evt->incoming_src.pid);
     return 0;
 }
@@ -234,8 +234,8 @@ int Client1_Publish()
 
     i++;
     if (i % 5 == 0) {
-	printf("Client1: FTB_Publish\n");
-	FTB_Publish(Client1_ftb_handle, "TEST_EVENT_1", NULL, &ehandle);
+        printf("Client1: FTB_Publish\n");
+        FTB_Publish(Client1_ftb_handle, "TEST_EVENT_1", NULL, &ehandle);
     }
     Client2_PollandPublish();
     return 0;
@@ -256,15 +256,15 @@ int Client1_Init()
     printf("Client1: FTB_Connect\n");
     ret = FTB_Connect(&cinfo, &Client1_ftb_handle);
     if (ret != FTB_SUCCESS) {
-	printf("FTB_Connect failed\n");
-	exit(-1);
+        printf("FTB_Connect failed\n");
+        exit(-1);
     }
 
     /* Declare the event to be thrown by Client1 */
     ret = FTB_Declare_publishable_events(Client1_ftb_handle, 0, event_info, 1);
     if (ret != FTB_SUCCESS) {
-	printf("FTB_Declare_publishable_events failed ret=%d!\n", ret);
-	exit(-1);
+        printf("FTB_Declare_publishable_events failed ret=%d!\n", ret);
+        exit(-1);
     }
 
     /*
@@ -274,8 +274,8 @@ int Client1_Init()
     printf("Client1: FTB_Subscribe \n");
     ret = FTB_Subscribe(&shandle1, Client1_ftb_handle, "severity=fatal", Client1_evt_handler, NULL);
     if (ret != FTB_SUCCESS) {
-	printf("FTB_Subscribe failed!\n");
-	exit(-1);
+        printf("FTB_Subscribe failed!\n");
+        exit(-1);
     }
 
     Client2_Init();
@@ -290,15 +290,15 @@ int main(int argc, char *argv[])
     int i;
 
     if (argc > 1) {
-	if (strcasecmp(argv[1], "usage") == 0) {
-	    printf("./ftb_multiplecomp\n");
-	    exit(0);
-	}
+        if (strcasecmp(argv[1], "usage") == 0) {
+            printf("./ftb_multiplecomp\n");
+            exit(0);
+        }
     }
     Client1_Init();
     for (i = 0; i < 40; i++) {
-	/* Ask client1 to publish its events */
-	Client1_Publish();
+        /* Ask client1 to publish its events */
+        Client1_Publish();
     }
     Client1_Finalize();
     return 0;

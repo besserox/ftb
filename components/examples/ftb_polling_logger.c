@@ -2,7 +2,7 @@
 /* FTB:ftb-info */
 /* This file is part of FTB (Fault Tolerance Backplance) - the core of CIFTS
  * (Co-ordinated Infrastructure for Fault Tolerant Systems)
- * 
+ *
  * See http://www.mcs.anl.gov/research/cifts for more information.
  * 	
  */
@@ -51,7 +51,7 @@ static volatile int done = 0;
 void Int_handler(int sig)
 {
     if (sig == SIGINT)
-	done = 1;
+        done = 1;
 }
 
 
@@ -64,27 +64,27 @@ int main(int argc, char *argv[])
     int ret;
 
     if (argc >= 2) {
-	if (strcasecmp(argv[1], "usage") == 0) {
-	    printf
-		("Usage: ./ftb_polling_logger [option]\nOptions:\n\t\t- : Display on screen\n\t filename : Log into the file\n\t If above options are not specified, data is logged in default file specified in the ftb_polling_logger.c code\n");
-	    exit(0);
-	}
-	else if ((strcmp("-", argv[1]) == 0)) {
-	    fprintf(stderr, "Using stdout as log file\n");
-	    log_fp = stdout;
-	}
-	else {
-	    fprintf(stderr, "Using %s as log file\n", argv[1]);
-	    log_fp = fopen(argv[1], "w");
-	}
+        if (strcasecmp(argv[1], "usage") == 0) {
+            printf
+                ("Usage: ./ftb_polling_logger [option]\nOptions:\n\t\t- : Display on screen\n\t filename : Log into the file\n\t If above options are not specified, data is logged in default file specified in the ftb_polling_logger.c code\n");
+            exit(0);
+        }
+        else if ((strcmp("-", argv[1]) == 0)) {
+            fprintf(stderr, "Using stdout as log file\n");
+            log_fp = stdout;
+        }
+        else {
+            fprintf(stderr, "Using %s as log file\n", argv[1]);
+            log_fp = fopen(argv[1], "w");
+        }
     }
     else {
-	fprintf(stderr, "Using %s as log file\n", LOG_FILE);
-	log_fp = fopen(LOG_FILE, "w");
+        fprintf(stderr, "Using %s as log file\n", LOG_FILE);
+        log_fp = fopen(LOG_FILE, "w");
     }
     if (log_fp == NULL) {
-	fprintf(stderr, "failed to open file %s\n", argv[1]);
-	return -1;
+        fprintf(stderr, "failed to open file %s\n", argv[1]);
+        return -1;
     }
     /* Specify the event space and other details of the client */
     strcpy(cinfo.event_space, "FTB.FTB_EXAMPLES.polling_LOGGER");
@@ -94,41 +94,41 @@ int main(int argc, char *argv[])
     /* Connect to FTB */
     ret = FTB_Connect(&cinfo, &handle);
     if (ret != FTB_SUCCESS) {
-	printf("FTB_Connect failed \n");
-	exit(-1);
+        printf("FTB_Connect failed \n");
+        exit(-1);
     }
 
     /* Subscribe to all events by specifying an empty subscription string */
     ret = FTB_Subscribe(&shandle, handle, "", NULL, NULL);
     if (ret != FTB_SUCCESS) {
-	printf("FTB_Subscribe failed\n");
-	exit(-1);
+        printf("FTB_Subscribe failed\n");
+        exit(-1);
     }
 
     signal(SIGINT, Int_handler);
     while (1) {
-	FTB_receive_event_t event;
-	int ret = 0;
+        FTB_receive_event_t event;
+        int ret = 0;
 
-	/* Poll for an event matching "" subscription string */
-	ret = FTB_Poll_event(shandle, &event);
-	if (ret == FTB_GOT_NO_EVENT) {
-	    time_t current = time(NULL);
-	    fprintf(log_fp, "%s\t", asctime(localtime(&current)));
-	    fprintf(log_fp, "No event\n");
-	    fflush(log_fp);
-	    sleep(5);
-	}
-	else {
-	    time_t current = time(NULL);
-	    fprintf(log_fp, "%s\t", asctime(localtime(&current)));
-	    fprintf(log_fp, "Caught eventspace: %s , severity: %s,  event_name: %s, client_name:--%s-- from host %s \
+        /* Poll for an event matching "" subscription string */
+        ret = FTB_Poll_event(shandle, &event);
+        if (ret == FTB_GOT_NO_EVENT) {
+            time_t current = time(NULL);
+            fprintf(log_fp, "%s\t", asctime(localtime(&current)));
+            fprintf(log_fp, "No event\n");
+            fflush(log_fp);
+            sleep(5);
+        }
+        else {
+            time_t current = time(NULL);
+            fprintf(log_fp, "%s\t", asctime(localtime(&current)));
+            fprintf(log_fp, "Caught eventspace: %s , severity: %s,  event_name: %s, client_name:--%s-- from host %s \
                    client_jobid: %s seqnum: %d \n", event.event_space, event.severity, event.event_name,
-		    event.client_name, event.incoming_src.hostname, event.client_jobid, event.seqnum);
-	    fflush(log_fp);
-	}
-	if (done)
-	    break;
+                    event.client_name, event.incoming_src.hostname, event.client_jobid, event.seqnum);
+            fflush(log_fp);
+        }
+        if (done)
+            break;
     }
 
     /* Disconnect from FTB */

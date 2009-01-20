@@ -2,7 +2,7 @@
 /* FTB:ftb-info */
 /* This file is part of FTB (Fault Tolerance Backplance) - the core of CIFTS
  * (Co-ordinated Infrastructure for Fault Tolerant Systems)
- * 
+ *
  * See http://www.mcs.anl.gov/research/cifts for more information.
  * 	
  */
@@ -42,27 +42,27 @@ int FTB_Connect(const FTB_client_t * client_info, FTB_client_handle_t * client_h
 
 
 int FTB_Declare_publishable_events(FTB_client_handle_t client_handle, const char *schema_file,
-				   const FTB_event_info_t * einfo, int num_events)
+                                   const FTB_event_info_t * einfo, int num_events)
 {
     return ZOID_FTB_Declare_publishable_events(client_handle, NULL, einfo, num_events);
 }
 
 
 int FTB_Publish(FTB_client_handle_t client_handle, const char *event_name,
-		const FTB_event_properties_t * event_properties, FTB_event_handle_t * event_handle)
+                const FTB_event_properties_t * event_properties, FTB_event_handle_t * event_handle)
 {
     return ZOID_FTB_Publish(client_handle, event_name, event_properties, event_handle);
 }
 
 
 int FTB_Subscribe(FTB_subscribe_handle_t * subscribe_handle, FTB_client_handle_t client_handle,
-		  const char *subscription_str, int (*callback) (FTB_receive_event_t *, void *),
-		  void *arg)
+                  const char *subscription_str, int (*callback) (FTB_receive_event_t *, void *),
+                  void *arg)
 {
     if (callback != NULL)
-	return FTB_ERR_NOT_SUPPORTED;
+        return FTB_ERR_NOT_SUPPORTED;
     else
-	return ZOID_FTB_Subscribe(subscribe_handle, client_handle, subscription_str);
+        return ZOID_FTB_Subscribe(subscribe_handle, client_handle, subscription_str);
 }
 
 
@@ -75,10 +75,10 @@ int FTB_Unsubscribe(FTB_subscribe_handle_t * subscribe_handle)
 int FTB_Poll_event(FTB_subscribe_handle_t subscribe_handle, FTB_receive_event_t * receive_event)
 {
     if (receive_event == NULL) {
-	return FTB_ERR_NULL_POINTER;
+        return FTB_ERR_NULL_POINTER;
     }
     else
-	return ZOID_FTB_Poll_event(subscribe_handle, receive_event);
+        return ZOID_FTB_Poll_event(subscribe_handle, receive_event);
 }
 
 
@@ -95,7 +95,7 @@ int FTB_Get_event_handle(const FTB_receive_event_t receive_event, FTB_event_hand
 
 
 int FTB_Compare_event_handles(const FTB_event_handle_t event_handle1,
-			      const FTB_event_handle_t event_handle2)
+                              const FTB_event_handle_t event_handle2)
 {
     return ZOID_FTB_Compare_event_handles(event_handle1, event_handle2);
 }
@@ -104,10 +104,10 @@ int FTB_Compare_event_handles(const FTB_event_handle_t event_handle1,
 #ifdef FTB_TAG
 
 int FTB_Add_dynamic_tag(FTB_client_handle_t client_handle, FTB_tag_t tag, const char *tag_data,
-			FTB_tag_len_t data_len)
+                        FTB_tag_len_t data_len)
 {
     if (tag_data == NULL) {
-	return FTB_ERR_NULL_POINTER;
+        return FTB_ERR_NULL_POINTER;
     }
     return ZOID_FTB_Add_dynamic_tag(client_handle, tag, tag_data, data_len);
 }
@@ -119,7 +119,7 @@ int FTB_Remove_dynamic_tag(FTB_client_handle_t client_handle, FTB_tag_t tag)
 }
 
 int FTB_Read_dynamic_tag(const FTB_event_t * event, FTB_tag_t tag, char *tag_data,
-			 FTB_tag_len_t * data_len)
+                         FTB_tag_len_t * data_len)
 {
     uint8_t tag_count;
     uint8_t i;
@@ -129,22 +129,22 @@ int FTB_Read_dynamic_tag(const FTB_event_t * event, FTB_tag_t tag, char *tag_dat
     memcpy(&tag_count, event->dynamic_data, sizeof(tag_count));
     offset = 1;
     for (i = 0; i < tag_count; i++) {
-	FTB_tag_t temp_tag;
-	FTB_tag_len_t temp_len;
-	memcpy(&temp_tag, event->dynamic_data + offset, sizeof(FTB_tag_t));
-	offset += sizeof(FTB_tag_t);
-	memcpy(&temp_len, event->dynamic_data + offset, sizeof(FTB_tag_len_t));
-	offset += sizeof(FTB_tag_len_t);
-	if (tag == temp_tag) {
-	    if (*data_len < temp_len) {
-		return FTB_ERR_TAG_NO_SPACE;
-	    }
-	    else {
-		*data_len = temp_len;
-		memcpy(tag_data, event->dynamic_data + offset, temp_len);
-		return FTB_SUCCESS;
-	    }
-	}
+        FTB_tag_t temp_tag;
+        FTB_tag_len_t temp_len;
+        memcpy(&temp_tag, event->dynamic_data + offset, sizeof(FTB_tag_t));
+        offset += sizeof(FTB_tag_t);
+        memcpy(&temp_len, event->dynamic_data + offset, sizeof(FTB_tag_len_t));
+        offset += sizeof(FTB_tag_len_t);
+        if (tag == temp_tag) {
+            if (*data_len < temp_len) {
+                return FTB_ERR_TAG_NO_SPACE;
+            }
+            else {
+                *data_len = temp_len;
+                memcpy(tag_data, event->dynamic_data + offset, temp_len);
+                return FTB_SUCCESS;
+            }
+        }
     }
 
     return FTB_ERR_TAG_NOT_FOUND;

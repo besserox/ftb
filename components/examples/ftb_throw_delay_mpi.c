@@ -2,7 +2,7 @@
 /* FTB:ftb-info */
 /* This file is part of FTB (Fault Tolerance Backplance) - the core of CIFTS
  * (Co-ordinated Infrastructure for Fault Tolerant Systems)
- * 
+ *
  * See http://www.mcs.anl.gov/research/cifts for more information.
  * 	
  */
@@ -47,17 +47,17 @@ int main(int argc, char *argv[])
     double min, max, avg;
 
     if (argc > 1) {
-	if ((strcasecmp(argv[1], "usage") == 0) || (argc > 2)) {
-	    printf("Usage: ./ftb_throw_delay_mpi <iterations>");
-	    exit(0);
-	}
-	else if (argc == 2) {
-	    count = atoi(argv[1]);
-	}
+        if ((strcasecmp(argv[1], "usage") == 0) || (argc > 2)) {
+            printf("Usage: ./ftb_throw_delay_mpi <iterations>");
+            exit(0);
+        }
+        else if (argc == 2) {
+            count = atoi(argv[1]);
+        }
 
     }
     else {
-	count = 2500;
+        count = 2500;
     }
 
 //    printf("Begin\n");
@@ -72,8 +72,8 @@ int main(int argc, char *argv[])
 //    printf("FTB_Connect\n");
     ret = FTB_Connect(&cinfo, &handle);
     if (ret != FTB_SUCCESS) {
-	printf("FTB_Connect is not successful ret=%d\n", ret);
-	exit(-1);
+        printf("FTB_Connect is not successful ret=%d\n", ret);
+        exit(-1);
     }
 
     FTB_event_info_t event_info[1] = { {"MPI_SIMPLE_EVENT", "INFO"}
@@ -81,8 +81,8 @@ int main(int argc, char *argv[])
 //    printf("FTB_Declare_publishable_events\n");
     ret = FTB_Declare_publishable_events(handle, 0, event_info, 1);
     if (ret != FTB_SUCCESS) {
-	printf("FTB_Declare_publishable_events failed ret=%d!\n", ret);
-	exit(-1);
+        printf("FTB_Declare_publishable_events failed ret=%d!\n", ret);
+        exit(-1);
     }
 
     MPI_Init(&argc, &argv);
@@ -95,7 +95,7 @@ int main(int argc, char *argv[])
      * publish to complete
      */
     for (i = 0; i < count; i++) {
-	FTB_Publish(handle, "MPI_SIMPLE_EVENT", NULL, &ehandle);
+        FTB_Publish(handle, "MPI_SIMPLE_EVENT", NULL, &ehandle);
     }
     end = MPI_Wtime();
     delay = end - begin;
@@ -106,8 +106,8 @@ int main(int argc, char *argv[])
 
 //   printf("%d: delay %.5f\n", rank, delay);
     if (rank == 0) {
-	printf("AvgTime-%d-throws AvgTime-1-throw\n", count);
-	printf("%0.5f %0.5f\n", avg, avg/count);
+        printf("AvgTime-%d-throws AvgTime-1-throw\n", count);
+        printf("%0.5f %0.5f\n", avg, avg / count);
 /*
 	printf("***** AVG delay: %.5f for %d throws and %d for 1 throw *****\n", avg, count);
 	printf("***** MAX delay: %.5f for %d throws *****\n", max, count);

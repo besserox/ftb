@@ -2,7 +2,7 @@
 /* FTB:ftb-info */
 /* This file is part of FTB (Fault Tolerance Backplance) - the core of CIFTS
  * (Co-ordinated Infrastructure for Fault Tolerant Systems)
- * 
+ *
  * See http://www.mcs.anl.gov/research/cifts for more information.
  * 	
  */
@@ -37,16 +37,16 @@ extern "C" {
 int FTB_Connect(const FTB_client_t * client_info, FTB_client_handle_t * client_handle);
 
 int FTB_Publish(FTB_client_handle_t client_handle, const char *event_name,
-		const FTB_event_properties_t * event_properties, FTB_event_handle_t * event_handle);
+                const FTB_event_properties_t * event_properties, FTB_event_handle_t * event_handle);
 
 int FTB_Subscribe(FTB_subscribe_handle_t * subscribe_handle, FTB_client_handle_t client_handle,
-		  const char *subscription_str, int (*callback) (FTB_receive_event_t *, void *),
-		  void *arg);
+                  const char *subscription_str, int (*callback) (FTB_receive_event_t *, void *),
+                  void *arg);
 
 int FTB_Unsubscribe(FTB_subscribe_handle_t * subscribe_handle);
 
 int FTB_Declare_publishable_events(FTB_client_handle_t client_handle, const char *schema_file,
-				   const FTB_event_info_t * event_info, int num_events);
+                                   const FTB_event_info_t * event_info, int num_events);
 
 int FTB_Poll_event(FTB_subscribe_handle_t shandle, FTB_receive_event_t * receive_event);
 
@@ -55,7 +55,7 @@ int FTB_Disconnect(FTB_client_handle_t client_handle);
 int FTB_Get_event_handle(const FTB_receive_event_t receive_event, FTB_event_handle_t * event_handle);
 
 int FTB_Compare_event_handles(const FTB_event_handle_t event_handle1,
-			      const FTB_event_handle_t event_handle2);
+                              const FTB_event_handle_t event_handle2);
 
 #ifdef FTB_TAG
 
@@ -80,14 +80,13 @@ int FTB_Compare_event_handles(const FTB_event_handle_t event_handle1,
  *    If there is no such tag with the event, FTB_ERR_TAG_NOT_FOUND is returned.
  *    If the data_len passed in is smaller than the actual data, FTB_ERR_TAG_NO_SPACE is returned.
  */
-int FTB_Add_tag(FTB_client_handle_t handle, FTB_tag_t tag, const char *tag_data,
-		FTB_tag_len_t data_len);
+int FTB_Add_tag(FTB_client_handle_t handle, FTB_tag_t tag, const char *tag_data, FTB_tag_len_t data_len);
 
 
 int FTB_Remove_tag(FTB_client_handle_t handle, FTB_tag_t tag);
 
 int FTB_Read_tag(const FTB_receive_event_t * event, FTB_tag_t tag, char *tag_data,
-		 FTB_tag_len_t * data_len);
+                 FTB_tag_len_t * data_len);
 #endif
 
 /* *INDENT-OFF* */

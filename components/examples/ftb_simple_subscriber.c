@@ -2,7 +2,7 @@
 /* FTB:ftb-info */
 /* This file is part of FTB (Fault Tolerance Backplance) - the core of CIFTS
  * (Co-ordinated Infrastructure for Fault Tolerant Systems)
- * 
+ *
  * See http://www.mcs.anl.gov/research/cifts for more information.
  * 	
  */
@@ -46,10 +46,10 @@ int main(int argc, char *argv[])
     FTB_subscribe_handle_t shandle;
 
     if (argc > 1) {
-	if (strcasecmp(argv[1], "usage") == 0) {
-	    printf("./ftb_simple_subscriber");
-	    exit(0);
-	}
+        if (strcasecmp(argv[1], "usage") == 0) {
+            printf("./ftb_simple_subscriber");
+            exit(0);
+        }
     }
     printf("Begin\n");
     /* Specify the client information and call FTB_Connect */
@@ -61,8 +61,8 @@ int main(int argc, char *argv[])
 
     ret = FTB_Connect(&cinfo, &handle);
     if (ret != FTB_SUCCESS) {
-	printf("FTB_Connect was not successful\n");
-	exit(-1);
+        printf("FTB_Connect was not successful\n");
+        exit(-1);
     }
     /*
      * Subscribe to all events of name SIMPLE_EVENT
@@ -70,31 +70,30 @@ int main(int argc, char *argv[])
      */
     ret = FTB_Subscribe(&shandle, handle, "event_name=SIMPLE_EVENT", NULL, NULL);
     if (ret != FTB_SUCCESS) {
-	printf("FTB_Subscribe failed!\n");
-	exit(-1);
+        printf("FTB_Subscribe failed!\n");
+        exit(-1);
     }
     /* Get the first 10 events only */
     for (i = 0; i < 10; i++) {
-	int ret;
-	FTB_receive_event_t event;
+        int ret;
+        FTB_receive_event_t event;
 
-	printf("sleeping for 10 seconds\n");
-	sleep(10);
-	while (1) {
-	    printf("FTB_Poll_event\n");
-	    /* Poll for an event */
-	    ret = FTB_Poll_event(shandle, &event);
-	    if (ret == FTB_SUCCESS) {
-		printf("Caught event: event_space: %s, severity: %s, event_name: %s\n",
-		       event.event_space, event.severity, event.event_name);
-		printf("From host: %s, pid: %d \n",
-		       event.incoming_src.hostname, event.incoming_src.pid);
-	    }
-	    else {
-		printf("No event\n");
-		break;
-	    }
-	}
+        printf("sleeping for 10 seconds\n");
+        sleep(10);
+        while (1) {
+            printf("FTB_Poll_event\n");
+            /* Poll for an event */
+            ret = FTB_Poll_event(shandle, &event);
+            if (ret == FTB_SUCCESS) {
+                printf("Caught event: event_space: %s, severity: %s, event_name: %s\n",
+                       event.event_space, event.severity, event.event_name);
+                printf("From host: %s, pid: %d \n", event.incoming_src.hostname, event.incoming_src.pid);
+            }
+            else {
+                printf("No event\n");
+                break;
+            }
+        }
     }
     printf("FTB_Disconnect\n");
     /* Disconnect from FTB */

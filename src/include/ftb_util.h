@@ -2,7 +2,7 @@
 /* FTB:ftb-info */
 /* This file is part of FTB (Fault Tolerance Backplance) - the core of CIFTS
  * (Co-ordinated Infrastructure for Fault Tolerant Systems)
- * 
+ *
  * See http://www.mcs.anl.gov/research/cifts for more information.
  * 	
  */
@@ -74,7 +74,7 @@ typedef struct FTBU_map_node {
     struct FTBU_map_node *next;
     struct FTBU_map_node *prev;
     FTBU_map_key_t key;
-    void *data;			/*For head node, data will be pointing to the is_equal function */
+    void *data;                 /*For head node, data will be pointing to the is_equal function */
 } FTBU_map_node_t;
 
 typedef FTBU_map_node_t FTBU_list_node_t;

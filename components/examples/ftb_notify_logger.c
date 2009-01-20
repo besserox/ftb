@@ -2,7 +2,7 @@
 /* FTB:ftb-info */
 /* This file is part of FTB (Fault Tolerance Backplance) - the core of CIFTS
  * (Co-ordinated Infrastructure for Fault Tolerant Systems)
- * 
+ *
  * See http://www.mcs.anl.gov/research/cifts for more information.
  * 	
  */
@@ -48,7 +48,7 @@ static volatile int done = 0;
 void Int_handler(int sig)
 {
     if (sig == SIGINT)
-	done = 1;
+        done = 1;
 }
 
 
@@ -59,9 +59,9 @@ int event_logger(FTB_receive_event_t * evt, void *arg)
 
     fprintf(log_fp, "%s\t", asctime(localtime(&current)));
     fprintf(log_fp,
-	    "Caught event: event_space %s, severity: %s, event_name %s from hostname=%s and pid=%d ",
-	    evt->event_space, evt->severity, evt->event_name, evt->incoming_src.hostname,
-	    evt->incoming_src.pid);
+            "Caught event: event_space %s, severity: %s, event_name %s from hostname=%s and pid=%d ",
+            evt->event_space, evt->severity, evt->event_name, evt->incoming_src.hostname,
+            evt->incoming_src.pid);
     fflush(log_fp);
     return 0;
 }
@@ -76,28 +76,28 @@ int main(int argc, char *argv[])
     int ret = 0;
 
     if (argc >= 2) {
-	if (strcasecmp(argv[1], "usage") == 0) {
-	    printf
-		("Usage: ./ftb_notify_logger [option]\nOptions:\n\t\t- : Display on screen\n\t filename : Log into the file\n\t If above options are not specified, data is logged in default file specified in the ftb_notify_logger.c code\n");
-	    exit(0);
-	}
-	else if (!strcmp("-", argv[1])) {
-	    fprintf(stderr, "Using stdout for output\n");
-	    log_fp = stdout;
-	}
-	else {
-	    fprintf(stderr, "Using %s as log file\n", argv[1]);
-	    log_fp = fopen(argv[1], "w");
-	}
+        if (strcasecmp(argv[1], "usage") == 0) {
+            printf
+                ("Usage: ./ftb_notify_logger [option]\nOptions:\n\t\t- : Display on screen\n\t filename : Log into the file\n\t If above options are not specified, data is logged in default file specified in the ftb_notify_logger.c code\n");
+            exit(0);
+        }
+        else if (!strcmp("-", argv[1])) {
+            fprintf(stderr, "Using stdout for output\n");
+            log_fp = stdout;
+        }
+        else {
+            fprintf(stderr, "Using %s as log file\n", argv[1]);
+            log_fp = fopen(argv[1], "w");
+        }
     }
     else {
-	fprintf(stderr, "Using %s as log file\n", LOG_FILE);
-	log_fp = fopen(LOG_FILE, "w");
+        fprintf(stderr, "Using %s as log file\n", LOG_FILE);
+        log_fp = fopen(LOG_FILE, "w");
     }
 
     if (log_fp == NULL) {
-	fprintf(stderr, "failed to open file %s\n", argv[1]);
-	return -1;
+        fprintf(stderr, "failed to open file %s\n", argv[1]);
+        return -1;
     }
 
     /* Specify the client information */
@@ -109,8 +109,8 @@ int main(int argc, char *argv[])
     /* Connect to FTB */
     ret = FTB_Connect(&cinfo, &handle);
     if (ret != FTB_SUCCESS) {
-	printf("FTB_Connect failed \n");
-	exit(-1);
+        printf("FTB_Connect failed \n");
+        exit(-1);
     }
 
     /*
@@ -120,8 +120,8 @@ int main(int argc, char *argv[])
      */
     ret = FTB_Subscribe(shandle, handle, "", event_logger, (void *) log_fp);
     if (ret != FTB_SUCCESS) {
-	printf("FTB_Subscribe failed\n");
-	exit(-1);
+        printf("FTB_Subscribe failed\n");
+        exit(-1);
     }
     signal(SIGINT, Int_handler);
     /*
@@ -129,7 +129,7 @@ int main(int argc, char *argv[])
      * function
      */
     while (!done) {
-	sleep(5);
+        sleep(5);
     }
 
     /* Disconnect from FTB */

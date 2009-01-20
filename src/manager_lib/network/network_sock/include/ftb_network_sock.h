@@ -2,7 +2,7 @@
 /* FTB:ftb-info */
 /* This file is part of FTB (Fault Tolerance Backplance) - the core of CIFTS
  * (Co-ordinated Infrastructure for Fault Tolerant Systems)
- * 
+ *
  * See http://www.mcs.anl.gov/research/cifts for more information.
  * 	
  */
@@ -90,10 +90,10 @@ typedef struct FTBNI_bootstrap_pkt {
 } FTBNI_bootstrap_pkt_t;
 
 int FTBNI_Bootstrap_init(const FTBN_config_info_t * config_info, FTBNI_config_sock_t * config,
-			 FTBN_addr_sock_t * my_addr);
+                         FTBN_addr_sock_t * my_addr);
 
 int FTBNI_Bootstrap_get_parent_addr(uint16_t my_level, FTBN_addr_sock_t * parent_addr,
-				    uint16_t * parent_level);
+                                    uint16_t * parent_level);
 
 int FTBNI_Bootstrap_register_addr(uint16_t my_level);
 
@@ -112,21 +112,21 @@ static inline void FTBNI_get_data_from_config_file(char *str, char *file, char *
 
     fp = fopen(file, "r");
     if (!fp) {
-	*retval = -1;
-	return;
+        *retval = -1;
+        return;
     }
     while (!feof(fp)) {
-	fgets(line, FTBNI_CONFIG_FILE_VAL, fp);
-	if ((pos = strstr(line, str)) != NULL) {
-	    while (*pos++ != '=');
-	    strcpy(output_val, pos);
-	    found = 1;
-	    break;
-	}
+        fgets(line, FTBNI_CONFIG_FILE_VAL, fp);
+        if ((pos = strstr(line, str)) != NULL) {
+            while (*pos++ != '=');
+            strcpy(output_val, pos);
+            found = 1;
+            break;
+        }
     }
     fclose(fp);
     if (!found)
-	*retval = -1;
+        *retval = -1;
     return;
 }
 
@@ -135,71 +135,72 @@ static inline void FTBNI_util_setup_config_sock(FTBNI_config_sock_t * config)
     char *env;
 
     if ((env = getenv("FTB_AGENT_PORT")) != NULL) {
-	config->agent_port = atoi(env);
+        config->agent_port = atoi(env);
     }
     else if ((env = getenv("FTB_CONFIG_FILE")) != NULL) {
-	char output_val[FTBNI_CONFIG_FILE_VAL];
-	int retval = 0;
-	FTBNI_get_data_from_config_file("FTB_AGENT_PORT", env, output_val, &retval);
-	if (retval == -1) {
-	    config->agent_port = FTB_AGENT_PORT;
-	    //FTB_WARNING ("Error in accessing agent port information from config file %s. Assigning default port to the agent %d\n", env, config->agent_port);
-	}
-	else {
-	    config->agent_port = atoi(output_val);
-	}
+        char output_val[FTBNI_CONFIG_FILE_VAL];
+        int retval = 0;
+        FTBNI_get_data_from_config_file("FTB_AGENT_PORT", env, output_val, &retval);
+        if (retval == -1) {
+            config->agent_port = FTB_AGENT_PORT;
+            //FTB_WARNING ("Error in accessing agent port information from config file %s. Assigning default port to the agent %d\n", env, config->agent_port);
+        }
+        else {
+            config->agent_port = atoi(output_val);
+        }
     }
     else {
-	config->agent_port = FTB_AGENT_PORT;
-	//FTB_WARNING("Assigning default port to the agent: %d", config->agent_port);
+        config->agent_port = FTB_AGENT_PORT;
+        //FTB_WARNING("Assigning default port to the agent: %d", config->agent_port);
     }
 
     if ((env = getenv("FTB_BSTRAP_PORT")) != NULL) {
-	config->server_port = atoi(env);
+        config->server_port = atoi(env);
     }
     else if ((env = getenv("FTB_CONFIG_FILE")) != NULL) {
-	char output_val[FTBNI_CONFIG_FILE_VAL];
-	int retval = 0;
+        char output_val[FTBNI_CONFIG_FILE_VAL];
+        int retval = 0;
 
-	FTBNI_get_data_from_config_file("FTB_BSTRAP_PORT", env, output_val, &retval);
-	if (retval == -1) {
-	    config->server_port = FTB_BSTRAP_PORT;
-	    //FTB_WARNING("Error in accessing server port information from config file %s. Assigning default port for bootstrap server : %d", env, config->server_port);
-	}
-	else {
-	    config->server_port = atoi(output_val);
-	}
+        FTBNI_get_data_from_config_file("FTB_BSTRAP_PORT", env, output_val, &retval);
+        if (retval == -1) {
+            config->server_port = FTB_BSTRAP_PORT;
+            //FTB_WARNING("Error in accessing server port information from config file %s. Assigning default port for bootstrap server : %d", env, config->server_port);
+        }
+        else {
+            config->server_port = atoi(output_val);
+        }
     }
     else {
-	config->server_port = FTB_BSTRAP_PORT;
+        config->server_port = FTB_BSTRAP_PORT;
     }
 
     if ((env = getenv("FTB_BSTRAP_SERVER")) != NULL) {
-	strncpy(config->server_name, env, FTB_MAX_HOST_ADDR);
+        strncpy(config->server_name, env, FTB_MAX_HOST_ADDR);
     }
     else if ((env = getenv("FTB_CONFIG_FILE")) != NULL) {
-	char output_val[FTBNI_CONFIG_FILE_VAL];
-	int retval = 0;
+        char output_val[FTBNI_CONFIG_FILE_VAL];
+        int retval = 0;
 
-	FTBNI_get_data_from_config_file("FTB_BSTRAP_SERVER", env, output_val, &retval);
-	if (retval == -1) {
+        FTBNI_get_data_from_config_file("FTB_BSTRAP_SERVER", env, output_val, &retval);
+        if (retval == -1) {
 #ifdef FTB_BSTRAP_SERVER
-	    strncpy(config->server_name, FTB_BSTRAP_SERVER, FTB_MAX_HOST_ADDR);
-	    FTB_WARNING("Error in accessing bootstrap server name information from config file %s. Assigning configure time server information: %s",
-		 env, config->server_name);
+            strncpy(config->server_name, FTB_BSTRAP_SERVER, FTB_MAX_HOST_ADDR);
+            FTB_WARNING
+                ("Error in accessing bootstrap server name information from config file %s. Assigning configure time server information: %s",
+                 env, config->server_name);
 #else
-	    FTB_ERR_ABORT("Cannot find boot-strap server ip address");
+            FTB_ERR_ABORT("Cannot find boot-strap server ip address");
 #endif
-	}
-	else {
-	    strncpy(config->server_name, output_val, FTB_MAX_HOST_ADDR);
-	}
+        }
+        else {
+            strncpy(config->server_name, output_val, FTB_MAX_HOST_ADDR);
+        }
     }
     else {
 #ifdef FTB_BSTRAP_SERVER
-	strncpy(config->server_name, FTB_BSTRAP_SERVER, FTB_MAX_HOST_ADDR);
+        strncpy(config->server_name, FTB_BSTRAP_SERVER, FTB_MAX_HOST_ADDR);
 #else
-	FTB_ERR_ABORT("Cannot find boot-strap server ip address");
+        FTB_ERR_ABORT("Cannot find boot-strap server ip address");
 #endif
     }
 }
@@ -212,21 +213,21 @@ static inline struct hostent *FTBNI_gethostbyname(const char *name)
     static struct hostent *hp = NULL;
 
     if (hp == NULL) {
-	if ((hp = (struct hostent *) malloc(sizeof(struct hostent))) == NULL) {
-	    exit(1);
-	}
-	hp->h_length = 4;
+        if ((hp = (struct hostent *) malloc(sizeof(struct hostent))) == NULL) {
+            exit(1);
+        }
+        hp->h_length = 4;
 
-	if ((hp->h_addr_list = (char **) malloc(sizeof(char *) * 2)) == NULL) {
-	    exit(1);
-	}
+        if ((hp->h_addr_list = (char **) malloc(sizeof(char *) * 2)) == NULL) {
+            exit(1);
+        }
 
-	if ((hp->h_addr_list[0] = (char *) malloc(sizeof(char) * 4)) == NULL) {
-	    exit(1);
-	}
+        if ((hp->h_addr_list[0] = (char *) malloc(sizeof(char) * 4)) == NULL) {
+            exit(1);
+        }
 
-	hp->h_addr_list[1] = 0;
-	hp->h_addr = hp->h_addr_list[0];
+        hp->h_addr_list[1] = 0;
+        hp->h_addr = hp->h_addr_list[0];
     }
     /*
      * if (strcmp(name,FTB_BSTRAP_SERVER) == 0) {
@@ -235,12 +236,12 @@ static inline struct hostent *FTBNI_gethostbyname(const char *name)
      * else
      */
     if (strcmp(name, "localhost") == 0) {
-	inet_aton(FTBNI_LOCAL_IP, ((struct in_addr *) hp->h_addr));
+        inet_aton(FTBNI_LOCAL_IP, ((struct in_addr *) hp->h_addr));
     }
     else {
-	/* case when an IP address is passed as
-	 * a host name */
-	inet_aton(name, ((struct in_addr *) hp->h_addr));
+        /* case when an IP address is passed as
+         * a host name */
+        inet_aton(name, ((struct in_addr *) hp->h_addr));
     }
 
     return hp;

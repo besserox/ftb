@@ -2,7 +2,7 @@
 /* FTB:ftb-info */
 /* This file is part of FTB (Fault Tolerance Backplance) - the core of CIFTS
  * (Co-ordinated Infrastructure for Fault Tolerant Systems)
- * 
+ *
  * See http://www.mcs.anl.gov/research/cifts for more information.
  * 	
  */
@@ -42,7 +42,7 @@ static volatile int done = 0;
 void Int_handler(int sig)
 {
     if (sig == SIGINT)
-	done = 1;
+        done = 1;
 }
 
 int main(int argc, char *argv[])
@@ -54,10 +54,10 @@ int main(int argc, char *argv[])
     FTB_event_info_t event_info[1] = { {"WATCH_DOG_EVENT", "INFO"} };
 
     if (argc > 1) {
-	if (strcasecmp(argv[1], "usage") == 0) {
-	    printf("Usage: ./ftb_watchdog");
-	    exit(0);
-	}
+        if (strcasecmp(argv[1], "usage") == 0) {
+            printf("Usage: ./ftb_watchdog");
+            exit(0);
+        }
     }
     /* Specify the client information needed by the FTB_Connect */
     strcpy(cinfo.event_space, "FTB.FTB_EXAMPLES.watchdog");
@@ -68,8 +68,8 @@ int main(int argc, char *argv[])
     /* Connect to FTB using FTB_Connect */
     ret = FTB_Connect(&cinfo, &handle);
     if (ret != FTB_SUCCESS) {
-	printf("FTB_Connect is not successful ret=%d\n", ret);
-	exit(-1);
+        printf("FTB_Connect is not successful ret=%d\n", ret);
+        exit(-1);
     }
 
     /*The schema is present in the watchog_schema file. The watchdog schema
@@ -80,8 +80,8 @@ int main(int argc, char *argv[])
     /* Using events declared in the file for now for portability on BGL. */
     ret = FTB_Declare_publishable_events(handle, 0, event_info, 1);
     if (ret != FTB_SUCCESS) {
-	printf("FTB_Declare_Publishable_events is not successful ret=%d\n", ret);
-	exit(-1);
+        printf("FTB_Declare_Publishable_events is not successful ret=%d\n", ret);
+        exit(-1);
     }
 
     /*
@@ -103,41 +103,42 @@ int main(int argc, char *argv[])
      */
     ret = FTB_Subscribe(&shandle, handle, "event_space=ftb.all.watchdog", NULL, NULL);
     if (ret != FTB_SUCCESS) {
-	printf("FTB_Subscribe failed ret=%d!\n", ret);
-	exit(-1);
+        printf("FTB_Subscribe failed ret=%d!\n", ret);
+        exit(-1);
     }
 
     signal(SIGINT, Int_handler);
 
     while (1) {
-	ret = 0;
-	FTB_receive_event_t caught_event;
-	FTB_event_handle_t ehandle;
+        ret = 0;
+        FTB_receive_event_t caught_event;
+        FTB_event_handle_t ehandle;
 
-	/*
-	 * Publish the event with the name = WATCH_DOG_EVENT. This should have
-	 * been declared using the Declare_publishable_events routine
-	 */
-	ret = FTB_Publish(handle, "WATCH_DOG_EVENT", NULL, &ehandle);
-	if (ret != FTB_SUCCESS) {
-	    printf("FTB_Publish failed\n");
-	    exit(-1);
-	}
+        /*
+         * Publish the event with the name = WATCH_DOG_EVENT. This should have
+         * been declared using the Declare_publishable_events routine
+         */
+        ret = FTB_Publish(handle, "WATCH_DOG_EVENT", NULL, &ehandle);
+        if (ret != FTB_SUCCESS) {
+            printf("FTB_Publish failed\n");
+            exit(-1);
+        }
 
-	sleep(1);
+        sleep(1);
 
-	/* Get the event from the poll queue */
-	ret = FTB_Poll_event(shandle, &caught_event);
-	if (ret != FTB_SUCCESS) {
-	    fprintf(stderr, "Watchdog: No event caught Error code is %d!\n", ret);
-	    break;
-	}
-	fprintf
-	    (stderr, "Received event details: Event space=%s, Severity=%s, Event name=%s, Client name=%s, Hostname=%s, Seqnum=%d\n",
-	     caught_event.event_space, caught_event.severity, caught_event.event_name,
-	     caught_event.client_name, caught_event.incoming_src.hostname, caught_event.seqnum);
-	if (done)
-	    break;
+        /* Get the event from the poll queue */
+        ret = FTB_Poll_event(shandle, &caught_event);
+        if (ret != FTB_SUCCESS) {
+            fprintf(stderr, "Watchdog: No event caught Error code is %d!\n", ret);
+            break;
+        }
+        fprintf
+            (stderr,
+             "Received event details: Event space=%s, Severity=%s, Event name=%s, Client name=%s, Hostname=%s, Seqnum=%d\n",
+             caught_event.event_space, caught_event.severity, caught_event.event_name,
+             caught_event.client_name, caught_event.incoming_src.hostname, caught_event.seqnum);
+        if (done)
+            break;
     }
     FTB_Disconnect(handle);
     return 0;
