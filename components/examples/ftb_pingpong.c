@@ -168,9 +168,8 @@ int main(int argc, char *argv[])
      * Note that the pingpong component will subscribe to events using the
      * notification subscription mechanism
      */
+	memset(&cinfo, 0, sizeof(cinfo));
     strcpy(cinfo.event_space, "FTB.FTB_EXAMPLES.Pingpong");
-    strcpy(cinfo.client_name, "");
-    strcpy(cinfo.client_jobid, "");
     strcpy(cinfo.client_subscription_style, "FTB_SUBSCRIPTION_NOTIFY");
     ret = FTB_Connect(&cinfo, &handle);
     if (ret != FTB_SUCCESS) {

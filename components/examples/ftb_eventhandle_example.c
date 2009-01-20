@@ -123,7 +123,7 @@ int eventhandle_client(FTB_receive_event_t * evt, void *arg)
             fprintf(stderr, "FTB_Get_event_handle failed %d", ret);
             exit(-1);
         }
-        printf("Got everything ok to my error event\n");
+        printf("Got \"everything ok\" to my error event\n");
         printf("Exiting\n");
         done = 1;
     }
@@ -169,9 +169,8 @@ int main(int argc, char *argv[])
      * Note that the pingpong component will subscribe to events using the
      * notification subscription mechanism
      */
+	memset(&cinfo, 0, sizeof(cinfo));
     strcpy(cinfo.event_space, "FTB.FTB_EXAMPLES.ftb_eventhandle");
-    strcpy(cinfo.client_name, "");
-    strcpy(cinfo.client_jobid, "");
     strcpy(cinfo.client_subscription_style, "FTB_SUBSCRIPTION_NOTIFY");
     ret = FTB_Connect(&cinfo, &handle);
     if (ret != FTB_SUCCESS) {

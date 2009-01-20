@@ -101,9 +101,9 @@ int main(int argc, char *argv[])
     }
 
     /* Specify the client information */
+	memset(&cinfo, 0, sizeof(cinfo));
     strcpy(cinfo.event_space, "FTB.FTB_EXAMPLES.NOTIFY_LOGGER");
     strcpy(cinfo.client_name, "notify");
-    strcpy(cinfo.client_jobid, "");
     strcpy(cinfo.client_subscription_style, "FTB_SUBSCRIPTION_NOTIFY");
 
     /* Connect to FTB */

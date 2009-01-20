@@ -60,16 +60,13 @@ int main(int argc, char *argv[])
         count = 2500;
     }
 
-//    printf("Begin\n");
 
     /* Create namespace and other attributes before calling FTB_Connect */
+	memset(&cinfo, 0, sizeof(cinfo));
     strcpy(cinfo.event_space, "FTB.MPI.EXAMPLE_MPI");
     strcpy(cinfo.client_schema_ver, "0.5");
-    strcpy(cinfo.client_name, "");
-    strcpy(cinfo.client_jobid, "");
     strcpy(cinfo.client_subscription_style, "FTB_SUBSCRIPTION_NONE");
 
-//    printf("FTB_Connect\n");
     ret = FTB_Connect(&cinfo, &handle);
     if (ret != FTB_SUCCESS) {
         printf("FTB_Connect is not successful ret=%d\n", ret);
@@ -78,7 +75,6 @@ int main(int argc, char *argv[])
 
     FTB_event_info_t event_info[1] = { {"MPI_SIMPLE_EVENT", "INFO"}
     };
-//    printf("FTB_Declare_publishable_events\n");
     ret = FTB_Declare_publishable_events(handle, 0, event_info, 1);
     if (ret != FTB_SUCCESS) {
         printf("FTB_Declare_publishable_events failed ret=%d!\n", ret);
@@ -90,6 +86,7 @@ int main(int argc, char *argv[])
     MPI_Comm_size(MPI_COMM_WORLD, &size);
     MPI_Barrier(MPI_COMM_WORLD);
     begin = MPI_Wtime();
+
     /*
      * Publish the events and calculate user-level wall time needed for this
      * publish to complete
@@ -104,7 +101,6 @@ int main(int argc, char *argv[])
     MPI_Reduce(&delay, &avg, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
     avg /= size;
 
-//   printf("%d: delay %.5f\n", rank, delay);
     if (rank == 0) {
         printf("AvgTime-%d-throws AvgTime-1-throw\n", count);
         printf("%0.5f %0.5f\n", avg, avg / count);
@@ -116,7 +112,6 @@ int main(int argc, char *argv[])
     }
 
     MPI_Finalize();
-//    printf("FTB_Disconnect\n");
     FTB_Disconnect(handle);
 
     return 0;

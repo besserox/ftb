@@ -53,10 +53,9 @@ int main(int argc, char *argv[])
     }
     printf("Begin\n");
     /* Specify the client information and call FTB_Connect */
+	memset(&cinfo, 0, sizeof(cinfo));
     strcpy(cinfo.event_space, "FTB.FTB_EXAMPLES.SIMPLE");
     strcpy(cinfo.client_schema_ver, "0.5");
-    strcpy(cinfo.client_name, "");
-    strcpy(cinfo.client_jobid, "");
     strcpy(cinfo.client_subscription_style, "FTB_SUBSCRIPTION_POLLING");
 
     ret = FTB_Connect(&cinfo, &handle);
@@ -78,16 +77,15 @@ int main(int argc, char *argv[])
         int ret;
         FTB_receive_event_t event;
 
-        printf("sleeping for 10 seconds\n");
+        printf("Sleeping for 10 seconds..\n\n");
         sleep(10);
         while (1) {
-            printf("FTB_Poll_event\n");
+            printf("Calling FTB_Poll_event\n");
             /* Poll for an event */
             ret = FTB_Poll_event(shandle, &event);
             if (ret == FTB_SUCCESS) {
-                printf("Caught event: event_space: %s, severity: %s, event_name: %s\n",
-                       event.event_space, event.severity, event.event_name);
-                printf("From host: %s, pid: %d \n", event.incoming_src.hostname, event.incoming_src.pid);
+                printf("Caught event: event_space: %s, severity: %s, event_name: %s from host: %s and pid: %d\n",
+                       event.event_space, event.severity, event.event_name, event.incoming_src.hostname, event.incoming_src.pid);
             }
             else {
                 printf("No event\n");

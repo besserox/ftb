@@ -87,6 +87,7 @@ int main(int argc, char *argv[])
         return -1;
     }
     /* Specify the event space and other details of the client */
+	memset(&cinfo, 0, sizeof(cinfo));
     strcpy(cinfo.event_space, "FTB.FTB_EXAMPLES.polling_LOGGER");
     strcpy(cinfo.client_schema_ver, "0.5");
     strcpy(cinfo.client_subscription_style, "FTB_SUBSCRIPTION_POLLING");

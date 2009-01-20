@@ -48,7 +48,7 @@ int main(int argc, char *argv[])
         NUM_EVENTS = atoi(getenv("NUM_EVENTS"));
     else
         NUM_EVENTS = 1;
-
+    memset(&cinfo, 0, sizeof(cinfo));
     strcpy(cinfo.event_space, "FTB.MPI.EXAMPLE_MPI");
     strcpy(cinfo.client_schema_ver, "0.5");
     strcpy(cinfo.client_name, "ftb-watch");

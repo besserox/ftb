@@ -90,6 +90,7 @@ int main(int argc, char *argv[])
     }
 
     /* Call FTB_Connect with required information */
+	memset(&cinfo, 0, sizeof(cinfo));
     strcpy(cinfo.event_space, "FTB.FTB_EXAMPLES.MULTITHREAD_EXAMPLE");
     strcpy(cinfo.client_subscription_style, "FTB_SUBSCRIPTION_NOTIFY");
     ret = FTB_Connect(&cinfo, &handle);

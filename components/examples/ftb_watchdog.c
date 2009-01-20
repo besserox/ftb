@@ -60,6 +60,7 @@ int main(int argc, char *argv[])
         }
     }
     /* Specify the client information needed by the FTB_Connect */
+	memset(&cinfo, 0, sizeof(cinfo));
     strcpy(cinfo.event_space, "FTB.FTB_EXAMPLES.watchdog");
     strcpy(cinfo.client_schema_ver, "0.5");
     strcpy(cinfo.client_name, "trial-watchdog");

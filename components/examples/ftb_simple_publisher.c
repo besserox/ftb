@@ -52,9 +52,8 @@ int main(int argc, char *argv[])
 
     printf("Begin\n");
     /* Specify the client information and call FTB_Connect */
+	memset(&cinfo, 0, sizeof(cinfo));
     strcpy(cinfo.event_space, "FTB.FTB_EXAMPLES.SIMPLE");
-    strcpy(cinfo.client_name, "");
-    strcpy(cinfo.client_jobid, "");
     strcpy(cinfo.client_subscription_style, "FTB_SUBSCRIPTION_NONE");
 
     ret = FTB_Connect(&cinfo, &handle);
