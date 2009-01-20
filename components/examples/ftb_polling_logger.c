@@ -114,16 +114,15 @@ int main(int argc, char *argv[])
         ret = FTB_Poll_event(shandle, &event);
         if (ret == FTB_GOT_NO_EVENT) {
             time_t current = time(NULL);
-            fprintf(log_fp, "%s\t", asctime(localtime(&current)));
-            fprintf(log_fp, "No event\n");
+            fprintf(log_fp, "Current Time: %sNo Event Caught\n\n", asctime(localtime(&current)));
             fflush(log_fp);
             sleep(5);
         }
         else {
             time_t current = time(NULL);
-            fprintf(log_fp, "%s\t", asctime(localtime(&current)));
-            fprintf(log_fp, "Caught eventspace: %s , severity: %s,  event_name: %s, client_name:--%s-- from host %s \
-                   client_jobid: %s seqnum: %d \n", event.event_space, event.severity, event.event_name,
+            fprintf(log_fp,
+                    "Current Time: %sEvent Caught with eventspace: %s, severity: %s, event_name: %s, client_name: %s, from host: %s, client_jobid: %s, seqnum: %d\n\n",
+                    asctime(localtime(&current)), event.event_space, event.severity, event.event_name,
                     event.client_name, event.incoming_src.hostname, event.client_jobid, event.seqnum);
             fflush(log_fp);
         }
