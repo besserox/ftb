@@ -124,14 +124,14 @@ endif
 
 ftb_alltoall: ftb_alltoall.c
 ifeq ($(shell  which mpicc ), )
-	$(warning MPI library not present. Not compiling ftb_throw_delay_mpi)
+	$(warning MPI library not present. Not compiling ftb_alltoall)
 else
 	mpicc ${CFLAGS_LINUX} ${LDFLAGS_LINUX} -o $@ $< ${LIBS_LINUX}
 endif
 
 ftb_grouping: ftb_grouping.c
 ifeq ($(shell  which mpicc ), )
-	$(warning MPI library not present. Not compiling ftb_throw_delay_mpi)
+	$(warning MPI library not present. Not compiling ftb_grouping)
 else
 	mpicc ${CFLAGS_LINUX} ${LDFLAGS_LINUX} -o $@ $< ${LIBS_LINUX}
 endif
