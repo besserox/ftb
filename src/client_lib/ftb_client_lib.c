@@ -1033,6 +1033,9 @@ int FTBC_Declare_publishable_events(FTB_client_handle_t client_handle, const cha
     FTB_INFO("FTBC_Declare_publishable_events In");
 
     if (client_handle.valid != 1) {
+		free(region);
+		free(comp_cat);
+		free(comp);
         FTB_INFO("FTBC_Declare_publishable_events Out");
         return FTB_ERR_INVALID_HANDLE;
     }
@@ -1040,6 +1043,9 @@ int FTBC_Declare_publishable_events(FTB_client_handle_t client_handle, const cha
     if (schema_file != NULL) {
         ret = FTBCI_check_schema_file(client_handle, schema_file);
         if (ret != FTB_SUCCESS) {
+			free(region);
+			free(comp_cat);
+			free(comp);
             FTB_INFO("FTBC_Declare_publishable_events Out");
             return ret;
         }
@@ -1049,6 +1055,9 @@ int FTBC_Declare_publishable_events(FTB_client_handle_t client_handle, const cha
         strcpy(comp_cat, client_handle.client_id.comp_cat);
         strcpy(comp, client_handle.client_id.comp);
         ret = FTBCI_populate_hashtable_with_events(region, comp_cat, comp, einfo, num_events);
+		free(region);
+		free(comp_cat);
+		free(comp);
         FTB_INFO("FTBC_Declare_publishable_events Out");
         return ret;
     }

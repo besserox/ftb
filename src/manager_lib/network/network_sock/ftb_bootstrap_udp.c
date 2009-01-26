@@ -187,6 +187,9 @@ int FTBNI_Bootstrap_get_parent_addr(uint16_t my_level, FTBN_addr_sock_t * parent
     FTBNI_bootstrap_pkt_t pkt_send, pkt_recv;
     int ret;
 
+	memset(&pkt_send, 0, sizeof(FTBNI_bootstrap_pkt_t));
+	memset(&pkt_recv, 0, sizeof(FTBNI_bootstrap_pkt_t));
+
     pkt_send.bootstrap_msg_type = FTBNI_BOOTSTRAP_MSG_TYPE_ADDR_REQ;
     pkt_send.level = my_level;
 
@@ -226,6 +229,9 @@ int FTBNI_Bootstrap_register_addr(uint16_t my_level)
 
     if (FTBNI_bootstrap_config_location.leaf)
         return FTB_ERR_NOT_SUPPORTED;
+
+	memset(&pkt_send, 0, sizeof(FTBNI_bootstrap_pkt_t));
+	memset(&pkt_recv, 0, sizeof(FTBNI_bootstrap_pkt_t));
 
     pkt_send.bootstrap_msg_type = FTBNI_BOOTSTRAP_MSG_TYPE_REG_REQ;
     pkt_send.level = my_level;
