@@ -70,6 +70,25 @@ typedef union FTBU_map_key {
     void *key_ptr;
 } FTBU_map_key_t;
 
+/*
+*  The FTB_map_node_t data structure is used the create nodes in a
+*  'map-type' (ftb-terminology) doubly linked list. Typically, all nodes
+*  in a linked list contain data of similar semantics. In the 'map-type'
+*  doubly linked list, the elements of the first/head node of the linked 
+*  list have unique semantics. More specifically:
+*  (1) The 'FTBU_map_key_t key' will be ignored for the first node of the
+*  linked list. 
+*  (2) The 'void *data' will actually point to a 'comparison' function
+*  that will be used for comparing data available on the other nodes of
+*  the linked list. Different instances of the FTBU_map_node will thus
+*  contain data whose type and comparison criteria will be defined in the
+*  function available in this 'data' element of the head node.
+* 
+*  The other nodes of the 'map-type' linked list will be semantically
+*  homogenous and will some information in the  'key' and 'data' elements.
+* 
+*/
+
 typedef struct FTBU_map_node {
     struct FTBU_map_node *next;
     struct FTBU_map_node *prev;
@@ -77,6 +96,12 @@ typedef struct FTBU_map_node {
     void *data;                 /*For head node, data will be pointing to the is_equal function */
 } FTBU_map_node_t;
 
+/*
+ * The FTBU_list_node_t will be used to create instances of the doubly linked
+ * list; where the semantics of all nodes are same 
+ * This data type is created is order to clearly distinguish it from the
+ * 'map-type' linked list 
+ */
 typedef FTBU_map_node_t FTBU_list_node_t;
 
 typedef FTBU_map_node_t *FTBU_map_iterator_t;
