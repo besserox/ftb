@@ -495,6 +495,8 @@ int FTBCI_populate_hashtable_with_events(const char *region, const char *comp_ca
             event_key[j] = toupper(event_key[j]);
         if (FTBCI_search_hash(event_key) != NULL) {
             FTB_INFO("Out FTBCI_populate_hashtable_with_events : Duplicate event. Ignoring!");
+			free(event_key);
+			free(event_entry);
             return FTB_SUCCESS;
             //return FTB_ERR_DUP_EVENT;
         }
@@ -1104,6 +1106,7 @@ int FTBC_Subscribe_with_polling(FTB_subscribe_handle_t * subscribe_handle,
     msg.msg_type = FTBM_MSG_TYPE_REG_SUBSCRIPTION;
     FTBM_Get_parent_location_id(&msg.dst.location_id);
     ret = FTBM_Send(&msg);
+	free(subscription_event);
 
     FTB_INFO("FTBC_Subscribe_with_polling Out");
     return ret;
