@@ -125,7 +125,7 @@ typedef struct FTB_client {
     FTB_client_name_t client_name;
     FTB_client_jobid_t client_jobid;
     FTB_subscription_style_t client_subscription_style;
-    unsigned int client_polling_queue_len;
+    int client_polling_queue_len;
 } FTB_client_t;
 
 typedef struct FTB_event_info {

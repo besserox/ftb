@@ -64,6 +64,8 @@ extern "C" {
 #define FTBU_EXIST         2
 #define FTBU_NOT_EXIST     3
 
+#define FTBU_NULL_PTR	 (-1)
+
 #define FTBU_MAP_PTR_KEY(x)        ((FTBU_map_key_t)(void*)(x))
 
 typedef union FTBU_map_key {
@@ -104,7 +106,6 @@ typedef struct FTBU_map_node {
  * 'map-type' linked list 
  */
 typedef FTBU_map_node_t FTBU_list_node_t;
-
 
 #define FTBU_list_for_each_readonly(pos, head) \
     for (pos=head->next; pos!=head; pos=pos->next)

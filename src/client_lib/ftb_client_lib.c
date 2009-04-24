@@ -74,16 +74,16 @@ typedef struct FTBCI_client_info {
     FTB_client_jobid_t jobid;
     uint8_t subscription_type;
     uint8_t err_handling;
-    unsigned int max_polling_queue_len;
-    FTBU_list_node_t *event_queue;      /* entry type: event_inst_list */
+    int max_polling_queue_len;
     int event_queue_size;
+    FTBU_list_node_t *event_queue;      		/* entry type: event_inst_list */
+    FTBU_list_node_t *callback_event_queue;     /* entry type: event_inst_list */
+    FTBCI_map_mask_2_callback_entry_t *callback_map;
+    uint16_t seqnum;
     pthread_mutex_t lock;
     pthread_cond_t cond;
     pthread_t callback;
     volatile int finalizing;
-    FTBU_list_node_t *callback_event_queue;     /* entry type: event_inst_list */
-    FTBCI_map_mask_2_callback_entry_t *callback_map;
-    uint16_t seqnum;
 } FTBCI_client_info_t;
 
 typedef struct FTBCI_publish_event_entry {
@@ -814,9 +814,8 @@ int FTBC_Connect(FTB_client_t * cinfo, uint8_t extension, FTB_client_handle_t * 
     client_info->err_handling = FTB_ERR_HANDLE_NONE;
 
 
-    if ((ret =
-         FTBCI_split_namespace(cinfo->event_space, region_name, category_name,
-                               component_name)) != FTB_SUCCESS) {
+    if ((ret = FTBCI_split_namespace(cinfo->event_space, region_name, category_name,
+               			                component_name)) != FTB_SUCCESS) {
         FTB_WARNING("Invalid namespace format");
         FTB_INFO("FTBC_Connect Out");
         return ret;
@@ -863,10 +862,6 @@ int FTBC_Connect(FTB_client_t * cinfo, uint8_t extension, FTB_client_handle_t * 
     }
 
     if (client_info->subscription_type & FTB_SUBSCRIPTION_POLLING) {
-        if (client_info->max_polling_queue_len == 0) {
-            FTB_WARNING("Polling queue size equal to 0, changing to default value");
-            client_info->max_polling_queue_len = FTB_DEFAULT_POLLING_Q_LEN;
-        }
         client_info->event_queue = (FTBU_list_node_t *) malloc(sizeof(FTBU_list_node_t));
         FTBU_list_init(client_info->event_queue);
     }
@@ -903,8 +898,7 @@ int FTBC_Connect(FTB_client_t * cinfo, uint8_t extension, FTB_client_handle_t * 
     FTB_INFO
         ("Going to call FTBU_map_insert() to insert as key=client_info->client_handle, data=client_info map=FTBCI_client_info_map");
 
-    if (FTBU_map_insert
-        (FTBCI_client_info_map, FTBU_MAP_PTR_KEY(&client_info->client_handle),
+    if (FTBU_map_insert(FTBCI_client_info_map, FTBU_MAP_PTR_KEY(&client_info->client_handle),
          (void *) client_info) == FTBU_EXIST) {
         FTB_WARNING("This component has already been registered");
         FTB_INFO("FTBC_Connect Out");

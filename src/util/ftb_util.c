@@ -264,7 +264,7 @@ static inline int util_key_match(const FTBU_map_node_t * head, FTBU_map_key_t ke
                                  FTBU_map_key_t key2)
 {
     int (*is_equal_func_ptr) (const void *, const void *) = (int (*)(const void *, const void *)) head->data;
-    assert(is_equal_func_ptr != NULL);
+	if (is_equal_func_ptr == NULL) return FTBU_NULL_PTR;
     return (*is_equal_func_ptr) (key1.key_ptr, key2.key_ptr);
 }
 
