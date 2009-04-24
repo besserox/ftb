@@ -161,13 +161,13 @@ int FTBCI_util_is_equal_clienthandle(const void *lhs_void, const void *rhs_void)
 
 
 #define FTBCI_LOOKUP_CLIENT_INFO(handle, client_info)  do {\
-    FTBU_map_iterator_t iter;\
+    FTBU_map_node_t *iter;\
     if (FTBCI_client_info_map == NULL) {\
         FTB_WARNING("Not initialized");\
         return FTB_ERR_GENERAL;\
     }\
     FTBCI_lock_client_lib();\
-    iter = FTBU_map_find(FTBCI_client_info_map, FTBU_MAP_PTR_KEY(&handle));\
+    iter = FTBU_map_find_key(FTBCI_client_info_map, FTBU_MAP_PTR_KEY(&handle));\
     if (iter == FTBU_map_end(FTBCI_client_info_map)) {\
         FTB_WARNING("Not registered");\
         FTBCI_unlock_client_lib();\
@@ -554,7 +554,7 @@ static void FTBCI_util_push_to_comp_polling_list(FTBCI_client_info_t * client_in
         if (client_info->event_queue_size == client_info->max_polling_queue_len) {
             FTB_WARNING("Event queue is full");
             temp = (FTBCI_event_inst_list_t *) client_info->event_queue->next;
-            FTBU_list_remove_entry((FTBU_list_node_t *) temp);
+            FTBU_list_remove_node((FTBU_list_node_t *) temp);
             free(temp);
             client_info->event_queue_size--;
         }
@@ -605,7 +605,7 @@ static void FTBCI_util_handle_FTBM_msg(FTBM_msg_t * msg)
 {
     FTB_client_handle_t client_handle;
     FTBCI_client_info_t *client_info;
-    FTBU_map_iterator_t iter;
+    FTBU_map_node_t *iter;
     FTBCI_event_inst_list_t *entry;
 
     if (msg->msg_type != FTBM_MSG_TYPE_NOTIFY) {
@@ -616,7 +616,7 @@ static void FTBCI_util_handle_FTBM_msg(FTBM_msg_t * msg)
     FTBCI_convert_clientid_to_clienthandle(msg->dst.client_id, &client_handle);
 
     FTBCI_lock_client_lib();
-    iter = FTBU_map_find(FTBCI_client_info_map, FTBU_MAP_PTR_KEY(&client_handle));
+    iter = FTBU_map_find_key(FTBCI_client_info_map, FTBU_MAP_PTR_KEY(&client_handle));
     if (iter == FTBU_map_end(FTBCI_client_info_map)) {
         FTB_WARNING("Message for unregistered component");
         FTBCI_unlock_client_lib();
@@ -664,7 +664,7 @@ static void *FTBCI_callback_component(void *arg)
 {
     FTBCI_client_info_t *client_info = (FTBCI_client_info_t *) arg;
     FTBCI_event_inst_list_t *entry;
-    FTBU_map_iterator_t iter;
+    FTBU_map_node_t *iter;
     FTBCI_callback_entry_t *callback_entry;
     int callback_done;
     //FTBCI_lock_client(client_info);
@@ -708,18 +708,18 @@ static void *FTBCI_callback_component(void *arg)
 #endif
                 (*callback_entry->callback) (&receive_event, callback_entry->arg);
                 FTBCI_lock_client(client_info);
-                FTBU_list_remove_entry((FTBU_list_node_t *) entry);
+                FTBU_list_remove_node((FTBU_list_node_t *) entry);
                 FTBCI_unlock_client(client_info);
                 free(entry);
                 callback_done = 1;
                 break;
             }
-            iter = FTBU_map_next_iterator(iter);
+            iter = FTBU_map_next_node(iter);
         }
         if (!callback_done) {
             /*Move to polling event queue */
             FTBCI_lock_client(client_info);
-            FTBU_list_remove_entry((FTBU_list_node_t *) entry);
+            FTBU_list_remove_node((FTBU_list_node_t *) entry);
             FTBCI_util_push_to_comp_polling_list(client_info, entry);
             FTBCI_unlock_client(client_info);
         }
@@ -747,7 +747,7 @@ static void FTBCI_util_finalize_component(FTBCI_client_info_t * client_info)
     FTB_INFO("In FTBCI_util_finalize_component: Free client_info->event_queue");
 
     if (client_info->subscription_type & FTB_SUBSCRIPTION_NOTIFY) {
-        FTBU_map_iterator_t iter;
+        FTBU_map_node_t *iter;
         client_info->finalizing = 1;
         FTB_INFO("signal the callback");
         pthread_cond_signal(&client_info->cond);
@@ -759,7 +759,7 @@ static void FTBCI_util_finalize_component(FTBCI_client_info_t * client_info)
         while (iter != FTBU_map_end(client_info->callback_map)) {
             FTBCI_callback_entry_t *entry = (FTBCI_callback_entry_t *) FTBU_map_get_data(iter);
             free(entry->mask);
-            iter = FTBU_map_next_iterator(iter);
+            iter = FTBU_map_next_node(iter);
         }
         FTBU_map_finalize(client_info->callback_map);
     }
@@ -1363,7 +1363,7 @@ int FTBC_Poll_event(FTB_subscribe_handle_t subscribe_handle, FTB_receive_event_t
             }
         } while (entry != start);
         if (event_found) {
-            FTBU_list_remove_entry((FTBU_list_node_t *) entry);
+            FTBU_list_remove_node((FTBU_list_node_t *) entry);
             client_info->event_queue_size--;
             FTBCI_unlock_client(client_info);
         }
@@ -1387,7 +1387,7 @@ int FTBC_Poll_event(FTB_subscribe_handle_t subscribe_handle, FTB_receive_event_t
             }
             if (client_info->subscription_type & FTB_SUBSCRIPTION_NOTIFY) {
                 FTB_INFO("Test whether belonging to any callback subscription string");
-                FTBU_map_iterator_t iter;
+                FTBU_map_node_t *iter;
                 iter = FTBU_map_begin(client_info->callback_map);
                 while (iter != FTBU_map_end(client_info->callback_map)) {
                     FTBCI_callback_entry_t *callback_entry =
@@ -1403,7 +1403,7 @@ int FTBC_Poll_event(FTB_subscribe_handle_t subscribe_handle, FTB_receive_event_t
                         is_for_callback = 1;
                         break;
                     }
-                    iter = FTBU_map_next_iterator(iter);
+                    iter = FTBU_map_next_node(iter);
                 }
             }
             if (!is_for_callback) {
@@ -1478,7 +1478,7 @@ int FTBC_Poll_event(FTB_subscribe_handle_t subscribe_handle, FTB_receive_event_t
                     }
                 } while (entry != start);
                 if (event_found) {
-                    FTBU_list_remove_entry((FTBU_list_node_t *) entry);
+                    FTBU_list_remove_node((FTBU_list_node_t *) entry);
                     client_info->event_queue_size--;
                 }
                 free(entry);
@@ -1593,7 +1593,7 @@ int FTBC_Disconnect(FTB_client_handle_t client_handle)
 static void FTBCI_util_update_tag_string()
 {
     int offset = 0;
-    FTBU_map_iterator_t iter;
+    FTBU_map_node_t *iter;
     //Format: 1 byte tag count (M) + M*{tag, len(N), N byte data}
     memcpy(tag_string, &tag_count, sizeof(tag_count));
     offset += sizeof(tag_count);
@@ -1606,7 +1606,7 @@ static void FTBCI_util_update_tag_string()
         offset += sizeof(FTB_tag_len_t);
         memcpy(tag_string + offset, &entry->data, entry->data_len);
         offset += entry->data_len;
-        iter = FTBU_map_next_iterator(iter);
+        iter = FTBU_map_next_node(iter);
     }
     tag_size = offset;
 }
@@ -1615,7 +1615,7 @@ static void FTBCI_util_update_tag_string()
 int FTBC_Add_dynamic_tag(FTB_client_handle_t handle, FTB_tag_t tag, const char *tag_data,
                          FTB_tag_len_t data_len)
 {
-    FTBU_map_iterator_t iter;
+    FTBU_map_node_t *iter;
 
     FTB_INFO("FTBC_Add_dynamic_tag In");
 
@@ -1625,7 +1625,7 @@ int FTBC_Add_dynamic_tag(FTB_client_handle_t handle, FTB_tag_t tag, const char *
         return FTB_ERR_TAG_NO_SPACE;
     }
 
-    iter = FTBU_map_find(FTBCI_tag_map, FTBU_MAP_PTR_KEY(&tag));
+    iter = FTBU_map_find_key(FTBCI_tag_map, FTBU_MAP_PTR_KEY(&tag));
     if (iter == FTBU_map_end(FTBCI_tag_map)) {
         FTBCI_tag_entry_t *entry = (FTBCI_tag_entry_t *) malloc(sizeof(FTBCI_tag_entry_t));
         FTB_INFO("create a new tag");
@@ -1661,12 +1661,12 @@ int FTBC_Add_dynamic_tag(FTB_client_handle_t handle, FTB_tag_t tag, const char *
 
 int FTBC_Remove_dynamic_tag(FTB_client_handle_t handle, FTB_tag_t tag)
 {
-    FTBU_map_iterator_t iter;
+    FTBU_map_node_t *iter;
     FTBCI_tag_entry_t *entry;
 
     FTB_INFO("FTBC_Remove_dynamic_tag In");
     FTBCI_lock_client_lib();
-    iter = FTBU_map_find(FTBCI_tag_map, FTBU_MAP_PTR_KEY(&tag));
+    iter = FTBU_map_find_key(FTBCI_tag_map, FTBU_MAP_PTR_KEY(&tag));
     if (iter == FTBU_map_end(FTBCI_tag_map)) {
         FTB_INFO("FTBC_Remove_dynamic_tag Out");
         return FTB_ERR_TAG_NOT_FOUND;
@@ -1678,7 +1678,7 @@ int FTBC_Remove_dynamic_tag(FTB_client_handle_t handle, FTB_tag_t tag)
         return FTB_ERR_TAG_CONFLICT;
     }
 
-    FTBU_map_remove_iter(iter);
+    FTBU_map_remove_node(iter);
     tag_count--;
     free(entry);
     FTBCI_util_update_tag_string();

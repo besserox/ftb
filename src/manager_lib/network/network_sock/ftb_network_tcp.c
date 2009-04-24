@@ -398,7 +398,7 @@ int FTBN_Disconnect_peer(const FTB_location_id_t * peer_location_id)
 
     free(conn->dst);
     close(conn->fd);
-    FTBU_list_remove_entry((FTBU_list_node_t *) conn);
+    FTBU_list_remove_node((FTBU_list_node_t *) conn);
     free(conn);
     FTBNI_unlock_conn_table();
     FTB_INFO("FTBN_Disconnect_peer Out");
@@ -427,7 +427,7 @@ int FTBN_Send_msg(const FTBM_msg_t * msg)
         conn->ref_count--;
         if (conn->ref_count == 0) {
             free(conn->dst);
-            FTBU_list_remove_entry((FTBU_list_node_t *) conn);
+            FTBU_list_remove_node((FTBU_list_node_t *) conn);
             FTBNI_unlock_conn_table();
             close(conn->fd);
             free(conn);
@@ -561,7 +561,7 @@ int FTBN_Recv_msg(FTBM_msg_t * msg, FTB_location_id_t * incoming_src, int blocki
                 FTBNI_unlock_conn_entry(conn);
                 FTBNI_unlock_conn_table();
                 free(conn->dst);
-                FTBU_list_remove_entry((FTBU_list_node_t *) conn);
+                FTBU_list_remove_node((FTBU_list_node_t *) conn);
                 close(conn->fd);
                 free(conn);
                 FTBNI_unlock_recv();

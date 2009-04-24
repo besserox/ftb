@@ -93,8 +93,9 @@ typedef struct FTBU_map_node {
     struct FTBU_map_node *next;
     struct FTBU_map_node *prev;
     FTBU_map_key_t key;
-    void *data;                 /*For head node, data will be pointing to the is_equal function */
+    void *data;  /*For head node, data is a func ptr that points to a comparison function */                 
 } FTBU_map_node_t;
+
 
 /*
  * The FTBU_list_node_t will be used to create instances of the doubly linked
@@ -104,34 +105,6 @@ typedef struct FTBU_map_node {
  */
 typedef FTBU_map_node_t FTBU_list_node_t;
 
-typedef FTBU_map_node_t *FTBU_map_iterator_t;
-
-static inline void FTBU_list_init(FTBU_list_node_t * list)
-{
-    list->next = list->prev = list;
-}
-
-static inline void FTBU_list_add_front(FTBU_list_node_t * list, FTBU_list_node_t * entry)
-{
-    list->next->prev = entry;
-    entry->next = list->next;
-    entry->prev = list;
-    list->next = entry;
-}
-
-static inline void FTBU_list_add_back(FTBU_list_node_t * list, FTBU_list_node_t * entry)
-{
-    list->prev->next = entry;
-    entry->next = list;
-    entry->prev = list->prev;
-    list->prev = entry;
-}
-
-static inline void FTBU_list_remove_entry(FTBU_list_node_t * entry)
-{
-    entry->next->prev = entry->prev;
-    entry->prev->next = entry->next;
-}
 
 #define FTBU_list_for_each_readonly(pos, head) \
     for (pos=head->next; pos!=head; pos=pos->next)
@@ -139,50 +112,62 @@ static inline void FTBU_list_remove_entry(FTBU_list_node_t * entry)
 #define FTBU_list_for_each(pos, head, temp) \
     for (pos=head->next, temp=pos->next; pos!=head; pos=temp, temp=temp->next)
 
-/* Initialize the map, if is_equal == NULL, use the integ */
+/* Initialize a map */
 FTBU_map_node_t *FTBU_map_init(int (*is_equal) (const void *, const void *));
 
-/* Get the iterator to first element */
-FTBU_map_iterator_t FTBU_map_begin(const FTBU_map_node_t * headnode);
+/* Return the beginning of the map linked list */
+FTBU_map_node_t *FTBU_map_begin(const FTBU_map_node_t * head);
 
-/* Get the iterator to the end symbol */
-FTBU_map_iterator_t FTBU_map_end(const FTBU_map_node_t * headnode);
+/* Return the last node of the map linked list */
+FTBU_map_node_t *FTBU_map_end(const FTBU_map_node_t * head);
 
-/* Get map_key from the iterator */
-FTBU_map_key_t FTBU_map_get_key(FTBU_map_iterator_t iterator);
+/* Get the key from the node*/
+FTBU_map_key_t FTBU_map_get_key(FTBU_map_node_t * node);
 
-/* Get data from the iterator */
-void *FTBU_map_get_data(FTBU_map_iterator_t iterator);
+/* Get data from the node */
+void *FTBU_map_get_data(FTBU_map_node_t * node);
 
-/* Get the next iterator */
-FTBU_map_iterator_t FTBU_map_next_iterator(FTBU_map_iterator_t iterator);
+/* Get the next node */
+FTBU_map_node_t * FTBU_map_next_node(FTBU_map_node_t * node);
 
 /*
- * Insert val to the map. Returns FTBU_SUCCESS if new element inserted
+ * Insert value in the map. Returns FTBU_SUCCESS if new element inserted
  * or FTBU_EXIST if the same element is already in the map
  */
-int FTBU_map_insert(FTBU_map_node_t * headnode, FTBU_map_key_t key, void *data);
+int FTBU_map_insert(FTBU_map_node_t * head, FTBU_map_key_t key, void *data);
 
 /*
- * Find whether a same element is in the map. Returns its iterator if
- * it exists or the iterator pointing to FTBU_map_end if not
+ * Find whether a same element is in the map. Returns the position of the match node if
+ * it exists or a pointer pointing to the head node if it does not exist
  */
-FTBU_map_iterator_t FTBU_map_find(const FTBU_map_node_t * headnode, FTBU_map_key_t key);
+FTBU_map_node_t *FTBU_map_find_key(const FTBU_map_node_t * head, FTBU_map_key_t key);
 
 /*
  * Remove one element from the map. Returns FTBU_SUCCESS if a same
  * element is removed or FTBU_NOT_EXIST if no such element is in the map
  */
-int FTBU_map_remove_key(FTBU_map_node_t * headnode, FTBU_map_key_t key);
+int FTBU_map_remove_key(FTBU_map_node_t * head, FTBU_map_key_t key);
 
-/* Remove the element pointed by iter from the map */
-int FTBU_map_remove_iter(FTBU_map_iterator_t iter);
+/* Remove the element pointed by node from the map */
+int FTBU_map_remove_node(FTBU_map_node_t * node);
 
-/* Test wether the map is empty. Returns non-zero when it is empty, 0 if it is not */
-int FTBU_map_is_empty(const FTBU_map_node_t * headnode);
+/* Test whether the map is empty. Returns 1 when it is empty, 0 if it is not */
+int FTBU_map_is_empty(const FTBU_map_node_t * head);
 
 /* Finalize the map, will free all map node. Note: the data will not be freed */
-int FTBU_map_finalize(FTBU_map_node_t * headnode);
+int FTBU_map_finalize(FTBU_map_node_t * head);
+
+/* Initialize a list */
+void FTBU_list_init(FTBU_list_node_t * list);
+
+/* Add node in front of list node */
+void FTBU_list_add_front(FTBU_list_node_t * list, FTBU_list_node_t * node);
+
+/* Add node behind list node */
+void FTBU_list_add_back(FTBU_list_node_t * list, FTBU_list_node_t * node);
+
+/* Remove a node from a list */
+void FTBU_list_remove_node(FTBU_list_node_t * node);
 
 int FTBU_match_mask(const FTB_event_t * event, const FTB_event_t * mask);
 

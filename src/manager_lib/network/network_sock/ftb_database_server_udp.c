@@ -84,7 +84,7 @@ int FTNI_is_equal_addr_sock(const void *lhs_void, const void *rhs_void)
 static inline FTBNI_bootstrap_entry_t *FTBNI_util_find_parent_addr(const FTBNI_bootstrap_pkt_t * pkt_req)
 {
     /*This is to achieve some randomness with certain requirements of the addr */
-    FTBU_map_iterator_t iter;
+    FTBU_map_node_t *iter;
     FTBNI_bootstrap_entry_t *entry = NULL;
     FTBNI_bootstrap_entry_t *temp;
     int x, i;
@@ -111,7 +111,7 @@ static inline FTBNI_bootstrap_entry_t *FTBNI_util_find_parent_addr(const FTBNI_b
              strncmp(pkt_req->addr.name, temp->addr.name, FTB_MAX_HOST_ADDR) != 0)) {
             entry = temp;
         }
-        iter = FTBU_map_next_iterator(iter);
+        iter = FTBU_map_next_node(iter);
     }
 
     if (entry == NULL) {
@@ -128,7 +128,7 @@ static inline FTBNI_bootstrap_entry_t *FTBNI_util_find_parent_addr(const FTBNI_b
                 entry = temp;
                 break;
             }
-            iter = FTBU_map_next_iterator(iter);
+            iter = FTBU_map_next_node(iter);
         }
     }
 
@@ -233,7 +233,7 @@ int main(int argc, char *argv[])
             }
         }
         else if (pkt.bootstrap_msg_type == FTBNI_BOOTSTRAP_MSG_TYPE_REG_REQ) {
-            FTBU_map_iterator_t iter;
+            FTBU_map_node_t *iter;
             FTBNI_bootstrap_entry_t *entry =
                 (FTBNI_bootstrap_entry_t *) malloc(sizeof(FTBNI_bootstrap_entry_t));
 
@@ -249,7 +249,7 @@ int main(int argc, char *argv[])
                 continue;
             }
 
-            iter = FTBU_map_find(FTBNI_bootstrap_addr_map, (FTBU_map_key_t) (void *) &entry->addr);
+            iter = FTBU_map_find_key(FTBNI_bootstrap_addr_map, (FTBU_map_key_t) (void *) &entry->addr);
             if (iter == FTBU_map_end(FTBNI_bootstrap_addr_map)) {
                 FTBU_map_insert(FTBNI_bootstrap_addr_map,
                                 (FTBU_map_key_t) (void *) &entry->addr, (void *) entry);
@@ -272,19 +272,19 @@ int main(int argc, char *argv[])
             }
         }
         else if (pkt.bootstrap_msg_type == FTBNI_BOOTSTRAP_MSG_TYPE_DEREG_REQ) {
-            FTBU_map_iterator_t iter;
+            FTBU_map_node_t *iter;
 
             memset(&pkt_send, 0, sizeof(FTBNI_bootstrap_pkt_t));
             if (pkt.addr.port == 0) {
                 FTB_WARNING("deregistering an invalid addr");
                 continue;
             }
-            iter = FTBU_map_find(FTBNI_bootstrap_addr_map, (FTBU_map_key_t) (void *) &pkt.addr);
+            iter = FTBU_map_find_key(FTBNI_bootstrap_addr_map, (FTBU_map_key_t) (void *) &pkt.addr);
             if (iter != FTBU_map_end(FTBNI_bootstrap_addr_map)) {
                 FTBNI_bootstrap_entry_t *entry = (FTBNI_bootstrap_entry_t *) FTBU_map_get_data(iter);
                 free(entry);
                 FTBNI_addr_count--;
-                FTBU_map_remove_iter(iter);
+                FTBU_map_remove_node(iter);
             }
             else {
                 FTB_WARNING("deregstering an non-existing addr");
@@ -301,19 +301,19 @@ int main(int argc, char *argv[])
             }
         }
         else if (pkt.bootstrap_msg_type == FTBNI_BOOTSTRAP_MSG_TYPE_CONN_FAIL) {
-            FTBU_map_iterator_t iter;
+            FTBU_map_node_t *iter;
 
             if (pkt.addr.port == 0) {
                 FTB_WARNING("deregistering an invalid addr");
                 continue;
             }
 
-            iter = FTBU_map_find(FTBNI_bootstrap_addr_map, (FTBU_map_key_t) (void *) &pkt.addr);
+            iter = FTBU_map_find_key(FTBNI_bootstrap_addr_map, (FTBU_map_key_t) (void *) &pkt.addr);
             if (iter != FTBU_map_end(FTBNI_bootstrap_addr_map)) {
                 FTBNI_bootstrap_entry_t *entry = (FTBNI_bootstrap_entry_t *) FTBU_map_get_data(iter);
                 free(entry);
                 FTBNI_addr_count--;
-                FTBU_map_remove_iter(iter);
+                FTBU_map_remove_node(iter);
             }
             else {
                 FTB_WARNING("reporting an non-existing addr");

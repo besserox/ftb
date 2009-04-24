@@ -126,7 +126,7 @@ static void FTBMI_util_reg_propagation(int msg_type, const FTB_event_t * event,
 {
     FTBM_msg_t msg;
     int ret;
-    FTBU_map_iterator_t iter_comp;
+    FTBU_map_node_t *iter_comp;
     FTB_INFO("In FTBMI_util_reg_propagation with msg_type = %d\n", msg_type);
 
     msg.msg_type = msg_type;
@@ -135,7 +135,7 @@ static void FTBMI_util_reg_propagation(int msg_type, const FTB_event_t * event,
     memcpy(&msg.event, event, sizeof(FTB_event_t));
 
     for (iter_comp = FTBU_map_begin(FTBMI_info.peers); iter_comp != FTBU_map_end(FTBMI_info.peers);
-         iter_comp = FTBU_map_next_iterator(iter_comp)) {
+         iter_comp = FTBU_map_next_node(iter_comp)) {
         FTB_id_t *id = (FTB_id_t *) FTBU_map_get_key(iter_comp).key_ptr;
 
         /* Propagation to other FTB agents but not the source */
@@ -164,10 +164,10 @@ static void FTBMI_util_remove_com_from_catch_map(const FTBMI_comp_info_t * comp,
 {
     int ret;
     FTBMI_map_ftb_id_2_comp_info_t *map;
-    FTBU_map_iterator_t iter;
+    FTBU_map_node_t *iter;
     FTB_event_t *mask_manager;
 
-    iter = FTBU_map_find(FTBMI_info.catch_event_map, FTBU_MAP_PTR_KEY(mask));
+    iter = FTBU_map_find_key(FTBMI_info.catch_event_map, FTBU_MAP_PTR_KEY(mask));
     if (iter == FTBU_map_end(FTBMI_info.catch_event_map)) {
         FTB_WARNING("not found component map");
         return;
@@ -183,7 +183,7 @@ static void FTBMI_util_remove_com_from_catch_map(const FTBMI_comp_info_t * comp,
 
     if (FTBU_map_is_empty(map)) {
         FTBU_map_finalize(map);
-        FTBU_map_remove_iter(iter);
+        FTBU_map_remove_node(iter);
         /*Cancel catch mask to other ftb cores */
         FTBMI_util_reg_propagation(FTBM_MSG_TYPE_SUBSCRIPTION_CANCEL, mask_manager,
                                    &comp->id.location_id);
@@ -196,9 +196,9 @@ static void FTBMI_util_clean_component(FTBMI_comp_info_t * comp)
 {
     /*assumes it has the lock of component */
     /*remove it from catch map */
-    FTBU_map_iterator_t iter = FTBU_map_begin(comp->catch_event_set);
+    FTBU_map_node_t *iter = FTBU_map_begin(comp->catch_event_set);
 
-    for (; iter != FTBU_map_end(comp->catch_event_set); iter = FTBU_map_next_iterator(iter)) {
+    for (; iter != FTBU_map_end(comp->catch_event_set); iter = FTBU_map_next_node(iter)) {
         FTB_event_t *mask = (FTB_event_t *) FTBU_map_get_data(iter);
         FTBMI_util_remove_com_from_catch_map(comp, mask);
         free(mask);
@@ -212,10 +212,10 @@ static void FTBMI_util_clean_component(FTBMI_comp_info_t * comp)
 static inline FTBMI_comp_info_t *FTBMI_lookup_component(const FTB_id_t * id)
 {
     FTBMI_comp_info_t *comp = NULL;
-    FTBU_map_iterator_t iter;
+    FTBU_map_node_t *iter;
 
     lock_manager();
-    iter = FTBU_map_find(FTBMI_info.peers, FTBU_MAP_PTR_KEY(id));
+    iter = FTBU_map_find_key(FTBMI_info.peers, FTBU_MAP_PTR_KEY(id));
     if (iter != FTBU_map_end(FTBMI_info.peers)) {
         comp = (FTBMI_comp_info_t *) FTBU_map_get_data(iter);
     }
@@ -242,7 +242,7 @@ static void FTBMI_util_reconnect()
     }
     if (!FTBMI_info.leaf && FTBMI_info.parent.pid != 0) {
         FTBMI_comp_info_t *comp;
-        FTBU_map_iterator_t iter;
+        FTBU_map_node_t *iter;
 
         FTB_INFO("Adding parent to peers while reconecting");
         comp = (FTBMI_comp_info_t *) malloc(sizeof(FTBMI_comp_info_t));
@@ -266,7 +266,7 @@ static void FTBMI_util_reconnect()
         memcpy(&msg.dst, &comp->id, sizeof(FTB_id_t));
 
         for (iter = FTBU_map_begin(FTBMI_info.catch_event_map);
-             iter != FTBU_map_end(FTBMI_info.catch_event_map); iter = FTBU_map_next_iterator(iter)) {
+             iter != FTBU_map_end(FTBMI_info.catch_event_map); iter = FTBU_map_next_node(iter)) {
             FTB_event_t *mask = (FTB_event_t *) FTBU_map_get_key(iter).key_ptr;
             memcpy(&msg.event, mask, sizeof(FTB_event_t));
             ret = FTBN_Send_msg(&msg);
@@ -308,8 +308,8 @@ static void FTBMI_util_get_location_id(FTB_location_id_t * location_id)
 
 int FTBM_Get_catcher_comp_list(const FTB_event_t * event, FTB_id_t ** list, int *len)
 {
-    FTBU_map_iterator_t iter_comp;
-    FTBU_map_iterator_t iter_mask;
+    FTBU_map_node_t *iter_comp;
+    FTBU_map_node_t *iter_mask;
     FTBMI_map_ftb_id_2_comp_info_t *catcher_set;
     int temp_len = 0;
 
@@ -335,7 +335,7 @@ int FTBM_Get_catcher_comp_list(const FTB_event_t * event, FTB_id_t ** list, int 
 
     for (iter_mask = FTBU_map_begin(FTBMI_info.catch_event_map);
          iter_mask != FTBU_map_end(FTBMI_info.catch_event_map);
-         iter_mask = FTBU_map_next_iterator(iter_mask)) {
+         iter_mask = FTBU_map_next_node(iter_mask)) {
         FTB_event_t *mask = (FTB_event_t *) FTBU_map_get_key(iter_mask).key_ptr;
 
         if (FTBU_match_mask(event, mask)) {
@@ -352,7 +352,7 @@ int FTBM_Get_catcher_comp_list(const FTB_event_t * event, FTB_id_t ** list, int 
              */
 
             for (iter_comp = FTBU_map_begin(map); iter_comp != FTBU_map_end(map);
-                 iter_comp = FTBU_map_next_iterator(iter_comp)) {
+                 iter_comp = FTBU_map_next_node(iter_comp)) {
                 FTBMI_comp_info_t *comp = (FTBMI_comp_info_t *) FTBU_map_get_data(iter_comp);
 
                 /*
@@ -363,7 +363,7 @@ int FTBM_Get_catcher_comp_list(const FTB_event_t * event, FTB_id_t ** list, int 
 
                 FTB_INFO("Test whether component is already in catcher set");
 
-                if (FTBU_map_find(catcher_set, FTBU_MAP_PTR_KEY(&comp->id)) != FTBU_map_end(catcher_set)) {
+                if (FTBU_map_find_key(catcher_set, FTBU_MAP_PTR_KEY(&comp->id)) != FTBU_map_end(catcher_set)) {
                     FTB_INFO("Component has already counted in to receive this event. ");
                     continue;
                 }
@@ -389,7 +389,7 @@ int FTBM_Get_catcher_comp_list(const FTB_event_t * event, FTB_id_t ** list, int 
      * Also get the total number of destinations, to pass it back to the callee function
      */
     for (iter_comp = FTBU_map_begin(catcher_set); iter_comp != FTBU_map_end(catcher_set);
-         iter_comp = FTBU_map_next_iterator(iter_comp)) {
+         iter_comp = FTBU_map_next_node(iter_comp)) {
         FTB_id_t *id = (FTB_id_t *) FTBU_map_get_data(iter_comp);
         temp_len--;
         memcpy(&((*list)[temp_len]), id, sizeof(FTB_id_t));
@@ -517,8 +517,8 @@ int FTBM_Finalize()
     FTBMI_initialized = 0;
 
     if (!FTBMI_info.leaf) {
-        FTBU_map_iterator_t iter = FTBU_map_begin(FTBMI_info.peers);
-        for (; iter != FTBU_map_end(FTBMI_info.peers); iter = FTBU_map_next_iterator(iter)) {
+        FTBU_map_node_t *iter = FTBU_map_begin(FTBMI_info.peers);
+        for (; iter != FTBU_map_end(FTBMI_info.peers); iter = FTBU_map_next_node(iter)) {
             FTBMI_comp_info_t *comp = (FTBMI_comp_info_t *) FTBU_map_get_data(iter);
             FTBMI_util_clean_component(comp);
 
@@ -570,8 +570,8 @@ int FTBM_Abort()
     FTBMI_initialized = 0;
 
     if (!FTBMI_info.leaf) {
-        FTBU_map_iterator_t iter = FTBU_map_begin(FTBMI_info.peers);
-        for (; iter != FTBU_map_end(FTBMI_info.peers); iter = FTBU_map_next_iterator(iter)) {
+        FTBU_map_node_t *iter = FTBU_map_begin(FTBMI_info.peers);
+        for (; iter != FTBU_map_end(FTBMI_info.peers); iter = FTBU_map_next_node(iter)) {
             FTBMI_comp_info_t *comp = (FTBMI_comp_info_t *) FTBU_map_get_data(iter);
             free(comp);
         }
@@ -629,9 +629,9 @@ int FTBM_Client_register(const FTB_id_t * id)
         msg.msg_type = FTBM_MSG_TYPE_REG_SUBSCRIPTION;
         memcpy(&msg.dst, id, sizeof(FTB_id_t));
 
-        FTBU_map_iterator_t iter;
+        FTBU_map_node_t *iter;
         for (iter = FTBU_map_begin(FTBMI_info.catch_event_map);
-             iter != FTBU_map_end(FTBMI_info.catch_event_map); iter = FTBU_map_next_iterator(iter)) {
+             iter != FTBU_map_end(FTBMI_info.catch_event_map); iter = FTBU_map_next_node(iter)) {
             FTB_event_t *mask = (FTB_event_t *) FTBU_map_get_key(iter).key_ptr;
             memcpy(&msg.event, mask, sizeof(FTB_event_t));
             ret = FTBN_Send_msg(&msg);
@@ -729,7 +729,7 @@ int FTBM_Register_publishable_event(const FTB_id_t * id, FTB_event_t * event)
 
 int FTBM_Register_subscription(const FTB_id_t * id, FTB_event_t * event)
 {
-    FTBU_map_iterator_t iter;
+    FTBU_map_node_t *iter;
     FTB_event_t *new_mask_comp;
     FTB_event_t *new_mask_manager;
     FTBMI_comp_info_t *comp;
@@ -782,7 +782,7 @@ int FTBM_Register_subscription(const FTB_id_t * id, FTB_event_t * event)
      */
 
     lock_manager();
-    iter = FTBU_map_find(FTBMI_info.catch_event_map, FTBU_MAP_PTR_KEY(new_mask_comp));
+    iter = FTBU_map_find_key(FTBMI_info.catch_event_map, FTBU_MAP_PTR_KEY(new_mask_comp));
 
     if (iter == FTBU_map_end(FTBMI_info.catch_event_map)) {
         FTBMI_map_ftb_id_2_comp_info_t *new_map;
@@ -855,7 +855,7 @@ int FTBM_Publishable_event_registration_cancel(const FTB_id_t * id, FTB_event_t 
 int FTBM_Cancel_subscription(const FTB_id_t * id, FTB_event_t * event)
 {
     FTB_event_t *mask;
-    FTBU_map_iterator_t iter;
+    FTBU_map_node_t *iter;
     FTBMI_comp_info_t *comp;
 
     if (!FTBMI_initialized)
@@ -873,14 +873,14 @@ int FTBM_Cancel_subscription(const FTB_id_t * id, FTB_event_t * event)
 
     lock_comp(comp);
     FTB_INFO("util_reg_catch_cancel");
-    iter = FTBU_map_find(comp->catch_event_set, FTBU_MAP_PTR_KEY(event));
+    iter = FTBU_map_find_key(comp->catch_event_set, FTBU_MAP_PTR_KEY(event));
     if (iter == FTBU_map_end(comp->catch_event_set)) {
         FTB_WARNING("Not found throw entry");
         FTB_INFO("FTBM_Cancel_subscription Out");
         return FTB_SUCCESS;
     }
     mask = (FTB_event_t *) FTBU_map_get_data(iter);
-    FTBU_map_remove_iter(iter);
+    FTBU_map_remove_node(iter);
     lock_manager();
     FTBMI_util_remove_com_from_catch_map(comp, mask);
     unlock_manager();
