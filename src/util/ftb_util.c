@@ -294,8 +294,7 @@ int FTBU_map_insert(FTBU_map_node_t * head, FTBU_map_key_t key, void *data)
 {
     FTBU_map_node_t *new_node;
     FTBU_map_node_t *pos;
-
-	for (pos=head->next; pos!=head; pos=pos->next) {
+    FTBU_list_for_each_readonly(pos, head) { 
         if (util_key_match(head, pos->key, key))
             return FTBU_EXIST;
     }
@@ -331,7 +330,7 @@ FTBU_map_node_t *FTBU_map_find_key(const FTBU_map_node_t * head, FTBU_map_key_t 
 {
     FTBU_map_node_t *pos;
 
-    for (pos=head->next; pos!=head; pos=pos->next) {
+	FTBU_list_for_each_readonly(pos, head) {
         if (util_key_match(head, pos->key, key))
             return pos;
     }
@@ -366,7 +365,7 @@ int FTBU_map_remove_key(FTBU_map_node_t * head, FTBU_map_key_t key)
     FTBU_map_node_t *pos; 
 	FTBU_map_node_t *temp;
 
-    for (pos=head->next, temp=pos->next; pos!=head; pos=temp, temp=temp->next) {
+	FTBU_list_for_each(pos, head, temp) {
         if (util_key_match(head, pos->key, key)) {
 			pos->next->prev = pos->prev;
 			pos->prev->next = pos->next;
@@ -398,7 +397,7 @@ int FTBU_map_finalize(FTBU_map_node_t * head)
     FTBU_map_node_t *pos; 
 	FTBU_map_node_t *temp;
 
-	for (pos=head->next, temp=pos->next; pos!=head; pos=temp, temp=temp->next) {
+	FTBU_list_for_each(pos, head, temp) {
 		pos->next->prev = pos->prev;
 		pos->prev->next = pos->next;
         free(pos);
