@@ -118,7 +118,6 @@ int FTBMI_util_is_equal_event_mask(const void *lhs_void, const void *rhs_void)
     FTB_event_t *lhs = (FTB_event_t *) lhs_void;
     FTB_event_t *rhs = (FTB_event_t *) rhs_void;
     return FTBU_is_equal_event_mask(lhs, rhs);
-    //return FTBU_is_equal_event(lhs, rhs);
 }
 
 static void FTBMI_util_reg_propagation(int msg_type, const FTB_event_t * event,
@@ -147,7 +146,7 @@ static void FTBMI_util_reg_propagation(int msg_type, const FTB_event_t * event,
 
 
         memcpy(&msg.dst, id, sizeof(FTB_id_t));
-        FTB_INFO("FTBMI_util_reg_propagation - Sending msg type=%d to destination %d\n", msg.msg_type,
+        FTB_INFO("FTBMI_util_reg_propagation - Sending msg type=%d to destination %s\n", msg.msg_type,
                  msg.dst.location_id.hostname);
         ret = FTBN_Send_msg(&msg);
         if (ret != FTB_SUCCESS) {

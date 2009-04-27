@@ -48,8 +48,6 @@
 extern FILE *FTBU_log_file_fp;
 
 typedef struct FTB_connection_entry {
-    FTBU_list_node_t *next;
-    FTBU_list_node_t *prev;
     pthread_mutex_t lock;
     int err_flag;
     int fd;
@@ -142,15 +140,17 @@ static inline void FTBNI_unlock_recv()
 } while (0)
 
 
-static inline FTB_connection_entry_t *FTBNI_util_find_connection_to_location(const FTB_location_id_t *
+static inline FTBU_list_node_t *FTBNI_util_find_connection_to_location(const FTB_location_id_t *
                                                                              location_id)
 {
     FTBU_list_node_t *pos;
+
     FTBU_list_for_each_readonly(pos, FTBNI_connection_table) {
-        FTB_connection_entry_t *entry = (FTB_connection_entry_t *) pos;
+		FTBU_list_node_t *node = pos;
+        FTB_connection_entry_t *entry = (FTB_connection_entry_t *) node->data;
         if (FTBU_is_equal_location_id(entry->dst, location_id)) {
             FTBNI_unlock_conn_table();  /* Is this needed ? */
-            return entry;
+            return pos;
         }
     }
     return NULL;
@@ -190,6 +190,7 @@ static int FTBNI_util_connect_to(const FTBN_addr_sock_t * addr, const FTBM_msg_t
     int optval = 1;
     struct hostent *hp = NULL;
     struct sockaddr_in sa;
+	FTBU_list_node_t *node = (FTBU_list_node_t *) malloc(sizeof(FTBU_list_node_t));
     FTB_connection_entry_t *entry = (FTB_connection_entry_t *) malloc(sizeof(FTB_connection_entry_t));
     entry->err_flag = 0;
     entry->ref_count = 0;
@@ -240,8 +241,9 @@ static int FTBNI_util_connect_to(const FTBN_addr_sock_t * addr, const FTBM_msg_t
     /*since using tree mode, no indirect connection */
     pthread_mutex_init(&(entry->lock), NULL);
     memcpy(id, entry->dst, sizeof(FTB_location_id_t));
+	node->data = (void *)entry;
     FTBNI_lock_conn_table();
-    FTBU_list_add_front(FTBNI_connection_table, (FTBU_list_node_t *) entry);
+    FTBU_list_add_front(FTBNI_connection_table, node);
     FTBNI_unlock_conn_table();
 
     return FTB_SUCCESS;
@@ -357,10 +359,12 @@ int FTBN_Finalize()
     FTBNI_Bootstrap_finalize();
 
     FTBU_list_for_each(pos, FTBNI_connection_table, temp) {
-        FTB_connection_entry_t *entry = (FTB_connection_entry_t *) pos;
+		FTBU_list_node_t *node = pos;
+		FTB_connection_entry_t *entry = (FTB_connection_entry_t *)node->data;
         close(entry->fd);
         free(entry->dst);
         free(entry);
+		free(node);
     }
     if (FTBNI_listen_fd != -1)
         close(FTBNI_listen_fd);
@@ -381,15 +385,17 @@ int FTBN_Abort()
 
 int FTBN_Disconnect_peer(const FTB_location_id_t * peer_location_id)
 {
+	FTBU_list_node_t *node;
     FTB_connection_entry_t *conn;
     FTB_INFO("FTBN_Disconnect_peer In");
     FTBNI_lock_conn_table();
-    conn = FTBNI_util_find_connection_to_location(peer_location_id);
-    if (conn == NULL) {
+    node = FTBNI_util_find_connection_to_location(peer_location_id);
+    if (node == NULL) {
         FTBNI_unlock_conn_table();
         FTB_INFO("FTBN_Disconnect_peer Out");
         return FTB_ERR_INVALID_PARAMETER;
     }
+	conn = (FTB_connection_entry_t *)node->data;
 
     while (conn->ref_count != 0) {
         FTBNI_unlock_conn_table();
@@ -398,8 +404,9 @@ int FTBN_Disconnect_peer(const FTB_location_id_t * peer_location_id)
 
     free(conn->dst);
     close(conn->fd);
-    FTBU_list_remove_node((FTBU_list_node_t *) conn);
     free(conn);
+    FTBU_list_remove_node(node);
+	free(node);
     FTBNI_unlock_conn_table();
     FTB_INFO("FTBN_Disconnect_peer Out");
     return FTB_SUCCESS;
@@ -407,15 +414,18 @@ int FTBN_Disconnect_peer(const FTB_location_id_t * peer_location_id)
 
 int FTBN_Send_msg(const FTBM_msg_t * msg)
 {
+	FTBU_list_node_t *node;
     FTB_connection_entry_t *conn;
+
     FTB_INFO("FTBN_Send_msg In");
     FTBNI_lock_conn_table();
-    conn = FTBNI_util_find_connection_to_location(&msg->dst.location_id);
-    if (conn == NULL) {
+    node = FTBNI_util_find_connection_to_location(&msg->dst.location_id);
+    if (node == NULL) {
         FTBNI_unlock_conn_table();
         FTB_INFO("FTBN_Send_msg Out");
         return FTB_ERR_NETWORK_NO_ROUTE;
     }
+	conn = (FTB_connection_entry_t *) node->data;
     conn->ref_count++;
     FTBNI_unlock_conn_table();
 
@@ -427,10 +437,11 @@ int FTBN_Send_msg(const FTBM_msg_t * msg)
         conn->ref_count--;
         if (conn->ref_count == 0) {
             free(conn->dst);
-            FTBU_list_remove_node((FTBU_list_node_t *) conn);
+            FTBU_list_remove_node(node);
             FTBNI_unlock_conn_table();
             close(conn->fd);
             free(conn);
+			free(node);
         }
         else {
             FTBNI_unlock_conn_table();
@@ -480,7 +491,8 @@ int FTBN_Recv_msg(FTBM_msg_t * msg, FTB_location_id_t * incoming_src, int blocki
 
         FTBNI_lock_conn_table();
         FTBU_list_for_each_readonly(pos, FTBNI_connection_table) {
-            FTB_connection_entry_t *conn = (FTB_connection_entry_t *) pos;
+			FTBU_list_node_t *node = pos;
+            FTB_connection_entry_t *conn = (FTB_connection_entry_t *) node->data;
             FD_SET(conn->fd, &fds);
             if (max_fd < conn->fd)
                 max_fd = conn->fd;
@@ -508,7 +520,6 @@ int FTBN_Recv_msg(FTBM_msg_t * msg, FTB_location_id_t * incoming_src, int blocki
             entry->ref_count = 0;
             entry->fd = accept(FTBNI_listen_fd, NULL, NULL);
             if (entry->fd < 0) {
-                //printf("%d\n", (errno == EINVAL));
                 perror("accept");
                 free(entry);
                 FTB_ERR_ABORT("accept failed");
@@ -540,8 +551,10 @@ int FTBN_Recv_msg(FTBM_msg_t * msg, FTB_location_id_t * incoming_src, int blocki
             }
             FTBNI_UTIL_WRITE(entry, &FTBN_my_location_id, sizeof(FTB_location_id_t));
 
+			FTBU_list_node_t *node = (FTBU_list_node_t *)malloc(sizeof(FTBU_list_node_t));
+			node->data = (void *) entry;
             FTBNI_lock_conn_table();
-            FTBU_list_add_front(FTBNI_connection_table, (FTBU_list_node_t *) entry);
+            FTBU_list_add_front(FTBNI_connection_table, node);
             FTBNI_unlock_conn_table();
             FTBNI_unlock_recv();
             FTB_INFO("FTBN_Recv_msg Out");
@@ -550,7 +563,8 @@ int FTBN_Recv_msg(FTBM_msg_t * msg, FTB_location_id_t * incoming_src, int blocki
 
         FTBNI_lock_conn_table();
         FTBU_list_for_each_readonly(pos, FTBNI_connection_table) {
-            FTB_connection_entry_t *conn = (FTB_connection_entry_t *) pos;
+			FTBU_list_node_t *node = pos;
+            FTB_connection_entry_t *conn = (FTB_connection_entry_t *) node->data;
             if (!FD_ISSET(conn->fd, &fds)) {
                 continue;
             }
@@ -561,9 +575,10 @@ int FTBN_Recv_msg(FTBM_msg_t * msg, FTB_location_id_t * incoming_src, int blocki
                 FTBNI_unlock_conn_entry(conn);
                 FTBNI_unlock_conn_table();
                 free(conn->dst);
-                FTBU_list_remove_node((FTBU_list_node_t *) conn);
+                FTBU_list_remove_node(node);
                 close(conn->fd);
                 free(conn);
+				free(node);
                 FTBNI_unlock_recv();
                 FTB_INFO("FTBN_Recv_msg Out");
                 return FTB_ERR_NETWORK_GENERAL;

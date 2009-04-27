@@ -105,7 +105,11 @@ typedef struct FTBU_map_node {
  * This data type is created is order to clearly distinguish it from the
  * 'map-type' linked list 
  */
-typedef FTBU_map_node_t FTBU_list_node_t;
+typedef struct FTBU_list_node {
+	struct FTBU_list_node *next;
+	struct FTBU_list_node *prev;
+	void *data;
+} FTBU_list_node_t;
 
 #define FTBU_list_for_each_readonly(pos, head) \
     for (pos=head->next; pos!=head; pos=pos->next)
