@@ -127,6 +127,23 @@ int FTBU_is_equal_ftb_id(const FTB_id_t * lhs, const FTB_id_t * rhs)
 
 
 /*
+ * FTBU_is_equal_declared_event_index checks if two publishable event indexes, which populate
+ * the FTBCI_declared_events_map are same.
+ */
+int FTBU_is_equal_declared_event_index(const FTB_event_t * lhs, const FTB_event_t * rhs)
+{
+    if ((strcasecmp(lhs->region, rhs->region) == 0)
+        && (strcasecmp(lhs->comp_cat, rhs->comp_cat) == 0)
+        && (strcasecmp(lhs->comp, rhs->comp) == 0)
+        && (strcasecmp(lhs->event_name, rhs->event_name) == 0)) {
+        return 1;
+    }
+    else
+        return 0;
+}
+
+
+/*
  * FTBU_is_equal_event checks if two events match
  */
 int FTBU_is_equal_event(const FTB_event_t * lhs, const FTB_event_t * rhs)
@@ -328,7 +345,7 @@ inline FTBU_map_node_t *FTBU_map_begin(const FTBU_map_node_t * head)
 FTBU_map_node_t *FTBU_map_find_key(const FTBU_map_node_t * head, FTBU_map_key_t key) 
 {
     FTBU_map_node_t *pos;
-
+	int i=0;
 	FTBU_list_for_each_readonly(pos, head) {
         if (util_key_match(head, pos->key, key))
             return pos;
