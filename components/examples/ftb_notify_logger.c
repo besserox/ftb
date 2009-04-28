@@ -56,10 +56,11 @@ int event_logger(FTB_receive_event_t * evt, void *arg)
 {
     FILE *log_fp = (FILE *) arg;
     time_t current = time(NULL);
+	char buffer[26];
 
     fprintf(log_fp,
             "Current Time: %sEvent Caught with eventspace: %s, severity: %s, event_name: %s, client_name: %s, from host: %s, client_jobid: %s, seqnum: %d\n\n",
-            asctime(localtime(&current)), evt->event_space, evt->severity, evt->event_name, evt->client_name,
+            ctime_r(&current, buffer), evt->event_space, evt->severity, evt->event_name, evt->client_name,
             evt->incoming_src.hostname, evt->client_jobid, evt->seqnum);
     fflush(log_fp);
 

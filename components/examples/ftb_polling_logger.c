@@ -62,6 +62,7 @@ int main(int argc, char *argv[])
     FTB_subscribe_handle_t shandle;
     FTB_client_t cinfo;
     int ret;
+	char buffer[26];
 
     if (argc >= 2) {
         if (strcasecmp(argv[1], "usage") == 0) {
@@ -115,7 +116,7 @@ int main(int argc, char *argv[])
         ret = FTB_Poll_event(shandle, &event);
         if (ret == FTB_GOT_NO_EVENT) {
             time_t current = time(NULL);
-            fprintf(log_fp, "Current Time: %sNo Event Caught\n\n", asctime(localtime(&current)));
+            fprintf(log_fp, "Current Time: %sNo Event Caught\n\n", ctime_r(&current, buffer));
             fflush(log_fp);
             sleep(5);
         }
@@ -123,7 +124,7 @@ int main(int argc, char *argv[])
             time_t current = time(NULL);
             fprintf(log_fp,
                     "Current Time: %sEvent Caught with eventspace: %s, severity: %s, event_name: %s, client_name: %s, from host: %s, client_jobid: %s, seqnum: %d\n\n",
-                    asctime(localtime(&current)), event.event_space, event.severity, event.event_name,
+                    ctime_r(&current, buffer), event.event_space, event.severity, event.event_name,
                     event.client_name, event.incoming_src.hostname, event.client_jobid, event.seqnum);
             fflush(log_fp);
         }
