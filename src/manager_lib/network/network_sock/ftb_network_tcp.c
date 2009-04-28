@@ -28,7 +28,6 @@
 #include <pthread.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
-#include <assert.h>
 #include <pthread.h>
 #include <string.h>
 #include <netdb.h>
