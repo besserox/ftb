@@ -31,7 +31,7 @@ FILE *FTBU_log_file_fp;
 int FTB_Connect(const FTB_client_t * client_info, FTB_client_handle_t * client_handle)
 {
     FTBU_log_file_fp = stderr;
-    return FTBC_Connect(client_info, 0, client_handle); //Set extention to 0
+    return FTBC_Connect(client_info, 0, client_handle); /* Set extention to 0 */
 }
 
 

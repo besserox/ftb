@@ -736,7 +736,7 @@ static void *FTBCI_callback_component(void *arg)
 			free(node);
         }
     }
-    //FTBCI_unlock_client(client_info);
+    /* FTBCI_unlock_client(client_info); */
     return NULL;
 }
 

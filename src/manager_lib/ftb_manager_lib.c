@@ -250,7 +250,6 @@ static void FTBMI_util_reconnect()
         strcpy(comp->id.client_id.comp, "FTB_COMP_MANAGER");
         comp->id.client_id.ext = 0;
         pthread_mutex_init(&comp->lock, NULL);
-        //comp->catch_event_set = (FTBMI_set_event_mask_t *) FTBU_map_init(FTBMI_util_is_equal_event);
         comp->catch_event_set = (FTBMI_set_event_mask_t *) FTBU_map_init(FTBMI_util_is_equal_event_mask);
 
         FTB_INFO
@@ -445,7 +444,6 @@ int FTBM_Init(int leaf)
         FTBMI_info.peers = (FTBMI_map_ftb_id_2_comp_info_t *) FTBU_map_init(FTBMI_util_is_equal_ftb_id);
         FTBMI_info.catch_event_map =
             (FTBMI_map_event_mask_2_comp_info_map_t *) FTBU_map_init(FTBMI_util_is_equal_event_mask);
-        //FTBMI_info.catch_event_map =(FTBMI_map_event_mask_2_comp_info_map_t *) FTBU_map_init(FTBMI_util_is_equal_event);
         FTBMI_info.err_handling = FTB_ERR_HANDLE_RECOVER;
     }
     else {
@@ -481,7 +479,6 @@ int FTBM_Init(int leaf)
         strcpy(comp->id.client_id.comp, "FTB_COMP_MANAGER");
         comp->id.client_id.ext = 0;
         pthread_mutex_init(&comp->lock, NULL);
-        //comp->catch_event_set = (FTBMI_set_event_mask_t *) FTBU_map_init(FTBMI_util_is_equal_event);
         comp->catch_event_set = (FTBMI_set_event_mask_t *) FTBU_map_init(FTBMI_util_is_equal_event_mask);
 
         FTB_INFO
@@ -602,7 +599,6 @@ int FTBM_Client_register(const FTB_id_t * id)
     comp = (FTBMI_comp_info_t *) malloc(sizeof(FTBMI_comp_info_t));
     memcpy(&comp->id, id, sizeof(FTB_id_t));
     pthread_mutex_init(&comp->lock, NULL);
-    //comp->catch_event_set = (FTBMI_set_event_mask_t *) FTBU_map_init(FTBMI_util_is_equal_event);
     comp->catch_event_set = (FTBMI_set_event_mask_t *) FTBU_map_init(FTBMI_util_is_equal_event_mask);
 
     lock_manager();
@@ -816,7 +812,7 @@ int FTBM_Register_subscription(const FTB_id_t * id, FTB_event_t * event)
         FTB_INFO
             ("Going to call FTBU_map_insert() to insert key=comp_id, data=comp, map=FTB_id map which is present in the data part of the catch_event_map");
         if (FTBU_map_insert(map, FTBU_MAP_PTR_KEY(&comp->id), (void *) comp) == FTBU_EXIST) {
-            //FTB_WARNING("This Mask already registered");
+            /* FTB_WARNING("This Mask already registered"); */
         }
         FTBMI_util_reg_propagation(FTBM_MSG_TYPE_REG_SUBSCRIPTION, event, &id->location_id);
     }
@@ -899,7 +895,7 @@ int FTBM_Send(const FTBM_msg_t * msg)
 
     ret = FTBN_Send_msg(msg);
     if (ret != FTB_SUCCESS) {
-        if (!FTBMI_info.leaf) { //For an agent
+        if (!FTBMI_info.leaf) { /* For an agent */
             FTBMI_comp_info_t *comp;
             comp = FTBMI_lookup_component(&msg->dst);
             FTB_INFO("client %s:%s:%d from host %s pid %d, clean up",
