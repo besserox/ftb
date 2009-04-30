@@ -48,9 +48,8 @@ void Int_handler(int sig)
 int main(int argc, char *argv[])
 {
     FTB_client_t cinfo;
-    FTB_client_t cinfo1;
-    FTB_client_handle_t handle, handle1;
-    FTB_subscribe_handle_t shandle, shandle1;
+    FTB_client_handle_t handle;
+    FTB_subscribe_handle_t shandle;
     int ret = 0;
     FTB_event_info_t event_info[1] = { {"WATCH_DOG_EVENT", "INFO"} };
 
@@ -67,20 +66,8 @@ int main(int argc, char *argv[])
     strcpy(cinfo.client_name, "trial-watchdog");
     strcpy(cinfo.client_subscription_style, "FTB_SUBSCRIPTION_POLLING");
 
-	memset(&cinfo1, 0, sizeof(cinfo));
-    strcpy(cinfo1.event_space, "auto.FTB_EXAMPLES.watchdog");
-    strcpy(cinfo1.client_schema_ver, "0.5");
-    strcpy(cinfo1.client_name, "trial-watchdog1");
-    strcpy(cinfo1.client_subscription_style, "FTB_SUBSCRIPTION_POLLING");
-
     /* Connect to FTB using FTB_Connect */
     ret = FTB_Connect(&cinfo, &handle);
-    if (ret != FTB_SUCCESS) {
-        printf("FTB_Connect is not successful ret=%d\n", ret);
-        exit(-1);
-    }
-
-    ret = FTB_Connect(&cinfo1, &handle1);
     if (ret != FTB_SUCCESS) {
         printf("FTB_Connect is not successful ret=%d\n", ret);
         exit(-1);
@@ -93,11 +80,6 @@ int main(int argc, char *argv[])
 
     /* Using events declared in the file for now for portability on BGL. */
     ret = FTB_Declare_publishable_events(handle, 0, event_info, 1);
-    if (ret != FTB_SUCCESS) {
-        printf("FTB_Declare_Publishable_events is not successful ret=%d\n", ret);
-        exit(-1);
-    }
-    ret = FTB_Declare_publishable_events(handle1, 0, event_info, 1);
     if (ret != FTB_SUCCESS) {
         printf("FTB_Declare_Publishable_events is not successful ret=%d\n", ret);
         exit(-1);
@@ -121,7 +103,6 @@ int main(int argc, char *argv[])
      * component category=all and component name=watchdog
      */
     ret = FTB_Subscribe(&shandle, handle, "event_space=ftb.all.watchdog", NULL, NULL);
-    ret = FTB_Subscribe(&shandle1, handle, "event_space=auto.all.all", NULL, NULL);
     if (ret != FTB_SUCCESS) {
         printf("FTB_Subscribe failed ret=%d!\n", ret);
         exit(-1);
@@ -139,7 +120,6 @@ int main(int argc, char *argv[])
          * been declared using the Declare_publishable_events routine
          */
         ret = FTB_Publish(handle, "WATCH_DOG_EVENT", NULL, &ehandle);
-        ret = FTB_Publish(handle1, "WATCH_DOG_EVENT", NULL, &ehandle);
         if (ret != FTB_SUCCESS) {
             printf("FTB_Publish failed\n");
             exit(-1);
@@ -158,18 +138,6 @@ int main(int argc, char *argv[])
              "Received event details: Event space=%s, Severity=%s, Event name=%s, Client name=%s, Hostname=%s, Seqnum=%d\n",
              caught_event.event_space, caught_event.severity, caught_event.event_name,
              caught_event.client_name, caught_event.incoming_src.hostname, caught_event.seqnum);
-
-        ret = FTB_Poll_event(shandle1, &caught_event);
-        if (ret != FTB_SUCCESS) {
-            fprintf(stderr, "Watchdog: No event caught Error code is %d!\n", ret);
-            break;
-        }
-        fprintf
-            (stderr,
-             "Received event details: Event space=%s, Severity=%s, Event name=%s, Client name=%s, Hostname=%s, Seqnum=%d\n",
-             caught_event.event_space, caught_event.severity, caught_event.event_name,
-             caught_event.client_name, caught_event.incoming_src.hostname, caught_event.seqnum);
-
         if (done)
             break;
     }
