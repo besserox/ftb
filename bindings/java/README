@@ -1,0 +1,69 @@
+Java FTB Client Package Release 0.5
+
+
+Installation
+============
+
+1. Java FTB Client Package comes in a single jar file "jftb.jar" that
+   can be found under "lib" directory. Modify your LD_LIBRARY_PATH to
+   include the path to "jftb.tar", for instance, for bash users,
+
+   % export LD_LIBRARY_PATH=/home/hoony/jftb/lib/jftb.jar
+
+   where /home/hoony/jftb is the path to where Java FTB Client Package
+   is stored.
+
+2. Define an environment variable FTB_BSTRAP_SERVER to denote the IP
+   address of FTB database server host.
+
+   $ export FTB_BSTRAP_SERVER=<IP ADDRESS>
+
+   If FTB_BSTRAP_SERVER variable is not set, Java Client will assume
+   the database server will be running on the same machine (localhost).
+
+Building Your Java FTB Client
+=============================
+
+1. Java FTB Client is compatible with jdk-1.5 or higher.
+
+
+2. To use Java FTB Client API, simply import ftb.client package, i.e.,
+
+
+   import ftb.client.*;
+
+   public class YourJavaClient {
+      ...
+   }
+
+
+Documentation 
+=============
+
+A tutorial "Tutorial.pdf" and API documentation in HTML are available under "docs" directory.
+
+
+Examples
+========
+
+Three examples are included under "examples."
+
+  - SimpleSubscriber.java demonstrates how to subscribe to an
+    event. It particularly shows how to retrieve events using polling.
+    This is a Java version of "ftb_simple_subscriber."
+
+  - SimpleCallback.java demonstrates a subscription to an event with callback.
+
+  - SimplePublisher.java demonstrates how to publish events. This is a Java version
+    of "ftb_simple_publisher."
+
+  Note: These client codes also work with their C counterparts, i.e.
+  SimpleSubscriber with ftb_simple_publisher,  
+  SimplePublisher with ftb_simple_subscriber, and
+  SimpleCallback with ftb_simple_publisher.
+
+
+
+
+
+
