@@ -52,7 +52,7 @@ typedef struct FTBNI_config_sock {
 #define FTBNI_CONFIG_FILE_VAL 128
 
 /* totally try ten times maximum */
-#define FTBN_CONNECT_RETRY_COUNT                     10
+#define FTBN_CONNECT_RETRY_COUNT                     1
 
 /* in milliseconds */
 #define FTBN_CONNECT_BACKOFF_INIT_TIMEOUT             1
@@ -70,10 +70,10 @@ typedef struct FTBNI_config_sock {
 #define FTBNI_BOOTSTRAP_BACKOFF_INIT_TIMEOUT          100
 
 /* every time the timeout times four */
-#define FTBNI_BOOTSTRAP_BACKOFF_RATIO                   4
+#define FTBNI_BOOTSTRAP_BACKOFF_RATIO                  4
 
 /* totally try ten times maximum */
-#define FTBNI_BOOTSTRAP_BACKOFF_RETRY_COUNT            10
+#define FTBNI_BOOTSTRAP_BACKOFF_RETRY_COUNT            5
 
 #define FTBNI_BOOTSTRAP_MSG_TYPE_ADDR_REQ    1
 #define FTBNI_BOOTSTRAP_MSG_TYPE_ADDR_REP    2

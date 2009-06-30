@@ -312,7 +312,7 @@ int FTBN_Connect(const FTBM_msg_t * reg_msg, FTB_location_id_t * parent_location
         /*Pass current parent_addr to this function in the case of reconnecting */
         ret = FTBNI_Bootstrap_get_parent_addr(FTBN_my_level, &FTBN_parent_addr, &parent_level);
         if (ret == FTB_ERR_NETWORK_NO_ROUTE) {
-            FTB_WARNING("failed to contact databsae server\n");
+            FTB_WARNING("failed to contact database server\n");
             FTBN_parent_addr.port = 0;
             if (retry++ < FTBN_CONNECT_RETRY_COUNT)
                 continue;
