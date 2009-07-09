@@ -1,16 +1,15 @@
-					FTB Release 0.6
+					FTB Release 0.6.1
 
-FTB 0.6 RELEASE INFORMATION
+FTB 0.6.1 RELEASE INFORMATION
 ==========================================
 * This code release conforms to the "Fault Tolerance Backplane API 0.5". 
 			This FTB API 0.5 can be found on the CIFTS website at
 			http://www.mcs.anl.gov/research/cifts/
 			It can also be found in the 'docs' directory of this software.
 
-* Platforms supported : (1) Ubuntu Linux (Fiesty, Hardy), 
-			(2) IBM BG/L (with ZeptoOS/ZOID on compute nodes), 
-			(3) IBM BG/P (with ZeptoOS/ZOID on compute nodes), 
-			(4) Cray XT4
+* Platforms supported : (1) Ubuntu Linux (Intrepid), 
+			(2) IBM BG/P (with ZeptoOS/ZOID on compute nodes), 
+			(3) Cray XT4
 
 * Networking Protocols supported: TCP/IP
 
@@ -31,7 +30,7 @@ documentation files to proceed with FTB installation and configuration
 for a system of your choice.
 
 All the below files are located in the docs/chapters directory
-	(a) For Ubuntu Linux systems: 01_FTB_on_Linux.txt 
-	(b) For IBM BG/L and BG/P systems: 01_FTB_on_BlueGenes.txt
+	(a) For Linux systems: 01_FTB_on_Linux.txt 
+	(b) For Blue Gene systems: 01_FTB_on_BlueGenes.txt
 	(c) For Cray XT4 systems: 01_FTB_on_Crays.txt
 

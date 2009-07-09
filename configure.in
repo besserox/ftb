@@ -54,15 +54,15 @@ AC_DEFINE_UNQUOTED(FTB_AGENT_PORT, ${FTB_AGENT_PORT}, [FTB Agent port])
 
 
 dnl Expose option for platform type
-AC_ARG_WITH(platform, [  --with-platform=<platform type>	Possible values: bgl, bgp, linux],
+dnl AC_ARG_WITH(platform, [  --with-platform=<platform type>	Possible values: bgl, bgp, linux],
+dnl 		      CLIENTS=$withval, CLIENTS=linux)
+AC_ARG_WITH(platform, [  --with-platform=<platform type>	Possible values: bgp, linux],
  		      CLIENTS=$withval, CLIENTS=linux)
 AC_MSG_CHECKING(checking platform support)
 AC_MSG_RESULT($CLIENTS)
 
-dnl Expose option for BGL enviroment file
-AC_ARG_WITH(platform-envfile, [  --with-platform-envfile=<bg envfile>	Default file is bg_setup_env for BGL and BGP
-					platforms. For all other platforms, this file
-					is ignored.],
+dnl Expose option for BG enviroment file
+AC_ARG_WITH(platform-envfile, [  --with-platform-envfile=<bg envfile>	Default file is bg_setup_env for Blue Gene platforms. For all other platforms, this file is ignored.],
 			ENVFILE=$withval, ENVFILE=)
 AC_MSG_CHECKING(user specified platform environment file)
 AC_MSG_RESULT($ENVFILE)
@@ -79,7 +79,8 @@ fi
 FTB_LIB_LINUX_NAME=ftb
 if  test "$CLIENTS" == "linux"; then
 	clients="linux";
-elif [[ "$CLIENTS" == "bgl" ]] || [[ "$CLIENTS" == "bgp" ]]; then
+dnl elif [[ "$CLIENTS" == "bgl" ]] || [[ "$CLIENTS" == "bgp" ]]; then
+elif [ "$CLIENTS" == "bgp" ]; then
 	clients="bg linux";
 	unset_var=0;
 	ZOID_CLIENT_DIR='${abs_top_srcdir}/src/client_lib/platforms/bg/zoid_client';
@@ -96,9 +97,10 @@ elif [[ "$CLIENTS" == "bgl" ]] || [[ "$CLIENTS" == "bgp" ]]; then
 	else
 		source $BG_ENVFILE;
 	fi
-	if [[ "$CLIENTS" == "bgl" ]]; then
-		PLATFORM="bgl";
-	elif [[ "$CLIENTS" == "bgp" ]]; then
+dnl	if [[ "$CLIENTS" == "bgl" ]]; then
+dnl		PLATFORM="bgl";
+dnl	elif 
+	if [[ "$CLIENTS" == "bgp" ]]; then
 		PLATFORM="bgp";
 	fi
 	if test -z "$ZOID_HOME"; then
@@ -179,7 +181,7 @@ AC_SUBST(CC_BLRTS)
 AC_SUBST(AR_BLRTS)
 AC_SUBST(RANLIB_BLRTS)
 AC_SUBST(BGSYS_LIB_PATH)
-AC_SUBST(BGL_ENVFILE)
+AC_SUBST(BG_ENVFILE)
 AC_SUBST(clients)
 AC_SUBST(PLATFORM)
 AC_SUBST(FTB_NETWORK_CFLAG)
