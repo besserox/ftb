@@ -1,4 +1,4 @@
-Default configuration (Linux) should suffice to build and launch FTB 0.6
+Default configuration (Linux) should suffice to build and launch FTB 0.6.1
 under Cray XT series that run Compute Node Linux (CNL). However, depending
 on the environment setup, some adjustments may be required during the
 installation. For more details or information about the FTB installation at

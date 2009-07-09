@@ -1,4 +1,4 @@
-					FTB Release 0.6 
+					FTB Release 0.6.1
 				(implements FTB API Version 0.5)
 
 Table of Contents
@@ -15,7 +15,7 @@ Table of Contents
 
 Section 1.0 : INTRODUCTION 
 ===============================
-This release of FTB has been developed and tested on Ubuntu (Hardy and Fiesty) for Linux, IBM BG/L and IBM BG/P machines and Cray XT4 machines
+This release of FTB has been developed and tested on Ubuntu (Intrepid) for Linux, IBM BG/P machines and Cray XT4 machines
 
 
 Section 2.0: DOWNLOADING AND CONFIGURING FTB
@@ -23,7 +23,7 @@ Section 2.0: DOWNLOADING AND CONFIGURING FTB
 
 1. You can download the FTB software from the CIFTS website: http://www.mcs.anl.gov/research/cifts
 
-2. Unzip the ftb-0.6 tarball
+2. Unzip the ftb-0.6.1 tarball
 
 3. Change to the downloaded FTB directory and Run ./autogen.sh
 	The autogen script creates the configure and other additonal scripts
@@ -76,10 +76,10 @@ Section 2.0: DOWNLOADING AND CONFIGURING FTB
 		directory. If no directory is specified, the log
 		files are written onto stderr.
 
-	(e) --with-platform=<linux or bgl or bgp>
+	(e) --with-platform=<linux or bgp>
 	 	Default: linux
 	 	This option is used by the user to specify the platform for this
-		FTB build. Only BGL, BGP and linux are supported
+		FTB build. Only BGP and linux are supported
 		at this point. Crays use the default 'linux' option.
 
 	(d) In addition, the user can use other standard options
@@ -215,7 +215,7 @@ Section 5.1: CONFIGURE AND MAKE THE FTB EXAMPLES
 
    	Additional options to above are:
 
-	(a) --with-platform=<linux,bgl,bgp>
+	(a) --with-platform=<linux, bgp>
 	 	Default: linux
 	 	This option is used to specify the platform for which the
 	 	components are to be built for.

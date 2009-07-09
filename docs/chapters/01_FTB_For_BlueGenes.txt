@@ -1,27 +1,26 @@
-					FTB Release 0.6
+					FTB Release 0.6.1
 
 Table of Contents
 =======================
 1.0 Intro
-2.0 Preparing your BG/L or BG/P environment
+2.0 Preparing your BG/P environment
 3.0 Downloading and Configuring FTB
 4.0 Installing FTB
 5.0 Modifying ZeptoOS image with FTB files
 6.0 Running FTB
-        6.1: Specifying boot-strap IP, boot-starp port and agent port information
+        6.1: Specifying boot-strap IP, boot-strap port and agent port information
 7.0 Trying out FTB examples
         7.1: Configure and Make the FTB examples
         7.2: Run the FTB examples
 
 Section 1.0 : INTRODUCTION
 ===============================
-This release of FTB has been developed and tested ANL's Blue Gene/L
-and Blue Gene/P systems.
+This release of FTB has been developed and tested ANL's Blue Gene/P systems.
 
 
-Section 2.0: PREPARING YOUR BG/L OR BG/P ENVIRONMENT
+Section 2.0: PREPARING YOUR BG/P ENVIRONMENT
 =====================================================
-There are 2 facets on how to prepare your BG/L or BG/P environment
+There are 2 facets on how to prepare your BG/P environment
 for FTB. They are dependent on whether you plan to use FTB-enabled
 software on the IBM Compute Nodes.
 
@@ -49,7 +48,7 @@ The ZeptoOS and ZOID installation requires that setting up many
 environment variables. Sample environment files can be found in the
 FTB/docs/chapters/bg_sample_files
 
-The FTB version 0.6 release has been tested with the following
+The FTB version 0.6.1 release has been tested with the following
 ZeptoOS and ZOID versions.
 
 BG/L Machines
@@ -60,7 +59,7 @@ ZOID: Zoid 1.0
 
 BG/P Machines
 -------------
-ZeptoOS and ZOID: Based on the Preview version released on 19th May 2008.
+ZeptoOS and ZOID: Based on the version released on 19th May 2008.
 Here are the steps to get started.
 
 (a) Preparing Zoid
@@ -77,7 +76,7 @@ Section 3.0: DOWNLOADING AND CONFIGURING FTB
 
 0. You can download the FTB software from the CIFTS website: http://www.mcs.anl.gov/research/cifts
 
-1. Unzip the ftb-0.6 tarball
+1. Unzip the ftb-0.6.1 tarball
 
 2. The FTB requires that setting up some BG related environment variables.
 Sample environment files can be found in the FTB/docs/chapters/bg_sample_files
@@ -91,7 +90,7 @@ Sample environment files can be found in the FTB/docs/chapters/bg_sample_files
                 other additional files and provides you with a clean
                 working environment
 
-3. Run ./configure --with-platform=bgp or bgl
+3. Run ./configure --with-platform=bgp
 	Note that if you use --enable-debug, you will need to specify path to the Log files for BG systems.
 
         There are no options required to run configure. You can however specify the following additional options:
@@ -136,11 +135,11 @@ Sample environment files can be found in the FTB/docs/chapters/bg_sample_files
                 directory. If no directory is specified, the log
                 files are written onto stderr.
 
-        (e) --with-platform=<linux or bgl or bgp>
+        (e) --with-platform=<linux or bgp>
                 Default: linux
                 This option is used by the user to specify the platform for this
-                FTB build. Only BGL, BGP and linux are supported
-                at this point. Crays use the default 'linux' option.
+                FTB build. Only BG/P and Linux are supported
+                at this point. Crays use the default 'Linux' option.
 
         (d) In addition, the user can use other standard options
                 like --with-prefix etc. ./configure --help will provide
@@ -168,32 +167,6 @@ The following steps are specific to the ANL system. Please contact
 us if you have any questions for your specific system configuration
 with ZeptoOS and FTB.
 
-
-For BG/L machines
--------------------
-(a) Copy the FTB/sbin/ftb_agent daemon to /ZeptoOS/BGL_SITEDIST/dist/sbin 
-	This will ensure that the ftb_agent will start-up on the I/O node, when the I/O node boots up.
-
-(b) Copy startup scripts as per below steps
-    (0) Set the log file path to point to correct directory in init.d scripts for ftb agent
-	
-    (1) copy src/client_lib/platforms/bg/init_scripts/ftb_agent_bgl to
-        /ZeptoOS/BGL_SITEDIST/dist/etc/rc.d/init.d/ftb_agent
- 
-    (2) cd /ZeptoOS/BGL_SITEDIST/dist/etc/rc.d/rc3.d
-  
-    (3) ln -s ../init.d/ftb_agent  S36ftb_agent
-  
-    (4) ln -s ../init.d/ftb_agent  K64ftb_agent
-
-(c) Make  changes in /ZeptoOS/BGL_SITEDIST/dist/etc/sysconfig/zoid by replacing/adding 
-     the following to ZOID_MODULES:               
-     "ZOID_MODULES="$BGL_SITEDISTDIR/lib/unix_impl.so:$BGL_SITEDISTDIR/lib/unix_preload.so:$BGL_SITEDISTDIR/lib/
-     ftb_zoid_client_impl.so:$BGL_SITEDISTDIR/lib/ftb_zoid_client_preload.so""
-  
-(d) Copying the FTB library files to the ZeptoOS image.
-	Copy the /FTB/lib/ftb_zoid_client_impl.so and ftb_zoid_client_preload.so
-    	from ftb/lib/ to /ZeptoOS/BGL_SITEDIST/dist/lib
 
 For BG/P machines
 ------------------
@@ -269,13 +242,13 @@ Section 7.1: CONFIGURE AND MAKE THE FTB EXAMPLES
 
 2. Run ./autogen.sh
 
-3. Run ./configure --with-ftb=<path_to_ftb_binaries> --with-platform=bgp or bgl
+3. Run ./configure --with-ftb=<path_to_ftb_binaries> --with-platform=bgp
         The --with-ftb path specifies the path where the FTB-enabled software can find the ftb library.
         The default directory to --with-ftb is /usr/local/ftb.
 
         Additional options to above are:
 
-        (a) --with-platform=<linux,bgl,bgp>
+        (a) --with-platform=<linux,bgp>
                 Default: linux
                 This option is used to specify the platform for which the
                 components are to be built for.
@@ -294,9 +267,4 @@ At this stage, your examples should be built.
 Section 7.2: RUN THE FTB EXAMPLES
 ---------------------------------------
 1. Submit your examples using your job scheduler.
-
-
-
-
-
 
