@@ -54,7 +54,7 @@ int callback_handle_recovery(FTB_receive_event_t * evt, void *arg)
     int ret = 0;
     static int numtimes = 0;
     numtimes += 1;
-    printf("Callback Function : callback_handle_recovery called %d times\n", numtimes);
+    printf("Callback Function : Callback_handle_recovery called %d times\n", numtimes);
     printf("In callback_handle_recovery function comp_cat=%s comp=%s event_name=%s\n",
            shandle->client_handle.client_id.comp_cat, shandle->client_handle.client_id.comp,
            shandle->subscription_event.event_name);
@@ -64,7 +64,6 @@ int callback_handle_recovery(FTB_receive_event_t * evt, void *arg)
         return ret;
     }
     printf("In callback function: Unsubscribing the subscription string\n");
-
     return 0;
 }
 
@@ -118,7 +117,7 @@ int main(int argc, char *argv[])
      * At some time, the callback will unsubscribe the subscription_str and
      * some of these events will not be caught
      */
-    for (k = 0; k < 3; k++) {
+    for (k = 0; k < 1; k++) {
         printf("Publishing event %d\n", k);
         ret = FTB_Publish(handle, "my_error_event", NULL, &ehandle);
         if (ret != FTB_SUCCESS) {

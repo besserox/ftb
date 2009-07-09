@@ -1373,7 +1373,7 @@ int FTBC_Poll_event(FTB_subscribe_handle_t subscribe_handle, FTB_receive_event_t
         FTB_client_handle_t temp_handle;
         FTBCI_convert_clientid_to_clienthandle(msg.dst.client_id, &temp_handle);
         if (FTBCI_util_is_equal_clienthandle(&temp_handle, &client_handle)) {
-            FTB_INFO("Polled event for myself");
+            FTB_INFO("Got an event for myself");
             int is_for_callback = 0;
             if (msg.msg_type != FTBM_MSG_TYPE_NOTIFY) {
                 FTB_WARNING("unexpected message type %d", msg.msg_type);
