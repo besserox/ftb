@@ -48,7 +48,6 @@ int main(int argc, char *argv[])
     FTB_client_handle_t handle;
     FTB_subscribe_handle_t shandle;
     int ret = 0;
-    FTB_event_info_t event_info[1] = { {"WATCH_DOG_EVENT", "INFO"} };
 
     if (argc > 1) {
         if (strcasecmp(argv[1], "usage") == 0) {
@@ -70,31 +69,28 @@ int main(int argc, char *argv[])
         exit(-1);
     }
 
-    /*The schema is present in the watchog_schema file. The watchdog schema
+    /* The schema is present in the watchog_schema file. The watchdog schema
      * file is originally present in the  trunk/components/examples directory
-     * ret = FTB_Declare_publishable_events(handle, "watchdog_schema.ftb", NULL, 0);
      */
-
-    /* Using events declared in the file for now for portability on BGL. */
-    ret = FTB_Declare_publishable_events(handle, 0, event_info, 1);
+    ret = FTB_Declare_publishable_events(handle, "watchdog_schema.ftb", NULL, 0);
     if (ret != FTB_SUCCESS) {
         printf("FTB_Declare_Publishable_events is not successful ret=%d\n", ret);
         exit(-1);
     }
 
     /*
-     * The below section would Declare publishable events within the code
+     * The below section would declare publishable events within the code
      * itself. It could have been used instead of the watchdog_schema.ftb
      * file method
-
-     FTB_event_info_t event_info[1] = {{"WATCH_DOG_EVENT", "INFO"}};
-     int num_events = 1;
-     ret = FTB_Declare_publishable_events(handle, 0, event_info, num_events);
+	 */
+	/*
+     FTB_event_info_t event_info[1] = { {"WATCH_DOG_EVENT", "INFO"} };
+     ret = FTB_Declare_publishable_events(handle, 0, event_info, 1);
      if (ret != FTB_SUCCESS) {
      printf("FTB_Declare_publishable_events failed ret=%d!\n", ret); exit(-1);
      }
-     */
-
+	 */
+    
     /*
      * Subscribe to catch all events in the namespace with region=FTB,
      * component category=all and component name=watchdog
