@@ -53,7 +53,7 @@ CFLAGS = -Wall -g -O2
 all: .object_files_built
 
 .object_files_built:
-	$(CC_BLRTS) -c $(CFLAGS) -I@ZOID_CLIENT_DIR@ -I$(ZOID_HOME)/include -I$(INC_DIR) *.c
+	$(CC_BLRTS) -c $(CFLAGS) -I@ZOID_CLIENT_DIR@ -I$(ZOID_HOME) -I$(INC_DIR) *.c
 	touch .object_files_built
 
 clean:

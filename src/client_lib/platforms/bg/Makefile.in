@@ -71,4 +71,4 @@ ${FTB_LIB_PATH_STATIC}/lib${FTB_LIB_BG_CN_NAME}.a: ftb_zoid_wrapper.o ftb_zoid_c
 	${RANLIB} $@
 
 ftb_zoid_wrapper.o: ftb_zoid_wrapper.c
-	${CC} ${CFLAGS} -I${ZOID_HOME}/include -c $<
+	${CC} ${CFLAGS} -I${ZOID_HOME} -c $<

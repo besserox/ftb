@@ -49,7 +49,7 @@ RANLIB=@RANLIB@
 LIBS_PTHREAD=@LIBS_PTHREAD@
 
 PREFIX = ftb_zoid_client
-SCANNER = $(ZOID_HOME)/scanner.pl
+SCANNER = $(ZOID_SRC)/scanner.pl
 CFLAGS = -Wall -g -O2  
 CFLAGS_SHARED = -fPIC -mpowerpc -pthread
 LDFLAGS_SHARED = -shared
@@ -76,7 +76,7 @@ server/.object_files_built: $(PREFIX)_defs.h
 
 
 $(PREFIX)_$(PLATFORM)_dispatch.o: $(PREFIX)_defs.h
-	$(CC) -c $(CFLAGS) -I$(ZOID_HOME)/include $(CFLAGS_SHARED) $(PREFIX)_$(PLATFORM)_dispatch.c
+	$(CC) -c $(CFLAGS) -I$(ZOID_HOME) $(CFLAGS_SHARED) $(PREFIX)_$(PLATFORM)_dispatch.c
 
 $(PREFIX)_defs.h: $(PREFIX)_$(PLATFORM).h $(SCANNER)
 	$(SCANNER) $<

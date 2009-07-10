@@ -1,10 +1,13 @@
 #**************************************************************************************
 # FTB:ftb-info
-#  This software is licensed under BSD. See the file FTB/misc/license.BSD for
-#  complete details on your rights to copy, modify, and use this software.
+#  This file is part of FTB (Fault Tolerance Backplance) - the core of CIFTS
+#  (Co-ordinated Infrastructure for Fault Tolerant Systems)
+#  
+#  See http://www.mcs.anl.gov/research/cifts for more information.
+#  	
 # FTB:ftb-info
 # FTB:ftb-fillin
-#  FTB_Version: 0.6.1
+#  FTB_Version: 0.6
 #  FTB_API_Version: 0.5
 #  FTB_Heredity:FOSS_ORIG
 #  FTB_License:BSD
@@ -51,15 +54,15 @@ AC_DEFINE_UNQUOTED(FTB_AGENT_PORT, ${FTB_AGENT_PORT}, [FTB Agent port])
 
 
 dnl Expose option for platform type
-dnl AC_ARG_WITH(platform, [  --with-platform=<platform type>	Possible values: bgl, bgp, linux],
-dnl 		      CLIENTS=$withval, CLIENTS=linux)
 AC_ARG_WITH(platform, [  --with-platform=<platform type>	Possible values: bgp, linux],
  		      CLIENTS=$withval, CLIENTS=linux)
 AC_MSG_CHECKING(checking platform support)
 AC_MSG_RESULT($CLIENTS)
 
 dnl Expose option for BG enviroment file
-AC_ARG_WITH(platform-envfile, [  --with-platform-envfile=<bg envfile>	Default file is bg_setup_env for Blue Gene platforms. For all other platforms, this file is ignored.],
+AC_ARG_WITH(platform-envfile, [  --with-platform-envfile=<bg envfile>	Default file is bg_setup_env for BGP
+					platforms. For all other platforms, this file
+					is ignored.],
 			ENVFILE=$withval, ENVFILE=)
 AC_MSG_CHECKING(user specified platform environment file)
 AC_MSG_RESULT($ENVFILE)
@@ -76,8 +79,7 @@ fi
 FTB_LIB_LINUX_NAME=ftb
 if  test "$CLIENTS" == "linux"; then
 	clients="linux";
-dnl elif [[ "$CLIENTS" == "bgl" ]] || [[ "$CLIENTS" == "bgp" ]]; then
-elif [ "$CLIENTS" == "bgp" ]; then
+elif [[ "$CLIENTS" == "bgp" ]]; then
 	clients="bg linux";
 	unset_var=0;
 	ZOID_CLIENT_DIR='${abs_top_srcdir}/src/client_lib/platforms/bg/zoid_client';
@@ -96,7 +98,7 @@ elif [ "$CLIENTS" == "bgp" ]; then
 	fi
 dnl	if [[ "$CLIENTS" == "bgl" ]]; then
 dnl		PLATFORM="bgl";
-dnl	elif 
+dnl	elif [[ "$CLIENTS" == "bgp" ]]; then
 	if [[ "$CLIENTS" == "bgp" ]]; then
 		PLATFORM="bgp";
 	fi
@@ -105,6 +107,12 @@ dnl	elif
 		echo "error: Required environment variable not set: ZOID_HOME. Please check BG environment variables file." >&2;
 	else
 		ZOID_HOME="export ZOID_HOME=$ZOID_HOME";
+	fi
+	if test -z "$ZOID_SRC"; then
+		unset_var=1;
+		echo "error: Required environment variable not set: ZOID_SRC. Please check BG environment variables file." >&2;
+	else
+		ZOID_SRC="export ZOID_SRC=$ZOID_SRC";
 	fi
 	if test -z "$ZOID_LIBC_PATH"; then
 		unset_var=1;
@@ -172,13 +180,14 @@ CFLAGS_MANAGER='${CFLAGS_SRC} -I${abs_top_srcdir}/src/manager_lib/network/includ
 
 
 AC_SUBST(ZOID_HOME)
+AC_SUBST(ZOID_SRC)
 AC_SUBST(ZOID_LIBC_PATH)
 AC_SUBST(BLRTS_PATH)
 AC_SUBST(CC_BLRTS)
 AC_SUBST(AR_BLRTS)
 AC_SUBST(RANLIB_BLRTS)
 AC_SUBST(BGSYS_LIB_PATH)
-AC_SUBST(BG_ENVFILE)
+AC_SUBST(ENVFILE)
 AC_SUBST(clients)
 AC_SUBST(PLATFORM)
 AC_SUBST(FTB_NETWORK_CFLAG)
