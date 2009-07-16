@@ -23,8 +23,8 @@ usage()
 
 if [ "$1" == "clean" ]; then
     echo -n "Cleaning up configuration files... "
-    rm -rf ftb_config.* configure Makefile autom4te.cache `find . -name \*~` \
-    `find . -name \*\.d` `find . -name Makefile` include/ftb_config.h
+    rm -rf configure Makefile autom4te.cache `find . -name \*~` \
+    `find . -name \*\.d` `find . -name Makefile` include/ftb_config.* config.*
     echo "done"
     exit
 elif [ "$1" != "" ]; then
@@ -33,6 +33,7 @@ elif [ "$1" != "" ]; then
 else
     echo -n "Setting up configuration files... "
 #    aclocal
+    autoheader
     autoconf
 #    automake --add-missing
     echo done
