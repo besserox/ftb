@@ -1,5 +1,5 @@
-#ifndef CONFIG_H
-#define CONFIG_H
+#ifndef FTB_CONFIG_H
+#define FTB_CONFIG_H
 
 /* Define if debug should be enabled */
 #undef FTB_DEBUG
@@ -13,4 +13,4 @@
 
 #undef FTB_AGENT_PORT
 
-#endif /* CONFIG_H */
+#endif /* FTB_CONFIG_H */

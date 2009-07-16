@@ -21,7 +21,6 @@
 #define FTB_NETWORK_TCP_H
 
 #include "ftb_util.h"
-#include "config.h"
 #include <netdb.h>
 #include <arpa/inet.h>
 

@@ -98,7 +98,6 @@ static pthread_mutex_t FTBCI_lock = PTHREAD_MUTEX_INITIALIZER;
 static pthread_t callback_thread;
 typedef FTBU_map_node_t FTBCI_map_client_handle_2_client_info_t;
 static FTBCI_map_client_handle_2_client_info_t *FTBCI_client_info_map = NULL;
-static FTBCI_map_publishable_event_index_to_event_details *FTBCI_declared_events_map = NULL;
 
 #ifdef FTB_TAG
 typedef FTBU_map_node_t FTBCI_map_tag_2_tag_entry_t;

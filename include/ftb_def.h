@@ -24,7 +24,7 @@
 #include <stdint.h>
 #include <unistd.h>
 #include <sys/types.h>
-#include "config.h"
+#include "ftb_config.h"
 
 /* *INDENT-OFF* */
 #ifdef __cplusplus
