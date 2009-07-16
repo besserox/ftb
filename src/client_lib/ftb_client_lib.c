@@ -472,6 +472,7 @@ int FTBCI_store_declared_events(FTBCI_client_info_t * client_info, const FTB_eve
 		FTBCI_lock_client(client_info);
         if (client_info->total_publish_events >= FTBCI_MAX_EVENTS_PER_CLIENT) {
             FTB_INFO("Out FTBCI_store_declared_events");
+			FTBCI_unlock_client(client_info);
             return FTB_ERR_GENERAL;
         }
 		FTBCI_unlock_client(client_info);
@@ -782,6 +783,7 @@ int FTBC_Connect(FTB_client_t * cinfo, uint8_t extension, FTB_client_handle_t * 
         return FTB_ERR_NULL_POINTER;
 
     client_info = (FTBCI_client_info_t *) malloc(sizeof(FTBCI_client_info_t));
+	memset(client_info, 0, sizeof(FTBCI_client_info_t));
 
     if (strcasecmp(cinfo->client_subscription_style, "FTB_SUBSCRIPTION_POLLING") == 0) {
         client_info->subscription_type = FTB_SUBSCRIPTION_POLLING;
@@ -1476,16 +1478,13 @@ int FTBC_Poll_event(FTB_subscribe_handle_t subscribe_handle, FTB_receive_event_t
                 if (event_found) {
                     FTBU_list_remove_node(current);
                     client_info->event_queue_size--;
+                	FTBCI_unlock_client(client_info);
 					free(current->data);
 					free(current);
 		            FTB_INFO("FTBC_Poll_event Out");
         		    return FTB_SUCCESS;
                 }
                 FTBCI_unlock_client(client_info);
-                if (event_found) {
-                    FTB_INFO("FTBC_Poll_event Out");
-                    return FTB_SUCCESS;
-                }
             }
             FTB_INFO("No events put in my queue, keep polling");
         }
