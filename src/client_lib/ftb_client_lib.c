@@ -1561,7 +1561,6 @@ int FTBC_Disconnect(FTB_client_handle_t client_handle)
     FTBCI_unlock_client(client_info);
     FTBCI_lock_client_lib();
     pthread_mutex_destroy(&client_info->lock);
-    free(client_info);
     FTBU_map_remove_key(FTBCI_client_info_map, FTBU_MAP_PTR_KEY(&client_handle));
     if (client_info->subscription_type & FTB_SUBSCRIPTION_NOTIFY) {
         enable_callback--;
@@ -1571,6 +1570,7 @@ int FTBC_Disconnect(FTB_client_handle_t client_handle)
             pthread_join(callback_thread, NULL);
         }
     }
+    free(client_info);
     num_components--;
     if (num_components == 0) {
         FTBM_Finalize();
