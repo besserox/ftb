@@ -490,8 +490,7 @@ int FTBM_Init(int leaf)
     FTBMI_initialized = 1;
     unlock_manager();
     FTB_INFO("FTBM_Init Out - success");
-    fprintf(stderr, "My location is %s and my parent is %s\n", FTBMI_info.self.location_id.hostname,
-            FTBMI_info.parent.hostname);
+    FTB_INFO("My location is %s and my parent is %s\n", FTBMI_info.self.location_id.hostname, FTBMI_info.parent.hostname);
     return FTB_SUCCESS;
 }
 
