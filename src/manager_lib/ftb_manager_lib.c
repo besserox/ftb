@@ -604,6 +604,8 @@ int FTBM_Client_register(const FTB_id_t * id)
     if (FTBU_map_insert(FTBMI_info.peers, FTBU_MAP_PTR_KEY(&comp->id), (void *) comp) == FTBU_EXIST) {
         FTB_WARNING("Client already registered as a peer");
         unlock_manager();
+		FTBU_map_finalize(comp->catch_event_set);
+		free(comp);
         FTB_INFO("FTBM_Client_register Out");
         return FTB_ERR_INVALID_PARAMETER;
     }
