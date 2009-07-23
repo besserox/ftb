@@ -169,7 +169,7 @@ int FTBNI_Bootstrap_init(const FTBN_config_info_t * config_info, FTBNI_config_so
     return FTB_SUCCESS;
 }
 
-int FTBNI_Bootstrap_get_parent_addr(uint16_t my_level, FTBN_addr_sock_t * parent_addr,
+int FTBNI_Bootstrap_get_parent_addr(int leaf, uint16_t my_level, FTBN_addr_sock_t * parent_addr,
                                     uint16_t * parent_level)
 {
 
@@ -183,13 +183,21 @@ int FTBNI_Bootstrap_get_parent_addr(uint16_t my_level, FTBN_addr_sock_t * parent
     FTBNI_bootstrap_pkt_t pkt_send, pkt_recv;
     int ret;
 
-	memset(&pkt_send, 0, sizeof(FTBNI_bootstrap_pkt_t));
-	memset(&pkt_recv, 0, sizeof(FTBNI_bootstrap_pkt_t));
+    memset(&pkt_send, 0, sizeof(FTBNI_bootstrap_pkt_t));
+    memset(&pkt_recv, 0, sizeof(FTBNI_bootstrap_pkt_t));
 
     pkt_send.bootstrap_msg_type = FTBNI_BOOTSTRAP_MSG_TYPE_ADDR_REQ;
     pkt_send.level = my_level;
 
     memcpy(&pkt_send.addr, parent_addr, sizeof(FTBN_addr_sock_t));
+
+    /* 
+     * Below sender_addr is useful for the database server only if this
+     * is an agent AND is the root agent
+     */
+    memcpy(&pkt_send.sender_addr, &FTBNI_bootstrap_my_addr, sizeof(FTBN_addr_sock_t));
+    pkt_send.leaf = leaf;
+
     ret = FTBNI_util_exchange_bootstrap_msg(&pkt_send, &pkt_recv);
     if (ret != FTB_SUCCESS)
         return ret;

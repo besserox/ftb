@@ -265,13 +265,15 @@ int FTBN_Init(const FTB_location_id_t * my_id, const FTBN_config_info_t * config
 int FTBN_Connect(const FTBM_msg_t * reg_msg, FTB_location_id_t * parent_location_id)
 {
     int ret;
-    int retry = 0;
+    int retry = 0, retry_agent = 0;
     uint16_t parent_level;
     FTBN_addr_sock_t addr;
-    struct timespec delay;
+    struct timespec delay, delay_agent;
 
     delay.tv_sec = 0;
     delay.tv_nsec = FTBN_CONNECT_BACKOFF_INIT_TIMEOUT * 1E6;
+    delay_agent.tv_sec = 0;
+    delay_agent.tv_nsec = FTBN_CONNECT_BACKOFF_INIT_TIMEOUT * 1E6;
 
     strcpy(addr.name, "localhost");
     addr.port = FTBN_config.agent_port;
@@ -307,20 +309,33 @@ int FTBN_Connect(const FTBM_msg_t * reg_msg, FTB_location_id_t * parent_location
             }
         }
         /*Pass current parent_addr to this function in the case of reconnecting */
-        ret = FTBNI_Bootstrap_get_parent_addr(FTBN_my_level, &FTBN_parent_addr, &parent_level);
+        ret = FTBNI_Bootstrap_get_parent_addr(FTBN_config_location.leaf, FTBN_my_level, &FTBN_parent_addr, &parent_level);
         if (ret == FTB_ERR_NETWORK_NO_ROUTE) {
-            FTB_WARNING("failed to contact database server\n");
+            FTB_WARNING("Failed to contact database server. Return code = %d", ret);
             FTBN_parent_addr.port = 0;
-            if (retry++ < FTBN_CONNECT_RETRY_COUNT)
+            if (retry++ < FTBN_CONNECT_RETRY_COUNT) {
+		FTB_INFO("Trying to contact database server again retry number = %d", retry);	
                 continue;
-            else
-                break;
+            }
+            else {
+                FTB_ERR_ABORT("Failed to contact database server..Exiting\n");
+	    }
         }
         if (FTBN_parent_addr.port == 0) {       /*It is the root */
             parent_location_id->pid = 0;
             break;
         }
-        ret = FTBNI_util_connect_to(&FTBN_parent_addr, reg_msg, parent_location_id);
+	do {
+            ret = FTBNI_util_connect_to(&FTBN_parent_addr, reg_msg, parent_location_id);
+            nanosleep(&delay_agent, NULL);
+            delay_agent.tv_sec *= FTBN_CONNECT_BACKOFF_RATIO_FOR_AGENT;
+            delay_agent.tv_nsec *= FTBN_CONNECT_BACKOFF_RATIO_FOR_AGENT;
+            if (delay_agent.tv_nsec > 1E9) {
+                delay_agent.tv_sec += delay_agent.tv_nsec / 1E9;
+                delay_agent.tv_nsec = delay_agent.tv_nsec - delay_agent.tv_sec * 1E9;
+            }
+	    FTB_INFO("Could not connect to parent. Retrying %d", retry_agent);
+	} while (ret != FTB_SUCCESS && retry_agent++ < FTBN_CONNECT_RETRY_COUNT_FOR_AGENT);
         if (ret == FTB_ERR_NETWORK_NO_ROUTE) {
             FTBNI_Bootstrap_report_conn_failure(&FTBN_parent_addr);
             FTBN_parent_addr.port = 0;
@@ -331,15 +346,20 @@ int FTBN_Connect(const FTBM_msg_t * reg_msg, FTB_location_id_t * parent_location
         FTB_INFO("FTBN_Connect Out");
         return ret;
     }
-
     if (!FTBN_config_location.leaf) {
         if (FTBNI_listen_fd == -1) {
             if (FTBNI_util_listen() != FTB_SUCCESS)
                 FTB_ERR_ABORT("cannot listen for new connection");
         }
-        /*Register to allow other agent connect in */
-        FTBN_my_level = parent_level + 1;
-        FTBNI_Bootstrap_register_addr(FTBN_my_level);
+	if (FTBN_parent_addr.port != 0) {
+
+	    /* This agent is not the root; so it was not automatically
+	     * registered. Register it with the database server now so that
+	     * other agents can connect to it. 
+	     */
+	    FTBN_my_level = parent_level + 1;
+            FTBNI_Bootstrap_register_addr(FTBN_my_level);
+	}
     }
     FTB_INFO("FTBN_Connect Out");
 
