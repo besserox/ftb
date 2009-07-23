@@ -50,10 +50,6 @@ static int FTBNI_util_send_bootstrap_msg(const FTBNI_bootstrap_pkt_t * pkt_send)
     struct hostent *hp = NULL;
     int fd;
 
-    if ((fd = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) == -1) {
-        FTB_ERR_ABORT("socket failed");
-    }
-
     hp = FTBNI_gethostbyname(FTBNI_bootstrap_config.server_name);
     if (hp == NULL) {
         FTB_ERR_ABORT("Cannot find database server %s", FTBNI_bootstrap_config.server_name);
@@ -64,6 +60,10 @@ static int FTBNI_util_send_bootstrap_msg(const FTBNI_bootstrap_pkt_t * pkt_send)
     server.sin_family = AF_INET;
     server.sin_port = htons(FTBNI_bootstrap_config.server_port);
 
+    if ((fd = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) == -1) {
+        FTB_ERR_ABORT("socket failed");
+    }
+
     FTB_INFO("sending pkt type %d", pkt_send->bootstrap_msg_type);
     if (sendto
         (fd, pkt_send, sizeof(FTBNI_bootstrap_pkt_t), 0, (struct sockaddr *) &server,
@@ -72,6 +72,7 @@ static int FTBNI_util_send_bootstrap_msg(const FTBNI_bootstrap_pkt_t * pkt_send)
         FTB_ERR_ABORT("sendto failed");
     }
 
+    close(fd);
     return FTB_SUCCESS;
 }
 
@@ -85,10 +86,6 @@ static int FTBNI_util_exchange_bootstrap_msg(const FTBNI_bootstrap_pkt_t * pkt_s
     int i;
     int flag;
 
-    if ((fd = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) == -1) {
-        FTB_ERR_ABORT("socket failed");
-    }
-
     hp = FTBNI_gethostbyname(FTBNI_bootstrap_config.server_name);
     if (hp == NULL) {
         FTB_ERR_ABORT("cannot find database server %s", FTBNI_bootstrap_config.server_name);
@@ -98,6 +95,10 @@ static int FTBNI_util_exchange_bootstrap_msg(const FTBNI_bootstrap_pkt_t * pkt_s
     memcpy((void *) &server.sin_addr, (void *) hp->h_addr, hp->h_length);
     server.sin_family = AF_INET;
     server.sin_port = htons(FTBNI_bootstrap_config.server_port);
+
+    if ((fd = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) == -1) {
+        FTB_ERR_ABORT("socket failed");
+    }
 
     flag = 0;
     for (i = 0; i < FTBNI_BOOTSTRAP_BACKOFF_RETRY_COUNT; i++) {
@@ -137,9 +138,10 @@ static int FTBNI_util_exchange_bootstrap_msg(const FTBNI_bootstrap_pkt_t * pkt_s
             timeout_milli = timeout_milli * FTBNI_BOOTSTRAP_BACKOFF_RATIO;
         }
     }
-    if (flag == 0)
-        return FTB_ERR_NETWORK_NO_ROUTE;
+
     close(fd);
+    if (flag == 0) 
+	return FTB_ERR_NETWORK_NO_ROUTE;
     return FTB_SUCCESS;
 }
 

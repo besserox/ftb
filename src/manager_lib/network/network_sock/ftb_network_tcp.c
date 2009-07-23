@@ -199,7 +199,7 @@ static int FTBNI_util_connect_to(const FTBN_addr_sock_t * addr, const FTBM_msg_t
     hp = FTBNI_gethostbyname(addr->name);
     if (hp == NULL) {
         FTB_WARNING("cannot find host %s", addr->name);
-		close(entry->fd);
+        close(entry->fd);
         return FTB_ERR_NETWORK_NO_ROUTE;
     }
     memset((void *) &sa, 0, sizeof(sa));
@@ -207,11 +207,11 @@ static int FTBNI_util_connect_to(const FTBN_addr_sock_t * addr, const FTBM_msg_t
     sa.sin_family = AF_INET;
     sa.sin_port = htons(addr->port);
     if (setsockopt(entry->fd, IPPROTO_TCP, TCP_NODELAY, (char *) &optval, sizeof(optval))) {
-		close(entry->fd);
+	close(entry->fd);
         return FTB_ERR_NETWORK_GENERAL;
     }
     if (connect(entry->fd, (struct sockaddr *) &sa, sizeof(sa)) < 0) {
-		close(entry->fd);
+	close(entry->fd);
         return FTB_ERR_NETWORK_NO_ROUTE;
     }
 #ifdef FD_CLOEXEC
@@ -313,7 +313,7 @@ int FTBN_Connect(const FTBM_msg_t * reg_msg, FTB_location_id_t * parent_location
         if (ret == FTB_ERR_NETWORK_NO_ROUTE) {
             FTB_WARNING("Failed to contact database server. Return code = %d", ret);
             FTBN_parent_addr.port = 0;
-            if (retry++ < FTBN_CONNECT_RETRY_COUNT) {
+            if (retry < FTBN_CONNECT_RETRY_COUNT) {
 		FTB_INFO("Trying to contact database server again retry number = %d", retry);	
                 continue;
             }

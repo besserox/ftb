@@ -155,9 +155,11 @@ int main(int argc, char *argv[])
     server.sin_addr.s_addr = htonl(INADDR_ANY);
     if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, (char *) &optval, sizeof(optval))) {
         FTB_WARNING("setsockopt failed");
+        close(fd);
         return FTB_ERR_NETWORK_GENERAL;
     }
     if (bind(fd, (struct sockaddr *) &server, sizeof(struct sockaddr_in)) == -1) {
+        close(fd);
         FTB_ERR_ABORT("bind failed");
     }
 
@@ -174,6 +176,7 @@ int main(int argc, char *argv[])
         if (select(fd + 1, &fds, NULL, NULL, NULL) < 0) {
             if (errno == EINTR || errno == EAGAIN)
                 continue;
+            close(fd);
             return FTB_ERR_NETWORK_GENERAL;
         }
 
@@ -373,5 +376,6 @@ int main(int argc, char *argv[])
             }
         }
     }
+    close(fd);
     return 0;
 }
