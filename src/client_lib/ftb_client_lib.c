@@ -1233,8 +1233,8 @@ int FTBC_Publish(FTB_client_handle_t client_handle, const char *event_name,
 	if (iter == FTBU_map_end(client_info->declared_events_map)) {
 		free(event_index);
 		FTBCI_unlock_client(client_info);
-        FTB_INFO("FTBC_Publish Out with an error");
-        return ret;
+        FTB_INFO("FTBC_Publish Out - event name has not been declared");
+        return FTB_ERR_INVALID_EVENT_NAME;
 	}
 	event_details = (FTBCI_publish_event_details_t *)FTBU_map_get_data(iter); 
 	FTBCI_unlock_client(client_info);
