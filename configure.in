@@ -281,5 +281,13 @@ AC_OUTPUT(Makefile 								\
 	  src/client_lib/platforms/bg/zoid_client/implementation/Makefile	\
 	  src/client_lib/platforms/bg/zoid_client/client/Makefile		\
 	  src/client_lib/platforms/bg/zoid_client/server/Makefile		\
-	  src/agent/Makefile)
+	  src/agent/Makefile,
+	  [ header='include/ftb_config.h'
+	    if test -f $header -a -n "`grep PACKAGE_NAME $header`" ; then
+	      mv $header $header.dirty
+	      grep -v '#define PACKAGE_' <$header.dirty >$header
+	      rm -f $header.dirty
+	    fi
+	  ])
+
 
