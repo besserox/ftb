@@ -212,6 +212,7 @@ dnl	elif [[ "$CLIENTS" == "bgp" ]]; then
 	fi
 fi
 
+
 dnl Setup some default variables that will be useful in lower Maekfiles
 network="sock";
 FTB_NETWORK_CFLAG="-DFTB_NETWORK_SOCK";
@@ -282,12 +283,12 @@ AC_OUTPUT(Makefile 								\
 	  src/client_lib/platforms/bg/zoid_client/client/Makefile		\
 	  src/client_lib/platforms/bg/zoid_client/server/Makefile		\
 	  src/agent/Makefile,
-	  [ header='include/ftb_config.h'
+dnl Below statement remove the empty PACKAGE_* statements and associated comments from ftb_config.h	  
+	   [header='include/ftb_config.h'
 	    if test -f $header -a -n "`grep PACKAGE_NAME $header`" ; then
-	      mv $header $header.dirty
-	      grep -v '#define PACKAGE_' <$header.dirty >$header
-	      rm -f $header.dirty
+		  sed -n -e '/define PACKAGE_/{n;/^$/n;h;$p;d;}' -e 'x;1!p;g;$p' <$header >$header.tmp
+		  mv -f $header.tmp $header
 	    fi
-	  ])
+		])
 
 
