@@ -88,8 +88,13 @@ static inline FTBNI_bootstrap_entry_t *FTBNI_util_find_parent_addr(const FTBNI_b
     if (FTBNI_addr_count == 0)
         return NULL;
 
+    FTB_INFO("req level %d, old parent hostname %s, port %d", pkt_req->level,
+             pkt_req->addr.name, pkt_req->addr.port);
+
     x = rand() % FTBNI_addr_count;
+
     iter = FTBU_map_begin(FTBNI_bootstrap_addr_map);
+
 
     /* Return the last suitable one in a random range */
     for (i = 0; i <= x; i++) {
@@ -155,11 +160,9 @@ int main(int argc, char *argv[])
     server.sin_addr.s_addr = htonl(INADDR_ANY);
     if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, (char *) &optval, sizeof(optval))) {
         FTB_WARNING("setsockopt failed");
-        close(fd);
         return FTB_ERR_NETWORK_GENERAL;
     }
     if (bind(fd, (struct sockaddr *) &server, sizeof(struct sockaddr_in)) == -1) {
-        close(fd);
         FTB_ERR_ABORT("bind failed");
     }
 
@@ -172,11 +175,10 @@ int main(int argc, char *argv[])
         FD_ZERO(&fds);
         FD_SET(fd, &fds);
 
-        FTB_INFO("Bootstrap waiting for message");
+        FTB_INFO("Waiting for message");
         if (select(fd + 1, &fds, NULL, NULL, NULL) < 0) {
             if (errno == EINTR || errno == EAGAIN)
                 continue;
-            close(fd);
             return FTB_ERR_NETWORK_GENERAL;
         }
 
@@ -188,13 +190,14 @@ int main(int argc, char *argv[])
                        (struct sockaddr *) &client, (socklen_t *) & slen);
         if (ret != sizeof(FTBNI_bootstrap_pkt_t)) {
             perror("recvfrom");
-            FTB_WARNING("Received packet size different from what is expected");
+            FTB_WARNING("received packet size different from what is expected");
             continue;
         }
 
         strcpy(pkt.addr.name, inet_ntoa(client.sin_addr));
-        strcpy(pkt.sender_addr.name, inet_ntoa(client.sin_addr));
 
+        FTB_INFO("received packet type %d client addr %s:%d", pkt.bootstrap_msg_type,
+                 inet_ntoa(client.sin_addr), ntohs(client.sin_port));
 
         if (pkt.bootstrap_msg_type == FTBNI_BOOTSTRAP_MSG_TYPE_ADDR_REQ) {
             /*
@@ -203,9 +206,6 @@ int main(int argc, char *argv[])
              */
             FTBNI_bootstrap_entry_t *entry;
             int ret;
-        
-	    FTB_INFO("Bootstrap received packet type %d (requesting its parent address) from client address %s from client port %d", 
-		pkt.bootstrap_msg_type, inet_ntoa(client.sin_addr), ntohs(client.sin_port));
 
             memset(&pkt_send, 0, sizeof(FTBNI_bootstrap_pkt_t));
             pkt_send.bootstrap_msg_type = FTBNI_BOOTSTRAP_MSG_TYPE_ADDR_REP;
@@ -214,69 +214,21 @@ int main(int argc, char *argv[])
             if (entry != NULL) {
                 memcpy(&pkt_send.addr, &entry->addr, sizeof(FTBN_addr_sock_t));
                 pkt_send.level = entry->level;
-		FTB_INFO("Found parent of name %s, port %d and level %d for client = %s", 
-			pkt_send.addr.name, pkt_send.addr.port, pkt_send.level, inet_ntoa(client.sin_addr) );
             }
-            else { 
-		/* A parent could not be found for the requesting client.
- 		 * This client will be the root node with level 1 
- 		 */
-
-		if (!pkt.leaf) { /* reconfirming that this is an agent */
-		    FTBU_map_node_t *iter; FTBNI_bootstrap_entry_t
-		    *entry = (FTBNI_bootstrap_entry_t *) malloc(sizeof(FTBNI_bootstrap_entry_t));
-
-            	    if (pkt.sender_addr.port == 0) {
-                        FTB_WARNING("Trying to register an invalid address for root agent. Ignore");
-                        continue;
-		    }
-            	    memcpy(&entry->addr, &pkt.sender_addr, sizeof(FTBN_addr_sock_t));
-            	    entry->level = 1; 
-
-		    /*
- 		     * If this is a new node/client agent becoming a root;
- 		     * then add it immediately to the bootstrap map
- 		     */
-		    iter = FTBU_map_find_key(FTBNI_bootstrap_addr_map, (FTBU_map_key_t) (void *) &entry->addr);
-                    if (iter == FTBU_map_end(FTBNI_bootstrap_addr_map)) {
-                        FTBU_map_insert(FTBNI_bootstrap_addr_map,
-                                (FTBU_map_key_t) (void *) &entry->addr, (void *) entry);
-                        FTBNI_addr_count++;
-            	   	FTB_INFO("Right away registering root agent %s, port %d, level %u", pkt.sender_addr.name,
-                    	 	pkt.sender_addr.port, entry->level);
-                    }
-                    else {
-		        /*
- 			 * This is an existing agent who will become a root now
- 			 */
-                        free(entry);
-                        FTB_INFO("Registering an already registered address. Its parent (also the root) had died? This node is now the root");
-                        entry = (FTBNI_bootstrap_entry_t *) FTBU_map_get_data(iter);
-                        entry->level = 1;
-			/*
- 			 * Return level of its non-existent parent to this agent
- 			 */
-                        pkt_send.addr.name[0] = '\0';
-                        pkt_send.addr.port = 0;
-                        pkt_send.level = 0;
-                   } 
-		}
-		else {
-		    FTB_INFO("Bootstrap server is being contacted by an FTB client (which is not as agent) ");
-	            FTB_WARNING("Could not find a parent for the requesting FTB client. There are probably no agents running?");
-                    pkt_send.addr.name[0] = '\0';
-                    pkt_send.addr.port = 0;
-                    pkt_send.level = 0;
-		}
-
+            else {
+                pkt_send.addr.name[0] = '\0';
+                pkt_send.addr.port = 0;
+                pkt_send.level = 0;
             }
-	    FTB_INFO("Bootstrap sending client %s response of type %d containing parent name %s, port = %d and parent level = %d",
-                     inet_ntoa(client.sin_addr), pkt_send.bootstrap_msg_type, pkt_send.addr.name, pkt_send.addr.port, pkt_send.level);
+
+            FTB_INFO("sending reply addr of hostname %s, port %d, level %d",
+                     pkt_send.addr.name, pkt_send.addr.port, pkt_send.level);
+
             if (sendto
                 (fd, &pkt_send, sizeof(FTBNI_bootstrap_pkt_t), 0,
                  (struct sockaddr *) &client, slen) != sizeof(FTBNI_bootstrap_pkt_t)) {
                 close(fd);
-                FTB_ERR_ABORT("Sendto failed %d\n", ret);
+                FTB_ERR_ABORT("sendto failed %d\n", ret);
             }
         }
         else if (pkt.bootstrap_msg_type == FTBNI_BOOTSTRAP_MSG_TYPE_REG_REQ) {
@@ -284,14 +236,11 @@ int main(int argc, char *argv[])
             FTBNI_bootstrap_entry_t *entry =
                 (FTBNI_bootstrap_entry_t *) malloc(sizeof(FTBNI_bootstrap_entry_t));
 
-	    FTB_INFO("Bootstrap received packet type %d (register me as parent) from client address %s from client port %d", 
-		pkt.bootstrap_msg_type, inet_ntoa(client.sin_addr), ntohs(client.sin_port));
-
             memset(&pkt_send, 0, sizeof(FTBNI_bootstrap_pkt_t));
             memcpy(&entry->addr, &pkt.addr, sizeof(FTBN_addr_sock_t));
             entry->level = pkt.level;
 
-            FTB_INFO("This is a request to register %s as a parent on port %d, level %u", pkt.addr.name,
+            FTB_INFO("received request to register %s, port %d, level %u", pkt.addr.name,
                      pkt.addr.port, pkt.level);
 
             if (pkt.addr.port == 0) {
@@ -299,34 +248,47 @@ int main(int argc, char *argv[])
                 continue;
             }
 
-            iter = FTBU_map_find_key(FTBNI_bootstrap_addr_map, (FTBU_map_key_t) (void *) &entry->addr);
-            if (iter == FTBU_map_end(FTBNI_bootstrap_addr_map)) {
+            pkt_send.bootstrap_msg_type = FTBNI_BOOTSTRAP_MSG_TYPE_REG_REP;
+
+	    //HOONY added
+	    if ( entry->level == 1 )  { // i.e, if this agent claims it is the root
+	      FTBU_map_node_t *iter;
+	      iter = FTBU_map_begin(FTBNI_bootstrap_addr_map);
+	      while ( iter != FTBU_map_end(FTBNI_bootstrap_addr_map) ) {
+		FTBNI_bootstrap_entry_t *temp = (FTBNI_bootstrap_entry_t *) FTBU_map_get_data(iter);
+		if ( temp->level == 1 ) {
+		  pkt_send.bootstrap_msg_type = FTBNI_BOOTSTRAP_MSG_TYPE_REG_INVALID;	      
+		  break;
+		}
+		iter = FTBU_map_next_node(iter);
+	      }
+	    }
+
+	    if ( pkt_send.bootstrap_msg_type == FTBNI_BOOTSTRAP_MSG_TYPE_REG_REP ) {
+	      iter = FTBU_map_find_key(FTBNI_bootstrap_addr_map, (FTBU_map_key_t) (void *) &entry->addr);
+	      if (iter == FTBU_map_end(FTBNI_bootstrap_addr_map)) {
                 FTBU_map_insert(FTBNI_bootstrap_addr_map,
                                 (FTBU_map_key_t) (void *) &entry->addr, (void *) entry);
                 FTBNI_addr_count++;
-            }
-            else {
+	      }
+	      else {
                 free(entry);
+                FTB_WARNING("registering same addr again, update its level");
                 entry = (FTBNI_bootstrap_entry_t *) FTBU_map_get_data(iter);
                 entry->level = pkt.level;
-                FTB_WARNING("In Request register my address section: registering same addr again, update its level to pkt.level");
-            }
+	      }
+	    }
 
-            pkt_send.bootstrap_msg_type = FTBNI_BOOTSTRAP_MSG_TYPE_REG_REP;
-	    FTB_INFO("Bootstrap sending client %s a response of type %d indicating it has registered it as a parent",
-                     inet_ntoa(client.sin_addr), pkt_send.bootstrap_msg_type);
+            FTB_INFO("sending reg reply");
             if (sendto
                 (fd, &pkt_send, sizeof(FTBNI_bootstrap_pkt_t), 0,
                  (struct sockaddr *) &client, slen) != sizeof(FTBNI_bootstrap_pkt_t)) {
                 close(fd);
-                FTB_ERR_ABORT("Sendto failed");
+                FTB_ERR_ABORT("sendto failed");
             }
         }
         else if (pkt.bootstrap_msg_type == FTBNI_BOOTSTRAP_MSG_TYPE_DEREG_REQ) {
             FTBU_map_node_t *iter;
-
-	    FTB_INFO("Bootstrap received packet type %d (deregister me as parent) from client address %s from client port %d", 
-		pkt.bootstrap_msg_type, inet_ntoa(client.sin_addr), ntohs(client.sin_port));
 
             memset(&pkt_send, 0, sizeof(FTBNI_bootstrap_pkt_t));
             if (pkt.addr.port == 0) {
@@ -341,26 +303,24 @@ int main(int argc, char *argv[])
                 FTBU_map_remove_node(iter);
             }
             else {
-                FTB_WARNING("IBootstrap was contacted for deregistering an non-existing addr");
+                FTB_WARNING("deregstering an non-existing addr");
             }
 
             pkt_send.bootstrap_msg_type = FTBNI_BOOTSTRAP_MSG_TYPE_DEREG_REP;
-	    FTB_INFO("Bootstrap sending client %s a response of type %d indicating it has deregistered it as a parent",
-                     inet_ntoa(client.sin_addr), pkt_send.bootstrap_msg_type);
+
+            FTB_INFO("sending dereg reply");
             if (sendto
                 (fd, &pkt_send, sizeof(FTBNI_bootstrap_pkt_t), 0,
                  (struct sockaddr *) &client, slen) != sizeof(FTBNI_bootstrap_pkt_t)) {
                 close(fd);
-                FTB_ERR_ABORT("Sendto failed");
+                FTB_ERR_ABORT("sendto failed");
             }
         }
         else if (pkt.bootstrap_msg_type == FTBNI_BOOTSTRAP_MSG_TYPE_CONN_FAIL) {
             FTBU_map_node_t *iter;
-	    FTB_INFO("Bootstrap received packet type %d (connection to parent failed) from client address %s from client port %d", 
-		pkt.bootstrap_msg_type, inet_ntoa(client.sin_addr), ntohs(client.sin_port));
 
             if (pkt.addr.port == 0) {
-                FTB_WARNING("Bootstrap was contacted by an invalid address");
+                FTB_WARNING("deregistering an invalid addr");
                 continue;
             }
 
@@ -372,10 +332,9 @@ int main(int argc, char *argv[])
                 FTBU_map_remove_node(iter);
             }
             else {
-                FTB_WARNING("In Connection failed; Reporting an non-existing addr");
+                FTB_WARNING("reporting an non-existing addr");
             }
         }
     }
-    close(fd);
     return 0;
 }

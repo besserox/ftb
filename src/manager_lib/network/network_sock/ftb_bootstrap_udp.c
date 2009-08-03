@@ -206,6 +206,11 @@ int FTBNI_Bootstrap_get_parent_addr(int leaf, uint16_t my_level, FTBN_addr_sock_
 
     FTB_INFO("received msg type %d, parent hostname %s, port %d, level %u", pkt_recv.bootstrap_msg_type,
              pkt_recv.addr.name, pkt_recv.addr.port, pkt_recv.level);
+
+    //HOONY
+    printf("received msg type %d, parent hostname %s, port %d, level %u", pkt_recv.bootstrap_msg_type,
+             pkt_recv.addr.name, pkt_recv.addr.port, pkt_recv.level);
+
     if (pkt_recv.bootstrap_msg_type != FTBNI_BOOTSTRAP_MSG_TYPE_ADDR_REP) {
         return FTB_ERR_GENERAL;
     }

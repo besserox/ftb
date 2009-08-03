@@ -35,7 +35,7 @@ static pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
 
 FILE *FTBU_log_file_fp;
 
-void *progress_loop(void *arg)
+void progress_loop()
 {
     FTBM_msg_t msg;
     FTBM_msg_t msg_send;
@@ -46,23 +46,28 @@ void *progress_loop(void *arg)
     FTB_location_id_t incoming_src;
 
     pthread_mutex_lock(&lock);
-    while (1) {
+
+    while (!done) {
         pthread_mutex_unlock(&lock);
         ret = FTBM_Wait(&msg, &incoming_src);
+
         if (ret != FTB_SUCCESS) {
             FTB_WARNING("FTBM_Wait failed %d", ret);
             continue;
         }
+
         pthread_mutex_lock(&lock);
         if (msg.msg_type == FTBM_MSG_TYPE_NOTIFY) {
             msg_send.msg_type = FTBM_MSG_TYPE_NOTIFY;
             memcpy(&msg_send.src, &msg.src, sizeof(FTB_id_t));
             memcpy(&msg_send.event, &msg.event, sizeof(FTB_event_t));
-            ret = FTBM_Get_catcher_comp_list(&msg.event, &ids, &ids_len);
-            if (ret != FTB_SUCCESS) {
-                FTB_WARNING("FTBM_Get_catcher_comp_list failed");
-                continue;
-            }
+
+	    ret = FTBM_Get_catcher_comp_list(&msg.event, &ids, &ids_len);
+	    if (ret != FTB_SUCCESS) {
+	      FTB_WARNING("FTBM_Get_catcher_comp_list failed");
+	      continue;
+	    }
+
             for (i = 0; i < ids_len; i++) {
                 if ((strcasecmp(ids[i].client_id.comp, "FTB_COMP_MANAGER") == 0)
                     && (strcasecmp(ids[i].client_id.comp_cat, "FTB_COMP_CAT_BACKPLANE") == 0)
@@ -70,15 +75,18 @@ void *progress_loop(void *arg)
                     /*not send same msg back in case incoming source is another agent */
                     continue;
                 }
+
                 FTB_INFO("FTBM_MSG_TYPE_NOTIFY : Sending the message to destination =%s \n",
                          ids[i].location_id.hostname);
                 memcpy(&msg_send.dst, &ids[i], sizeof(FTB_id_t));
+
                 ret = FTBM_Send(&msg_send);
                 if (ret != FTB_SUCCESS) {
                     FTB_WARNING("FTBM_Send failed %d", ret);
                 }
             }
-            ret = FTBM_Release_comp_list(ids);
+
+	    ret = FTBM_Release_comp_list(ids);
         }
         else if (msg.msg_type == FTBM_MSG_TYPE_CLIENT_REG) {
             ret = FTBM_Client_register(&msg.src);
@@ -120,7 +128,7 @@ void *progress_loop(void *arg)
             FTB_WARNING("Unknown message type %d", msg.msg_type);
         }
     }
-    return NULL;
+    return;
 }
 
 
@@ -135,11 +143,13 @@ void handler(int sig)
 int main(int argc, char *argv[])
 {
     int ret;
+/*
     int pid;
 
     pid = fork();
     if (pid != 0)
         return 0;
+*/
 
 #ifdef FTB_DEBUG
     if (argc >= 2 && strcmp("ION_AGENT", argv[1]) == 0) {
@@ -156,9 +166,12 @@ int main(int argc, char *argv[])
         FTBU_log_file_fp = stderr;
 
     ret = FTBM_Init(0);
+
     if (ret != FTB_SUCCESS) {
         FTB_ERR_ABORT("FTBM_Init failed %d", ret);
     }
+
+    /*
     pthread_create(&progress_thread, NULL, progress_loop, NULL);
 
     signal(SIGINT, handler);
@@ -166,6 +179,16 @@ int main(int argc, char *argv[])
     while (!done) {
         sleep(1);
     }
+    pthread_mutex_lock(&lock);
+    pthread_cancel(progress_thread);
+    pthread_join(progress_thread, NULL);
+    */
+    signal(SIGINT, handler);
+    signal(SIGTERM, handler);
+    pthread_create(&progress_thread, NULL, FTBM_Fill_Message_Queue, NULL);
+
+    progress_loop();
+
     pthread_mutex_lock(&lock);
     pthread_cancel(progress_thread);
     pthread_join(progress_thread, NULL);
