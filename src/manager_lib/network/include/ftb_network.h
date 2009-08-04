@@ -68,9 +68,6 @@ int FTBN_Send_msg(const FTBM_msg_t * msg);
 
 int FTBN_Recv_msg(FTBM_msg_t * msg, FTB_location_id_t * incoming_src, int blocking);
 
-/* HOONY added */
-int FTBN_Grab_Messages(FTBM_msg_node_t **head, FTBM_msg_node_t **tail);
-
 int FTBN_Disconnect_peer(const FTB_location_id_t * peer_location_id);
 
 int FTBN_Get_my_network_address(char *addr);
