@@ -49,14 +49,12 @@ typedef struct FTBNI_config_sock {
 
 /* totally try ten times maximum */
 #define FTBN_CONNECT_RETRY_COUNT                     1
-#define FTBN_CONNECT_RETRY_COUNT_FOR_AGENT           10
 
 /* in milliseconds */
 #define FTBN_CONNECT_BACKOFF_INIT_TIMEOUT             1
 
 /* every time the timeout times four */
 #define FTBN_CONNECT_BACKOFF_RATIO                    4
-#define FTBN_CONNECT_BACKOFF_RATIO_FOR_AGENT          5
 
 /*
  * A UDP design of bootstraping module. It is to handle the initial dymanic
@@ -85,15 +83,12 @@ typedef struct FTBNI_bootstrap_pkt {
     uint8_t bootstrap_msg_type;
     FTBN_addr_sock_t addr;
     uint16_t level;
-    FTBN_addr_sock_t sender_addr;
-    int leaf;
-    
 } FTBNI_bootstrap_pkt_t;
 
 int FTBNI_Bootstrap_init(const FTBN_config_info_t * config_info, FTBNI_config_sock_t * config,
                          FTBN_addr_sock_t * my_addr);
 
-int FTBNI_Bootstrap_get_parent_addr(int leaf, uint16_t my_level, FTBN_addr_sock_t * parent_addr,
+int FTBNI_Bootstrap_get_parent_addr(uint16_t my_level, FTBN_addr_sock_t * parent_addr,
                                     uint16_t * parent_level);
 
 int FTBNI_Bootstrap_register_addr(uint16_t my_level);
