@@ -316,7 +316,7 @@ int FTBN_Connect(const FTBM_msg_t * reg_msg, FTB_location_id_t * parent_location
                 continue;
             }
             else {
-				break;
+				FTB_ERR_ABORT("Failed to contact database server..Exiting\n");
 	        }
         }
         if (FTBN_parent_addr.port == 0) {       /*It is the root */
