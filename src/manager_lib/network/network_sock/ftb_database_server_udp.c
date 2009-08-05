@@ -282,7 +282,7 @@ int main(int argc, char *argv[])
 					FTB_WARNING("In Request register my address section: registering same addr again, update its level to pkt.level");
 				}
 			}
-			FTB_INFO("Bootstrap sending client %s a response of type %d indicating it has registered it as a parent",
+			FTB_INFO("Bootstrap sending client %s a response of type %d indicating whether it could registered as a parent",
                      inet_ntoa(client.sin_addr), pkt_send.bootstrap_msg_type);
             if (sendto
                 (fd, &pkt_send, sizeof(FTBNI_bootstrap_pkt_t), 0,

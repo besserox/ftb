@@ -329,9 +329,8 @@ int FTBN_Connect(const FTBM_msg_t * reg_msg, FTB_location_id_t * parent_location
         }
 
         if (FTBN_parent_addr.port == 0) {       /*It is the root */
-            parent_location_id->pid = 0;
+        	parent_location_id->pid = 0;
 			FTBN_my_level = parent_level + 1;
-			//sleep(5);
 			ret = FTBNI_Bootstrap_register_addr(FTBN_my_level);
 			if (ret != FTB_SUCCESS) {
 				/* Reset FTBN_my_level to initial value and get new parent from database server*/
