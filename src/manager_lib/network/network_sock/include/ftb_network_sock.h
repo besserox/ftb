@@ -78,6 +78,7 @@ typedef struct FTBNI_config_sock {
 #define FTBNI_BOOTSTRAP_MSG_TYPE_DEREG_REQ   5
 #define FTBNI_BOOTSTRAP_MSG_TYPE_DEREG_REP   6
 #define FTBNI_BOOTSTRAP_MSG_TYPE_CONN_FAIL   7
+#define FTBNI_BOOTSTRAP_MSG_TYPE_REG_INVALID 10
 
 typedef struct FTBNI_bootstrap_pkt {
     uint8_t bootstrap_msg_type;

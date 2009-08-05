@@ -250,21 +250,39 @@ int main(int argc, char *argv[])
                 continue;
             }
 
-            iter = FTBU_map_find_key(FTBNI_bootstrap_addr_map, (FTBU_map_key_t) (void *) &entry->addr);
-            if (iter == FTBU_map_end(FTBNI_bootstrap_addr_map)) {
-                FTBU_map_insert(FTBNI_bootstrap_addr_map,
-                                (FTBU_map_key_t) (void *) &entry->addr, (void *) entry);
-                FTBNI_addr_count++;
-            }
-            else {
-                free(entry);
-                entry = (FTBNI_bootstrap_entry_t *) FTBU_map_get_data(iter);
-                entry->level = pkt.level;
-                FTB_WARNING("In Request register my address section: registering same addr again, update its level to pkt.level");
-            }
-
             pkt_send.bootstrap_msg_type = FTBNI_BOOTSTRAP_MSG_TYPE_REG_REP;
-	    	FTB_INFO("Bootstrap sending client %s a response of type %d indicating it has registered it as a parent",
+
+			/* 
+			 * Check if the contacting agent is a true root of the tree.
+			 * If some other agent is the root; then send a
+			 * FTBNI_BOOTSTRAP_MSG_TYPE_REG_INVALID message
+			 */
+			if (entry->level == 1)  {
+				FTBU_map_node_t *iter;
+				iter = FTBU_map_begin(FTBNI_bootstrap_addr_map);
+				while (iter != FTBU_map_end(FTBNI_bootstrap_addr_map)) {
+					FTBNI_bootstrap_entry_t *temp = (FTBNI_bootstrap_entry_t *) FTBU_map_get_data(iter);
+					if (temp->level == 1) { 
+						pkt_send.bootstrap_msg_type = FTBNI_BOOTSTRAP_MSG_TYPE_REG_INVALID;
+						break;
+					}
+					iter = FTBU_map_next_node(iter);
+				}
+			}   
+			if (pkt_send.bootstrap_msg_type == FTBNI_BOOTSTRAP_MSG_TYPE_REG_REP) { 
+				iter = FTBU_map_find_key(FTBNI_bootstrap_addr_map, (FTBU_map_key_t) (void *) &entry->addr);
+				if (iter == FTBU_map_end(FTBNI_bootstrap_addr_map)) {
+					FTBU_map_insert(FTBNI_bootstrap_addr_map,(FTBU_map_key_t) (void *) &entry->addr, (void *) entry);
+					FTBNI_addr_count++;
+           	 	}
+				else {
+					free(entry);
+					entry = (FTBNI_bootstrap_entry_t *) FTBU_map_get_data(iter);
+					entry->level = pkt.level;
+					FTB_WARNING("In Request register my address section: registering same addr again, update its level to pkt.level");
+				}
+			}
+			FTB_INFO("Bootstrap sending client %s a response of type %d indicating it has registered it as a parent",
                      inet_ntoa(client.sin_addr), pkt_send.bootstrap_msg_type);
             if (sendto
                 (fd, &pkt_send, sizeof(FTBNI_bootstrap_pkt_t), 0,

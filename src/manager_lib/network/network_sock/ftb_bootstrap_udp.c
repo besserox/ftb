@@ -246,6 +246,9 @@ int FTBNI_Bootstrap_register_addr(uint16_t my_level)
     if (pkt_recv.bootstrap_msg_type != FTBNI_BOOTSTRAP_MSG_TYPE_REG_REP) {
         return FTB_ERR_GENERAL;
     }
+	else {
+    	FTB_INFO("received packet type %d, confirming registration as parent", pkt_recv.bootstrap_msg_type);
+	}
 
     return FTB_SUCCESS;
 }

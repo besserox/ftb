@@ -291,10 +291,16 @@ int FTBN_Connect(const FTBM_msg_t * reg_msg, FTB_location_id_t * parent_location
             FTB_INFO("FTBN_Connect Out");
             return ret;
         }
-
         /*Otherwise try to get address from data base server */
         FTBN_parent_addr.port = 0;
     }
+	else { /* For Agents, open listening port */ 
+		if (FTBNI_listen_fd == -1) {
+			if (FTBNI_util_listen() != FTB_SUCCESS) {
+				FTB_ERR_ABORT("Agent cannot listen for new connection");
+			}
+		}
+	}
 
     do {
         if (retry > 0) {
@@ -306,6 +312,7 @@ int FTBN_Connect(const FTBM_msg_t * reg_msg, FTB_location_id_t * parent_location
                 delay.tv_nsec = delay.tv_nsec - delay.tv_sec * 1E9;
             }
         }
+
         /*Pass current parent_addr to this function in the case of reconnecting */
         ret = FTBNI_Bootstrap_get_parent_addr(FTBN_my_level, &FTBN_parent_addr, &parent_level);
         if (ret == FTB_ERR_NETWORK_NO_ROUTE) {
@@ -316,35 +323,52 @@ int FTBN_Connect(const FTBM_msg_t * reg_msg, FTB_location_id_t * parent_location
                 continue;
             }
             else {
+				close(FTBNI_listen_fd);
 				FTB_ERR_ABORT("Failed to contact database server..Exiting\n");
 	        }
         }
+
         if (FTBN_parent_addr.port == 0) {       /*It is the root */
             parent_location_id->pid = 0;
-            break;
+			FTBN_my_level = parent_level + 1;
+			//sleep(5);
+			ret = FTBNI_Bootstrap_register_addr(FTBN_my_level);
+			if (ret != FTB_SUCCESS) {
+				/* Reset FTBN_my_level to initial value and get new parent from database server*/
+				FTBN_my_level = 0-1;
+				retry = 0;
+				FTB_INFO("Root registration failed, Retrying ...");
+				continue;
+			}
         }
-		ret = FTBNI_util_connect_to(&FTBN_parent_addr, reg_msg, parent_location_id);
-        if (ret == FTB_ERR_NETWORK_NO_ROUTE) {
-            FTBNI_Bootstrap_report_conn_failure(&FTBN_parent_addr);
-            FTBN_parent_addr.port = 0;
-        }
+		else {
+			/* Non-root agent or a component tried to connect to its parent */
+			ret = FTBNI_util_connect_to(&FTBN_parent_addr, reg_msg, parent_location_id);
+        	if (ret == FTB_ERR_NETWORK_NO_ROUTE) {
+            	FTBNI_Bootstrap_report_conn_failure(&FTBN_parent_addr);
+            	FTBN_parent_addr.port = 2;
+				retry = 0;
+        	}
+			else if (ret == FTB_SUCCESS) {
+				if (!FTBN_config_location.leaf) {
+					FTBN_my_level = parent_level + 1;
+					ret = FTBNI_Bootstrap_register_addr(FTBN_my_level);
+					if (ret != FTB_SUCCESS) {
+						FTB_WARNING("Agent could not register itself as parent. Ignoring");
+						FTB_INFO("FTBN_Connect Out");
+						return FTB_SUCCESS;
+					}
+				}
+			}
+		}
     } while (ret != FTB_SUCCESS && retry++ < FTBN_CONNECT_RETRY_COUNT);
 
     if (ret != FTB_SUCCESS) {
+		close(FTBNI_listen_fd);
         FTB_INFO("FTBN_Connect Out");
         return ret;
     }
 
-    if (!FTBN_config_location.leaf) {
-        if (FTBNI_listen_fd == -1) {
-            if (FTBNI_util_listen() != FTB_SUCCESS)
-                FTB_ERR_ABORT("cannot listen for new connection");
-        }
-	    /*Register to allow other agent connect in */
-		FTBN_my_level = parent_level + 1;
-		FTBNI_Bootstrap_register_addr(FTBN_my_level);
-    }
-    
 	FTB_INFO("FTBN_Connect Out");
     return FTB_SUCCESS;
 }
