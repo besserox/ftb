@@ -42,11 +42,17 @@ extern "C" {
 #define FTBM_MSG_TYPE_SUBSCRIPTION_CANCEL           0x24
 
 typedef struct FTBM_msg {
-    int msg_type;
+	int msg_type;
     FTB_id_t src;
     FTB_id_t dst;
     FTB_event_t event;
 } FTBM_msg_t;
+
+typedef struct FTBM_msg_node {
+	struct FTBM_msg_node *next;
+	FTBM_msg_t *msg;
+	FTB_location_id_t *incoming_src;
+} FTBM_msg_node_t;
 
 int FTBM_Init(int leaf);
 
@@ -82,6 +88,10 @@ int FTBM_Publishable_event_registration_cancel(const FTB_id_t * id, FTB_event_t 
 int FTBM_Get_catcher_comp_list(const FTB_event_t * event, FTB_id_t ** list, int *len);
 
 int FTBM_Release_comp_list(FTB_id_t * list);
+
+int FTBM_Recv(FTBM_msg_t * msg, FTB_location_id_t * incoming_src);
+
+int FTBM_Fill_message_queue(void *);
 
 /* *INDENT-OFF* */
 #ifdef __cplusplus

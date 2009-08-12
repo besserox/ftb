@@ -35,7 +35,7 @@ static pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
 
 FILE *FTBU_log_file_fp;
 
-void *progress_loop(void *arg)
+void progress_loop()
 {
     FTBM_msg_t msg;
     FTBM_msg_t msg_send;
@@ -48,7 +48,7 @@ void *progress_loop(void *arg)
     pthread_mutex_lock(&lock);
     while (1) {
         pthread_mutex_unlock(&lock);
-        ret = FTBM_Wait(&msg, &incoming_src);
+        ret = FTBM_Recv(&msg, &incoming_src);
         if (ret != FTB_SUCCESS) {
             FTB_WARNING("FTBM_Wait failed %d", ret);
             continue;
@@ -120,7 +120,6 @@ void *progress_loop(void *arg)
             FTB_WARNING("Unknown message type %d", msg.msg_type);
         }
     }
-    return NULL;
 }
 
 
@@ -135,11 +134,10 @@ void handler(int sig)
 int main(int argc, char *argv[])
 {
     int ret;
-    int pid;
+	int pid;
 
-    pid = fork();
-    if (pid != 0)
-        return 0;
+	pid = fork();
+	if (pid != 0) return 0;
 
 #ifdef FTB_DEBUG
     if (argc >= 2 && strcmp("ION_AGENT", argv[1]) == 0) {
@@ -153,22 +151,22 @@ int main(int argc, char *argv[])
     }
     else
 #endif
-        FTBU_log_file_fp = stderr;
+    FTBU_log_file_fp = stderr;
 
     ret = FTBM_Init(0);
     if (ret != FTB_SUCCESS) {
         FTB_ERR_ABORT("FTBM_Init failed %d", ret);
     }
-    pthread_create(&progress_thread, NULL, progress_loop, NULL);
 
-    signal(SIGINT, handler);
-    signal(SIGTERM, handler);
-    while (!done) {
-        sleep(1);
-    }
-    pthread_mutex_lock(&lock);
-    pthread_cancel(progress_thread);
-    pthread_join(progress_thread, NULL);
+	signal(SIGINT, handler);
+	signal(SIGTERM, handler);
+
+    pthread_create(&progress_thread, NULL, FTBM_Fill_message_queue, NULL);
+	progress_loop();
+	
+	pthread_mutex_lock(&lock);
+	pthread_cancel(progress_thread);
+	pthread_join(progress_thread, NULL);
 
     FTBM_Finalize();
 

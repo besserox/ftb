@@ -63,6 +63,12 @@ static pthread_mutex_t FTBN_lock = PTHREAD_MUTEX_INITIALIZER;
 static FTBMI_node_info_t FTBMI_info;
 static volatile int FTBMI_initialized = 0;
 
+pthread_mutex_t message_queue_mutex;
+pthread_cond_t  message_queue_cond;
+FTBM_msg_node_t *message_queue_head = NULL;
+FTBM_msg_node_t *message_queue_tail = NULL;
+
+
 static inline void lock_manager()
 {
     pthread_mutex_lock(&FTBMI_lock);
@@ -441,6 +447,9 @@ int FTBM_Init(int leaf)
         FTBMI_info.catch_event_map =
             (FTBMI_map_event_mask_2_comp_info_map_t *) FTBU_map_init(FTBMI_util_is_equal_event_mask);
         FTBMI_info.err_handling = FTB_ERR_HANDLE_RECOVER;
+
+	pthread_mutex_init(&message_queue_mutex, NULL);
+	pthread_cond_init(&message_queue_cond, NULL);
     }
     else {
         FTBMI_info.peers = NULL;
@@ -811,7 +820,8 @@ int FTBM_Register_subscription(const FTB_id_t * id, FTB_event_t * event)
         if (FTBU_map_insert(map, FTBU_MAP_PTR_KEY(&comp->id), (void *) comp) == FTBU_EXIST) {
             /* FTB_WARNING("This Mask already registered"); */
         }
-        FTBMI_util_reg_propagation(FTBM_MSG_TYPE_REG_SUBSCRIPTION, event, &id->location_id);
+
+	   FTBMI_util_reg_propagation(FTBM_MSG_TYPE_REG_SUBSCRIPTION, event, &id->location_id);
     }
 
     unlock_manager();
@@ -975,3 +985,56 @@ int FTBM_Wait(FTBM_msg_t * msg, FTB_location_id_t * incoming_src)
     FTB_INFO("FTBM_Wait Out");
     return ret;
 }
+
+
+int FTBM_Recv(FTBM_msg_t * msg, FTB_location_id_t * incoming_src)
+{
+	FTBM_msg_node_t *ptr;
+	pthread_mutex_lock(&message_queue_mutex);
+
+	if (message_queue_head == NULL) {
+		pthread_cond_wait(&message_queue_cond, &message_queue_mutex);
+	}
+
+	if (message_queue_head == NULL) {
+		pthread_mutex_unlock(&message_queue_mutex);
+		return FTBN_NO_MSG;
+	}
+     
+	memcpy(msg, message_queue_head->msg, sizeof(FTBM_msg_t));
+	memcpy(incoming_src, message_queue_head->incoming_src, sizeof(FTB_location_id_t));
+	ptr = message_queue_head;
+	message_queue_head = message_queue_head->next;
+
+	if (message_queue_head == NULL) message_queue_tail = NULL;  
+
+	pthread_mutex_unlock(&message_queue_mutex);
+	free(ptr->msg);
+	free(ptr->incoming_src);
+	free(ptr);
+
+	return FTB_SUCCESS;
+}
+
+int FTBM_Fill_message_queue(void *arg)
+{
+	FTBM_msg_node_t *head, *tail;
+	while (1) {
+		head = tail = NULL;
+		
+		FTBN_Grab_messages(&head, &tail);
+		pthread_mutex_lock(&message_queue_mutex);
+
+	 	if (head != NULL) {
+			if (message_queue_head == NULL) message_queue_head = head;
+			if (message_queue_tail != NULL) message_queue_tail->next = head;
+			message_queue_tail = tail;
+		}
+		
+		pthread_cond_signal(&message_queue_cond);
+		pthread_mutex_unlock(&message_queue_mutex);
+	}
+
+	return FTB_SUCCESS;
+}
+

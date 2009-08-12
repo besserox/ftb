@@ -623,6 +623,146 @@ int FTBN_Recv_msg(FTBM_msg_t * msg, FTB_location_id_t * incoming_src, int blocki
 }
 
 
+/* Grab messages from the network and put it in the message queue 
+ * - especially for the agent to read. This function will eventually 
+ * have to be replaced so that we dont have any special functions 
+ * for the agent
+ */
+int FTBN_Grab_messages(FTBM_msg_node_t **msg_head, FTBM_msg_node_t **msg_tail)
+{
+	fd_set fds;
+    FTBU_list_node_t *pos;
+
+    while ( 1 ) {
+
+		int max_fd = -1;
+		FD_ZERO(&fds);
+		if (FTBNI_listen_fd != -1) {
+			max_fd = FTBNI_listen_fd;
+			FD_SET(FTBNI_listen_fd, &fds);
+		}
+
+		FTBNI_lock_conn_table();
+		FTBU_list_for_each_readonly(pos, FTBNI_connection_table) {
+			FTBU_list_node_t *node = pos;
+			FTB_connection_entry_t *conn = (FTB_connection_entry_t *) node->data;
+			FD_SET(conn->fd, &fds);
+			if (max_fd < conn->fd)
+				max_fd = conn->fd;
+		}
+		FTBNI_unlock_conn_table();
+
+		if (select(max_fd + 1, &fds, NULL, NULL, NULL) < 0) {
+			if (errno == EINTR || errno == EAGAIN) {
+				continue;
+			}
+			return FTB_ERR_NETWORK_GENERAL;      
+		}
+
+		if (FTBNI_listen_fd != -1 && FD_ISSET(FTBNI_listen_fd, &fds)) {
+		/*New connection */
+			uint32_t system_id;
+			FTB_connection_entry_t *entry =
+				(FTB_connection_entry_t *) malloc(sizeof(FTB_connection_entry_t));
+
+			entry->err_flag = 0;
+			entry->ref_count = 0;
+			entry->fd = accept(FTBNI_listen_fd, NULL, NULL);
+			if (entry->fd < 0) {
+				perror("accept");
+				free(entry);
+				FTB_ERR_ABORT("accept failed");
+			}
+      
+			FTBNI_UTIL_READ(entry, &system_id, sizeof(uint32_t));
+			if (system_id != FTBN_config_location.FTB_system_id) {
+				FTB_WARNING("FTB system id doesn't match");
+				close(entry->fd);
+				free(entry);
+			continue;
+			}
+
+			pthread_mutex_init(&(entry->lock), NULL);
+			entry->dst = (FTB_location_id_t *) malloc(sizeof(FTB_location_id_t));
+			FTBM_msg_t *msg = (FTBM_msg_t *) malloc(sizeof(FTBM_msg_t));
+
+			FTBNI_UTIL_READ(entry, entry->dst, sizeof(FTB_location_id_t));
+			FTBNI_UTIL_READ(entry, msg, sizeof(FTBM_msg_t));
+
+			if (entry->err_flag) {
+				close(entry->fd);
+				free(entry->dst);
+				free(entry);
+				free(msg);
+			}
+			else {
+				FTBNI_UTIL_WRITE(entry, &FTBN_my_location_id, sizeof(FTB_location_id_t));
+				FTBU_list_node_t *node = (FTBU_list_node_t *)malloc(sizeof(FTBU_list_node_t));
+				node->data = (void *) entry;
+
+				FTBNI_lock_conn_table();
+				FTBU_list_add_front(FTBNI_connection_table, node);
+				FTBNI_unlock_conn_table();
+
+				FTBM_msg_node_t *msg_node = (FTBM_msg_node_t *)malloc(sizeof(FTBM_msg_node_t));
+				msg_node->msg = msg;
+				msg_node->incoming_src = (FTB_location_id_t *)malloc(sizeof(FTB_location_id_t));
+				memcpy(msg_node->incoming_src, entry->dst, sizeof(FTB_location_id_t));
+
+				if( *msg_head == NULL ) {
+					*msg_head = *msg_tail = msg_node;
+				}
+				else {
+					(*msg_tail)->next = msg_node;
+				}
+				msg_node->next = NULL;
+				*msg_tail = msg_node;
+			}
+		}
+
+		FTBNI_lock_conn_table();      
+
+		FTBU_list_for_each_readonly(pos, FTBNI_connection_table) {
+			FTBU_list_node_t *node = pos;
+			FTB_connection_entry_t *conn = (FTB_connection_entry_t *) node->data;
+
+			if ( FD_ISSET(conn->fd, &fds) ) {
+				FTBM_msg_t *msg = (FTBM_msg_t *) malloc(sizeof(FTBM_msg_t));
+				FTBNI_lock_conn_entry(conn);
+				FTBNI_UTIL_READ(conn, msg, sizeof(FTBM_msg_t));
+				if (conn->err_flag) {
+					FTBNI_unlock_conn_entry(conn);
+					free(conn->dst);
+					FTBU_list_remove_node(node);
+					close(conn->fd);
+					free(conn);
+					free(node);
+					free(msg);
+					FTBNI_unlock_conn_table();
+					return FTB_ERR_NETWORK_GENERAL;      
+				}
+				else {
+					FTBM_msg_node_t *msg_node = (FTBM_msg_node_t *)malloc(sizeof(FTBM_msg_node_t));
+					msg_node->msg = msg;
+					msg_node->incoming_src = (FTB_location_id_t *)malloc(sizeof(FTB_location_id_t));
+					memcpy(msg_node->incoming_src, conn->dst, sizeof(FTB_location_id_t));	    
+					FTBNI_unlock_conn_entry(conn);
+					if( *msg_head == NULL ) {
+						*msg_head = *msg_tail = msg_node;
+					}
+					else {
+						(*msg_tail)->next = msg_node;
+					}
+					msg_node->next = NULL;
+					*msg_tail = msg_node;
+				}
+			}
+		}	
+		FTBNI_unlock_conn_table();
+		return FTB_SUCCESS;
+	}	
+}
+
 int FTBN_Get_my_network_address(char *ipaddr)
 {
     int i;
