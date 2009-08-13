@@ -91,7 +91,7 @@ int FTBM_Release_comp_list(FTB_id_t * list);
 
 int FTBM_Recv(FTBM_msg_t * msg, FTB_location_id_t * incoming_src);
 
-int FTBM_Fill_message_queue(void *);
+void *FTBM_Fill_message_queue(void *);
 
 /* *INDENT-OFF* */
 #ifdef __cplusplus

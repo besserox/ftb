@@ -1016,7 +1016,7 @@ int FTBM_Recv(FTBM_msg_t * msg, FTB_location_id_t * incoming_src)
 	return FTB_SUCCESS;
 }
 
-int FTBM_Fill_message_queue(void *arg)
+void *FTBM_Fill_message_queue(void *arg)
 {
 	FTBM_msg_node_t *head, *tail;
 	while (1) {
@@ -1034,7 +1034,5 @@ int FTBM_Fill_message_queue(void *arg)
 		pthread_cond_signal(&message_queue_cond);
 		pthread_mutex_unlock(&message_queue_mutex);
 	}
-
-	return FTB_SUCCESS;
 }
 
