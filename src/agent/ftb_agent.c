@@ -30,12 +30,12 @@
 #include "ftb_util.h"
 
 static volatile int done = 0;
-static pthread_t progress_thread;
+static pthread_t progress_thread, progress_thread_main;
 static pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
 
 FILE *FTBU_log_file_fp;
 
-void progress_loop()
+void *progress_loop()
 {
     FTBM_msg_t msg;
     FTBM_msg_t msg_send;
@@ -162,11 +162,16 @@ int main(int argc, char *argv[])
 	signal(SIGTERM, handler);
 
     pthread_create(&progress_thread, NULL, FTBM_Fill_message_queue, NULL);
-	progress_loop();
+    pthread_create(&progress_thread_main, NULL, progress_loop, NULL);
+
+	while (!done) sleep (1);
 	
 	pthread_mutex_lock(&lock);
 	pthread_cancel(progress_thread);
+	pthread_cancel(progress_thread_main);
 	pthread_join(progress_thread, NULL);
+	pthread_join(progress_thread_main, NULL);
+	pthread_mutex_unlock(&lock);
 
     FTBM_Finalize();
 
