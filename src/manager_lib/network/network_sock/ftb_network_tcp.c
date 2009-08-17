@@ -145,7 +145,6 @@ static inline FTBU_list_node_t *FTBNI_util_find_connection_to_location(const FTB
 		FTBU_list_node_t *node = pos;
         FTB_connection_entry_t *entry = (FTB_connection_entry_t *) node->data;
         if (FTBU_is_equal_location_id(entry->dst, location_id)) {
-            FTBNI_unlock_conn_table();  /* Is this needed ? */
             return pos;
         }
     }
