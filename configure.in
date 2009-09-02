@@ -88,7 +88,7 @@ AC_PROG_RANLIB
 dnl Get bootstrap server name
 AC_ARG_WITH(bstrap-server, [  --with-bstrap-server=<IP Address>     IP Address of Bootstrapping server <no default>],
 	                 FTB_BSTRAP_SERVER=$withval)
-AC_MSG_CHECKING(checking bootstrap server IP Address)
+AC_MSG_CHECKING(for bootstrap server IP Address)
 AC_MSG_RESULT($FTB_BSTRAP_SERVER)
 if test "$FTB_BSTRAP_SERVER" != ""; then
 	AC_DEFINE_UNQUOTED(FTB_BSTRAP_SERVER, "${FTB_BSTRAP_SERVER}", [IP-Address for the FTB bootstrap server])
@@ -97,14 +97,14 @@ fi
 dnl Get bootstrap server port number
 AC_ARG_WITH(bstrap-port, [  --with-bstrap-port=<port number>	Port number of Bootstrapping server <14455>],
 	                 FTB_BSTRAP_PORT=$withval, FTB_BSTRAP_PORT=14455)
-AC_MSG_CHECKING(checking bootstrap server port number)
+AC_MSG_CHECKING(for bootstrap server port number)
 AC_MSG_RESULT($FTB_BSTRAP_PORT)
 AC_DEFINE_UNQUOTED(FTB_BSTRAP_PORT, ${FTB_BSTRAP_PORT}, [Port number for the FTB bootstrap server])
 
 dnl Get agent port number
 AC_ARG_WITH(agent-port, [  --with-agent-port=<port number>	Port number on which agent is running <10809>],
 			FTB_AGENT_PORT=$withval, FTB_AGENT_PORT=10809)
-AC_MSG_CHECKING(checking agent port number)
+AC_MSG_CHECKING(for agent port number)
 AC_MSG_RESULT($FTB_AGENT_PORT)
 AC_DEFINE_UNQUOTED(FTB_AGENT_PORT, ${FTB_AGENT_PORT}, [FTB Agent port])
 
@@ -112,7 +112,7 @@ AC_DEFINE_UNQUOTED(FTB_AGENT_PORT, ${FTB_AGENT_PORT}, [FTB Agent port])
 dnl Expose option for platform type
 AC_ARG_WITH(platform, [  --with-platform=<platform type>	Possible values: bgp, linux],
  		      CLIENTS=$withval, CLIENTS=linux)
-AC_MSG_CHECKING(checking platform support)
+AC_MSG_CHECKING(for platform support)
 AC_MSG_RESULT($CLIENTS)
 
 dnl Expose option for BG enviroment file
@@ -120,11 +120,11 @@ AC_ARG_WITH(platform-envfile, [  --with-platform-envfile=<bg envfile>	Default fi
 					platforms. For all other platforms, this file
 					is ignored.],
 			ENVFILE=$withval, ENVFILE=)
-AC_MSG_CHECKING(user specified platform environment file)
+AC_MSG_CHECKING(for user specified platform environment file)
 AC_MSG_RESULT($ENVFILE)
 
 AC_ARG_ENABLE(debug, [  --enable-debug: To enable debug messages. Default is no debug], FTB_DEBUG=$enableval, FTB_DEBUG=no)
-AC_MSG_CHECKING(debug log directory)
+AC_MSG_CHECKING(for debug log directory)
 AC_MSG_RESULT($FTB_DEBUG)
 if [[ "$FTB_DEBUG" != "no" ]]; then
    AC_DEFINE(FTB_DEBUG,, [FTB Debug definition])
