@@ -175,13 +175,15 @@ static int FTBNI_util_connect_to(const FTBN_addr_sock_t * addr, const FTBM_msg_t
     int optval = 1;
     struct hostent *hp = NULL;
     struct sockaddr_in sa;
-	FTBU_list_node_t *node = (FTBU_list_node_t *) malloc(sizeof(FTBU_list_node_t));
+	FTBU_list_node_t *node;
+
     FTB_connection_entry_t *entry = (FTB_connection_entry_t *) malloc(sizeof(FTB_connection_entry_t));
     entry->err_flag = 0;
     entry->ref_count = 0;
 
     entry->fd = socket(AF_INET, SOCK_STREAM, 0);
     if (entry->fd < 0) {
+		free(entry);
         return FTB_ERR_NETWORK_GENERAL;
     }
 
@@ -189,6 +191,7 @@ static int FTBNI_util_connect_to(const FTBN_addr_sock_t * addr, const FTBM_msg_t
     if (hp == NULL) {
         FTB_WARNING("cannot find host %s", addr->name);
         close(entry->fd);
+		free(entry);
         return FTB_ERR_NETWORK_NO_ROUTE;
     }
     memset((void *) &sa, 0, sizeof(sa));
@@ -196,11 +199,13 @@ static int FTBNI_util_connect_to(const FTBN_addr_sock_t * addr, const FTBM_msg_t
     sa.sin_family = AF_INET;
     sa.sin_port = htons(addr->port);
     if (setsockopt(entry->fd, IPPROTO_TCP, TCP_NODELAY, (char *) &optval, sizeof(optval))) {
-	close(entry->fd);
+		close(entry->fd);
+		free(entry);
         return FTB_ERR_NETWORK_GENERAL;
     }
     if (connect(entry->fd, (struct sockaddr *) &sa, sizeof(sa)) < 0) {
-	close(entry->fd);
+		close(entry->fd);
+		free(entry);
         return FTB_ERR_NETWORK_NO_ROUTE;
     }
 #ifdef FD_CLOEXEC
@@ -219,6 +224,7 @@ static int FTBNI_util_connect_to(const FTBN_addr_sock_t * addr, const FTBM_msg_t
     FTBNI_UTIL_READ(entry, entry->dst, sizeof(FTB_location_id_t));
     if (entry->err_flag) {
         close(entry->fd);
+		free(entry->dst);
         free(entry);
         return FTB_ERR_NETWORK_GENERAL;
     }
@@ -226,6 +232,8 @@ static int FTBNI_util_connect_to(const FTBN_addr_sock_t * addr, const FTBM_msg_t
     /*since using tree mode, no indirect connection */
     pthread_mutex_init(&(entry->lock), NULL);
     memcpy(id, entry->dst, sizeof(FTB_location_id_t));
+
+	node = (FTBU_list_node_t *) malloc(sizeof(FTBU_list_node_t));
 	node->data = (void *)entry;
     FTBNI_lock_conn_table();
     FTBU_list_add_front(FTBNI_connection_table, node);
@@ -245,8 +253,10 @@ int FTBN_Init(const FTB_location_id_t * my_id, const FTBN_config_info_t * config
     memcpy(&FTBN_config_location, config_info, sizeof(FTBN_config_info_t));
 
     ret = FTBNI_Bootstrap_init(&FTBN_config_location, &FTBN_config, &FTBN_my_addr);
-    if (ret != FTB_SUCCESS)
+    if (ret != FTB_SUCCESS) {
+		free(FTBNI_connection_table);
         return ret;
+	}
     FTB_INFO("FTBN_Init Out");
     return FTB_SUCCESS;
 }

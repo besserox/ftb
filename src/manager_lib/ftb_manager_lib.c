@@ -257,6 +257,7 @@ static void FTBMI_util_reconnect()
         FTB_INFO
             ("Going to call FTBU_map_insert() to insert as key=client_info->comp_info->id (parents id), data=comp_info (parents backplane) map=FTBMI_info.peers");
         if (FTBU_map_insert(FTBMI_info.peers, FTBU_MAP_PTR_KEY(&comp->id), (void *) comp) == FTBU_EXIST) {
+			free(comp);
             FTB_INFO("Out FTBMI_util_reconnect - new client already present in peer list");
             return;
         }
@@ -490,6 +491,7 @@ int FTBM_Init(int leaf)
             ("Agent is going to call FTBU_map_insert() to insert as key=comp_id, data=comp(parents) map=FTBMI_info.peers");
         if (FTBU_map_insert(FTBMI_info.peers, FTBU_MAP_PTR_KEY(&comp->id), (void *) comp) == FTBU_EXIST) {
             FTB_INFO("FTBM_Init Out - client already present in the peer list");
+			free(comp);
             return FTB_ERR_GENERAL;
         }
     }
