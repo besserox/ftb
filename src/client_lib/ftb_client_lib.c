@@ -763,6 +763,7 @@ static void FTBCI_util_finalize_component(FTBCI_client_info_t * client_info)
             iter = FTBU_map_next_node(iter);
         }
         FTBU_map_finalize(client_info->callback_map);
+        FTBCI_unlock_client(client_info);
     }
 
     FTB_INFO("in FTBCI_util_finalize_component -- done");
@@ -904,6 +905,7 @@ int FTBC_Connect(FTB_client_t * cinfo, uint8_t extension, FTB_client_handle_t * 
     if (FTBU_map_insert(FTBCI_client_info_map, FTBU_MAP_PTR_KEY(&client_info->client_handle),
          (void *) client_info) == FTBU_EXIST) {
         FTB_WARNING("This component has already been registered");
+		FTBCI_unlock_client_lib();
         FTB_INFO("FTBC_Connect Out");
         return FTB_ERR_DUP_CALL;
     }
@@ -1619,6 +1621,7 @@ int FTBC_Add_dynamic_tag(FTB_client_handle_t handle, FTB_tag_t tag, const char *
     FTBCI_lock_client_lib();
     if (FTB_MAX_DYNAMIC_DATA_SIZE - tag_size < data_len + sizeof(FTB_tag_len_t) + sizeof(FTB_tag_t)) {
         FTB_INFO("FTBC_Add_dynamic_tag Out");
+        FTBCI_unlock_client_lib();
         return FTB_ERR_TAG_NO_SPACE;
     }
 
@@ -1645,6 +1648,7 @@ int FTBC_Add_dynamic_tag(FTB_client_handle_t handle, FTB_tag_t tag, const char *
         }
         else {
             FTB_INFO("FTBC_Add_dynamic_tag Out");
+            FTBCI_unlock_client_lib();
             return FTB_ERR_TAG_CONFLICT;
         }
     }
@@ -1666,12 +1670,14 @@ int FTBC_Remove_dynamic_tag(FTB_client_handle_t handle, FTB_tag_t tag)
     iter = FTBU_map_find_key(FTBCI_tag_map, FTBU_MAP_PTR_KEY(&tag));
     if (iter == FTBU_map_end(FTBCI_tag_map)) {
         FTB_INFO("FTBC_Remove_dynamic_tag Out");
+        FTBCI_unlock_client_lib();
         return FTB_ERR_TAG_NOT_FOUND;
     }
 
     entry = (FTBCI_tag_entry_t *) FTBU_map_get_data(iter);
     if (entry->owner != handle) {
         FTB_INFO("FTBC_Remove_dynamic_tag Out");
+        FTBCI_unlock_client_lib();
         return FTB_ERR_TAG_CONFLICT;
     }
 
