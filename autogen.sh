@@ -23,6 +23,9 @@ usage()
 
 if [ "$1" == "clean" ]; then
     echo -n "Cleaning up configuration files... "
+	if test -f Makefile; then
+		make clean
+	fi
     rm -rf configure Makefile autom4te.cache `find . -name \*~` \
     `find . -name \*\.d` `find . -name Makefile` include/ftb_config.* config.*
     echo "done"
