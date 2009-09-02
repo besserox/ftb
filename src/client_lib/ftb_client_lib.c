@@ -201,47 +201,60 @@ static int FTBCI_convert_clientid_to_clienthandle(const FTB_client_id_t client_i
 int FTBCI_split_namespace(const char *event_space, char *region_name, char *category_name,
                           char *component_name)
 {
-    char *tempstr = (char *) malloc(strlen(event_space) + 1);
-    char *ptr = tempstr;
-    char *str;
+    char *tempstr, *ptr, *str;
 
     FTB_INFO("In FTBCI_split_namespace");
+
     if (strlen(event_space) >= FTB_MAX_EVENTSPACE) {
         FTB_INFO("Out FTBCI_split_namespace");
         return FTB_ERR_EVENTSPACE_FORMAT;
     }
 
+    if ((tempstr = (char *) malloc(strlen(event_space) + 1)) == NULL) {
+        perror("malloc error\n");
+        exit(-1);
+    }
+	ptr = tempstr;
     strcpy(tempstr, event_space);
 
     str = strsep(&tempstr, ".");
     if ((strcmp(str, "\0") == 0) || (strcmp(tempstr, "\0") == 0)) {
+		free(ptr);
         FTB_INFO("Out FTBCI_split_namespace");
         return FTB_ERR_EVENTSPACE_FORMAT;
     }
     strcpy(region_name, str);
+
     str = strsep(&tempstr, ".");
     if ((strcmp(str, "\0") == 0) || (strcmp(tempstr, "\0") == 0)) {
+		free(ptr);
         FTB_INFO("Out FTBCI_split_namespace");
         return FTB_ERR_EVENTSPACE_FORMAT;
     }
     strcpy(category_name, str);
+
     str = strsep(&tempstr, ".");
     if (strcmp(str, "\0") == 0) {
+		free(ptr);
         FTB_INFO("Out FTBCI_split_namespace");
         return FTB_ERR_EVENTSPACE_FORMAT;
     }
     strcpy(component_name, str);
+
     if ((tempstr != NULL)
         || (!check_alphanumeric_underscore_format(region_name))
         || (!check_alphanumeric_underscore_format(category_name))
         || (!check_alphanumeric_underscore_format(component_name))) {
+		free(ptr);
         FTB_INFO("Out FTBCI_split_namespace");
         return FTB_ERR_EVENTSPACE_FORMAT;
     }
-    FTB_INFO("Out FTBCI_split_namespace");
 
-    if (ptr != NULL)
+    if (ptr != NULL) {
         free(ptr);
+	}
+
+    FTB_INFO("Out FTBCI_split_namespace");
 
     return FTB_SUCCESS;
 }
@@ -367,19 +380,19 @@ int FTBCI_parse_subscription_string(const char *subscription_str, FTB_event_t * 
         perror("malloc error\n");
         exit(-1);
     }
-
     strcpy(tempstr, subscription_str);
     ptr = tempstr;
 
     ret = FTBCI_check_subscription_value_pair("", "", subscription_event);
-
-    if ((subscriptionstr_len = strlen(tempstr)) == 0)
+    if ((subscriptionstr_len = strlen(tempstr)) == 0) {
+		free(ptr);
         return ret;
+	}
 
     while (tempstr != NULL) {
         if ((pair[i++] = strsep(&tempstr, ",")) == NULL) {
             FTB_INFO("FTBCI_parse_subscription_string Out");
-            free(tempstr);
+		    free(ptr);
             return FTB_ERR_SUBSCRIPTION_STR;
         }
     }
@@ -387,19 +400,19 @@ int FTBCI_parse_subscription_string(const char *subscription_str, FTB_event_t * 
     if (i > FTBCI_MAX_SUBSCRIPTION_FIELDS) {
         FTB_INFO("Subscription string has too many fields. This maybe an internal FTB error");
         FTB_INFO("FTBCI_parse_subscription_string Out");
-        free(tempstr);
+		free(ptr);
         return FTB_ERR_SUBSCRIPTION_STR;
     }
 
     for (j = 0; j < i; j++) {
         if ((lhs = strsep(&pair[j], "=")) == NULL) {
-            free(tempstr);
+			free(ptr);
             FTB_INFO("FTBCI_parse_subscription_string Out");
             return FTB_ERR_SUBSCRIPTION_STR;
         }
 
         if ((rhs = strsep(&pair[j], "=")) == NULL) {
-            free(tempstr);
+			free(ptr);
             FTB_INFO("FTBCI_parse_subscription_string Out");
             return FTB_ERR_SUBSCRIPTION_STR;
         }
@@ -408,14 +421,14 @@ int FTBCI_parse_subscription_string(const char *subscription_str, FTB_event_t * 
         soft_trim(&rhs);
 
         if (strlen(lhs) == 0 || strlen(rhs) == 0) {
-            free(tempstr);
+			free(ptr);
             FTB_INFO("FTBCI_parse_subscription_string Out");
             return FTB_ERR_SUBSCRIPTION_STR;
         }
 
         for (k = 0; k < strlen(lhs); k++) {
             if (lhs[k] == ' ' || lhs[k] == '\t') {
-                free(tempstr);
+				free(ptr);
                 FTB_INFO("FTBCI_parse_subscription_string Out");
                 return FTB_ERR_FILTER_ATTR;
             }
@@ -423,14 +436,14 @@ int FTBCI_parse_subscription_string(const char *subscription_str, FTB_event_t * 
 
         for (k = 0; k < strlen(rhs); k++) {
             if (rhs[k] == ' ' || rhs[k] == '\t') {
-                free(tempstr);
+				free(ptr);
                 FTB_INFO("FTBCI_parse_subscription_string Out");
                 return FTB_ERR_FILTER_VALUE;
             }
         }
 
         if ((ret = FTBCI_check_subscription_value_pair(lhs, rhs, subscription_event)) != FTB_SUCCESS) {
-            free(tempstr);
+            free(ptr);
             FTB_INFO("FTBCI_parse_subscription_string Out");
             return ret;
         }
@@ -493,6 +506,7 @@ int FTBCI_store_declared_events(FTBCI_client_info_t * client_info, const FTB_eve
 		if (iter != FTBU_map_end(client_info->declared_events_map)) {
             FTB_INFO("Out FTBCI_store_declared_events : Duplicate event");
 			FTBCI_unlock_client(client_info);
+			free(event_index);
 			return FTB_SUCCESS;
 			/* return FTB_ERR_DUP_EVENT; */
 		}
@@ -560,9 +574,9 @@ static void FTBCI_util_add_to_callback_map(FTBCI_client_info_t * client_info, co
                                            int (*callback) (FTB_receive_event_t *, void *), void *arg)
 {
     FTBCI_callback_entry_t *entry = (FTBCI_callback_entry_t *) malloc(sizeof(FTBCI_callback_entry_t));
-    entry->mask = (FTB_event_t *) malloc(sizeof(FTB_event_t));
-    FTB_INFO("In FTBCI_util_add_to_callback_map");
 
+    FTB_INFO("In FTBCI_util_add_to_callback_map");
+    entry->mask = (FTB_event_t *) malloc(sizeof(FTB_event_t));
     memcpy(entry->mask, event, sizeof(FTB_event_t));
     entry->callback = callback;
     entry->arg = arg;
@@ -579,8 +593,9 @@ static void FTBCI_util_remove_from_callback_map(FTBCI_client_info_t * client_inf
                                                 const FTB_event_t * event)
 {
     FTBCI_callback_entry_t *entry = (FTBCI_callback_entry_t *) malloc(sizeof(FTBCI_callback_entry_t));
-    entry->mask = (FTB_event_t *) malloc(sizeof(FTB_event_t));
 
+    FTB_INFO("In FTBCI_util_remove_from_callback_map");
+    entry->mask = (FTB_event_t *) malloc(sizeof(FTB_event_t));
     memcpy(entry->mask, event, sizeof(FTB_event_t));
     FTBCI_lock_client(client_info);
     FTBU_map_remove_key(client_info->callback_map, FTBU_MAP_PTR_KEY(entry->mask));
@@ -589,6 +604,9 @@ static void FTBCI_util_remove_from_callback_map(FTBCI_client_info_t * client_inf
      * was invalid, it should have been caught before
      * if (ret == FTBU_NOT_EXIST) return FTB_ERR_INVALID_HANDLE;
 	 */
+	free(entry->mask);
+	free(entry);
+    FTB_INFO("Out FTBCI_util_remove_from_callback_map");
 }
 
 static void FTBCI_util_handle_FTBM_msg(FTBM_msg_t * msg)
@@ -599,6 +617,7 @@ static void FTBCI_util_handle_FTBM_msg(FTBM_msg_t * msg)
 	FTBU_list_node_t *node;
     FTBCI_event_inst_list_t *entry;
 
+    FTB_INFO("In FTBCI_util_handle_FTBM_msg");
     if (msg->msg_type != FTBM_MSG_TYPE_NOTIFY) {
         FTB_WARNING("unexpected message type %d", msg->msg_type);
         return;
@@ -611,6 +630,7 @@ static void FTBCI_util_handle_FTBM_msg(FTBM_msg_t * msg)
     if (iter == FTBU_map_end(FTBCI_client_info_map)) {
         FTB_WARNING("Message for unregistered component");
         FTBCI_unlock_client_lib();
+        FTB_INFO("Out FTBCI_util_remove_from_callback_map");
         return;
     }
     client_info = (FTBCI_client_info_t *) FTBU_map_get_data(iter);
@@ -630,8 +650,8 @@ static void FTBCI_util_handle_FTBM_msg(FTBM_msg_t * msg)
     else {
         FTBCI_util_push_to_comp_polling_list(client_info, node);
     }
-
     FTBCI_unlock_client(client_info);
+    FTB_INFO("Out FTBCI_util_handle_FTBM_msg");
 }
 
 
@@ -641,16 +661,21 @@ static void *FTBCI_callback_thread_client(void *arg)
     FTB_location_id_t incoming_src;
     int ret;
 
+	FTB_INFO("In FTBCI_callback_thread_client");
+
     pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, NULL);
     pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS, NULL);
+
     while (1) {
         ret = FTBM_Wait(&msg, &incoming_src);
         if (ret != FTB_SUCCESS) {
             FTB_WARNING("FTBM_Wait failed %d", ret);
+			FTB_INFO("Out FTBCI_callback_thread_client");
             return NULL;
         }
         FTBCI_util_handle_FTBM_msg(&msg);
     }
+	FTB_INFO("Out FTBCI_callback_thread_client");
     return NULL;
 }
 
@@ -665,25 +690,33 @@ static void *FTBCI_callback_component(void *arg)
     int callback_done;
 
     /* FTBCI_lock_client(client_info);*/
+	FTB_INFO("In FTBCI_callback_component");
+
     while (1) {
+
         FTBCI_lock_client(client_info);
         while (client_info->callback_event_queue->next == client_info->callback_event_queue) {
             /*Callback event queue is empty */
             pthread_cond_wait(&client_info->cond, &client_info->lock);
             if (client_info->finalizing) {
                 FTBCI_unlock_client(client_info);
+				FTB_INFO("Out FTBCI_callback_component");
                 FTB_INFO("Finalizing");
                 return NULL;
             }
         }
         FTBCI_unlock_client(client_info);
+
         node = client_info->callback_event_queue->next;
 		entry = (FTBCI_event_inst_list_t *) node->data;
         /*Try to match it with callback_map */
         callback_done = 0;
+
         iter = FTBU_map_begin(client_info->callback_map);
         while (iter != FTBU_map_end(client_info->callback_map)) {
+
             callback_entry = (FTBCI_callback_entry_t *) FTBU_map_get_data(iter);
+
             if (FTBU_match_mask(&entry->event_inst, callback_entry->mask)) {
                 /*Make callback */
                 FTB_receive_event_t receive_event;
@@ -705,9 +738,11 @@ static void *FTBCI_callback_component(void *arg)
                        FTB_MAX_DYNAMIC_DATA_SIZE);
 #endif
                 (*callback_entry->callback) (&receive_event, callback_entry->arg);
+
                 FTBCI_lock_client(client_info);
                 FTBU_list_remove_node(node);
                 FTBCI_unlock_client(client_info);
+
 				free(entry);
                 free(node);
                 callback_done = 1;
@@ -715,25 +750,31 @@ static void *FTBCI_callback_component(void *arg)
             }
             iter = FTBU_map_next_node(iter);
         }
+
         if (!callback_done) {
             /*Move to polling event queue */
             FTBCI_lock_client(client_info);
             FTBU_list_remove_node(node);
             FTBCI_util_push_to_comp_polling_list(client_info, node);
             FTBCI_unlock_client(client_info);
+			free(entry);
 			free(node);
         }
     }
+
     /* FTBCI_unlock_client(client_info); */
+	FTB_INFO("Out FTBCI_callback_component");
     return NULL;
 }
 
 
 static void FTBCI_util_finalize_component(FTBCI_client_info_t * client_info)
 {
+    FTB_INFO("In FTBCI_util_finalize_component");
+
     FTBM_Client_deregister(client_info->id);
     free(client_info->id);
-    FTB_INFO("in FTBCI_util_finalize_component -- after FTBM_Client_deregister");
+
     if (client_info->event_queue) {
         FTBU_list_node_t *temp;
         FTBU_list_node_t *pos;
@@ -745,16 +786,16 @@ static void FTBCI_util_finalize_component(FTBCI_client_info_t * client_info)
         free(client_info->event_queue);
     }
 
-    FTB_INFO("In FTBCI_util_finalize_component: Free client_info->event_queue");
-
     if (client_info->subscription_type & FTB_SUBSCRIPTION_NOTIFY) {
         FTBU_map_node_t *iter;
         client_info->finalizing = 1;
-        FTB_INFO("signal the callback");
+
+        FTB_INFO("In FTBCI_util_finalize_component: signaling the callback subscriptions");
         pthread_cond_signal(&client_info->cond);
         FTBCI_unlock_client(client_info);
         pthread_join(client_info->callback, NULL);
         pthread_cond_destroy(&client_info->cond);
+
         FTBCI_lock_client(client_info);
         iter = FTBU_map_begin(client_info->callback_map);
         while (iter != FTBU_map_end(client_info->callback_map)) {
@@ -766,7 +807,7 @@ static void FTBCI_util_finalize_component(FTBCI_client_info_t * client_info)
         FTBCI_unlock_client(client_info);
     }
 
-    FTB_INFO("in FTBCI_util_finalize_component -- done");
+    FTB_INFO("Out FTBCI_util_finalize_component");
 }
 
 
@@ -777,14 +818,17 @@ int FTBC_Connect(FTB_client_t * cinfo, uint8_t extension, FTB_client_handle_t * 
     char component_name[FTB_MAX_EVENTSPACE];
     char region_name[FTB_MAX_EVENTSPACE];
     int ret;
+	FTBM_msg_t msg;
 
     FTB_INFO("FTBC_Connect In");
+
     if (client_handle == NULL)
         return FTB_ERR_NULL_POINTER;
 
     client_info = (FTBCI_client_info_t *) malloc(sizeof(FTBCI_client_info_t));
 	memset(client_info, 0, sizeof(FTBCI_client_info_t));
 
+	/* Set the subscription-related fields */
     if (strcasecmp(cinfo->client_subscription_style, "FTB_SUBSCRIPTION_POLLING") == 0) {
         client_info->subscription_type = FTB_SUBSCRIPTION_POLLING;
         if (cinfo->client_polling_queue_len > 0) {
@@ -812,15 +856,16 @@ int FTBC_Connect(FTB_client_t * cinfo, uint8_t extension, FTB_client_handle_t * 
         }
     }
     else {
+		free(client_info);
         return FTB_ERR_SUBSCRIPTION_STYLE;
     }
     /* Expose the error handling as option to use */
     client_info->err_handling = FTB_ERR_HANDLE_NONE;
 
-
     if ((ret = FTBCI_split_namespace(cinfo->event_space, region_name, category_name,
                			                component_name)) != FTB_SUCCESS) {
         FTB_WARNING("Invalid namespace format");
+		free(client_info);
         FTB_INFO("FTBC_Connect Out");
         return ret;
     }
@@ -843,12 +888,15 @@ int FTBC_Connect(FTB_client_t * cinfo, uint8_t extension, FTB_client_handle_t * 
     strcpy(client_info->id->client_id.comp_cat, category_name);
     strcpy(client_info->id->client_id.comp, component_name);
     if (strlen(cinfo->client_name) >= FTB_MAX_CLIENT_NAME) {
+		free(client_info->id);
+		free(client_info);
         FTB_INFO("FTBC_Connect Out");
         return FTB_ERR_INVALID_VALUE;
     }
     else {
         strcpy(client_info->id->client_id.client_name, cinfo->client_name);
     }
+
     FTBCI_convert_clientid_to_clienthandle(client_info->id->client_id, &client_info->client_handle);
     *client_handle = client_info->client_handle;
 
@@ -857,6 +905,8 @@ int FTBC_Connect(FTB_client_t * cinfo, uint8_t extension, FTB_client_handle_t * 
     client_info->event_queue_size = 0;
     client_info->seqnum = 0;
     if (strlen(cinfo->client_jobid) >= FTB_MAX_CLIENT_JOBID) {
+		free(client_info->id);
+		free(client_info);
         FTB_INFO("FTBC_Connect Out");
         return FTB_ERR_INVALID_VALUE;
     }
@@ -898,6 +948,7 @@ int FTBC_Connect(FTB_client_t * cinfo, uint8_t extension, FTB_client_handle_t * 
     else {
         client_info->callback_map = NULL;
     }
+
     FTBCI_lock_client_lib();
     FTB_INFO
         ("Going to call FTBU_map_insert() to insert as key=client_info->client_handle, data=client_info map=FTBCI_client_info_map");
@@ -906,24 +957,30 @@ int FTBC_Connect(FTB_client_t * cinfo, uint8_t extension, FTB_client_handle_t * 
          (void *) client_info) == FTBU_EXIST) {
         FTB_WARNING("This component has already been registered");
 		FTBCI_unlock_client_lib();
+		if (client_info->subscription_type & FTB_SUBSCRIPTION_POLLING)	free(client_info->event_queue);
+		if (client_info->subscription_type & FTB_SUBSCRIPTION_NOTIFY)	free(client_info->callback_event_queue);
+		free(client_info->id);
+		free(client_info);
         FTB_INFO("FTBC_Connect Out");
         return FTB_ERR_DUP_CALL;
     }
     FTBCI_unlock_client_lib();
-    {
-        int ret;
-        FTBM_msg_t msg;
-        memcpy(&msg.src, client_info->id, sizeof(FTB_id_t));
-        msg.msg_type = FTBM_MSG_TYPE_CLIENT_REG;
-        FTBM_Get_parent_location_id(&msg.dst.location_id);
-        FTB_INFO("parent: %s pid %d pid_starttime=%s", msg.dst.location_id.hostname,
+
+    memcpy(&msg.src, client_info->id, sizeof(FTB_id_t));
+    msg.msg_type = FTBM_MSG_TYPE_CLIENT_REG;
+    FTBM_Get_parent_location_id(&msg.dst.location_id);
+    FTB_INFO("Parent: %s pid %d pid_starttime=%s", msg.dst.location_id.hostname,
                  msg.dst.location_id.pid, msg.dst.location_id.pid_starttime);
-        ret = FTBM_Send(&msg);
-        if (ret != FTB_SUCCESS) {
-            FTB_INFO("FTBC_Connect Out");
-            return ret;
-        }
+    ret = FTBM_Send(&msg);
+    if (ret != FTB_SUCCESS) {
+		if (client_info->subscription_type & FTB_SUBSCRIPTION_POLLING)  free(client_info->event_queue);
+		if (client_info->subscription_type & FTB_SUBSCRIPTION_NOTIFY)   free(client_info->callback_event_queue);
+		free(client_info->id);
+		free(client_info);
+    	FTB_INFO("FTBC_Connect Out");
+        return ret;
     }
+
     FTB_INFO("FTBC_Connect Out");
     return FTB_SUCCESS;
 }
