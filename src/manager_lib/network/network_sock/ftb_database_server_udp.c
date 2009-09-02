@@ -310,7 +310,7 @@ int main(int argc, char *argv[])
                 FTBU_map_remove_node(iter);
             }
             else {
-                FTB_WARNING("IBootstrap was contacted for deregistering an non-existing addr");
+                FTB_WARNING("Bootstrap was contacted for deregistering an non-existing addr");
             }
 
             pkt_send.bootstrap_msg_type = FTBNI_BOOTSTRAP_MSG_TYPE_DEREG_REP;
