@@ -49,11 +49,11 @@ void *progress_loop()
     while (1) {
         pthread_mutex_unlock(&lock);
         ret = FTBM_Recv(&msg, &incoming_src);
+		pthread_mutex_lock(&lock);
         if (ret != FTB_SUCCESS) {
             FTB_WARNING("FTBM_Wait failed %d", ret);
             continue;
         }
-        pthread_mutex_lock(&lock);
         if (msg.msg_type == FTBM_MSG_TYPE_NOTIFY) {
             msg_send.msg_type = FTBM_MSG_TYPE_NOTIFY;
             memcpy(&msg_send.src, &msg.src, sizeof(FTB_id_t));
