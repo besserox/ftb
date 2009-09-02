@@ -879,6 +879,7 @@ int FTBM_Cancel_subscription(const FTB_id_t * id, FTB_event_t * event)
     if (iter == FTBU_map_end(comp->catch_event_set)) {
         FTB_WARNING("Not found throw entry");
         FTB_INFO("FTBM_Cancel_subscription Out");
+		unlock_comp(comp);
         return FTB_SUCCESS;
     }
     mask = (FTB_event_t *) FTBU_map_get_data(iter);
