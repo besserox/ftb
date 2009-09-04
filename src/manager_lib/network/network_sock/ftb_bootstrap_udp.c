@@ -236,7 +236,7 @@ int FTBNI_Bootstrap_register_addr(uint16_t my_level)
     pkt_send.level = my_level;
     memcpy(&pkt_send.addr, &FTBNI_bootstrap_my_addr, sizeof(FTBN_addr_sock_t));
 
-    FTB_INFO("registering hostname %s, port %d, level %d", pkt_send.addr.name, pkt_send.addr.port,
+    FTB_INFO("Registering hostname %s, port %d, level %d as potential parent for other agents", pkt_send.addr.name, pkt_send.addr.port,
              pkt_send.level);
 
     ret = FTBNI_util_exchange_bootstrap_msg(&pkt_send, &pkt_recv);
@@ -247,7 +247,7 @@ int FTBNI_Bootstrap_register_addr(uint16_t my_level)
         return FTB_ERR_GENERAL;
     }
 	else {
-    	FTB_INFO("received packet type %d, confirming registration as parent", pkt_recv.bootstrap_msg_type);
+    	FTB_INFO("Received packet type %d, confirming my registration as potential parent for other agents", pkt_recv.bootstrap_msg_type);
 	}
 
     return FTB_SUCCESS;
