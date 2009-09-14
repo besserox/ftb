@@ -3,7 +3,7 @@
 
 Table of Contents
 =======================
-1.0 Intro
+1.0 Introduction
 2.0 Downloading and Configuring FTB
 3.0 Installing FTB
 4.0 Running FTB
@@ -15,7 +15,7 @@ Table of Contents
 
 Section 1.0 : INTRODUCTION 
 ===============================
-This release of FTB has been developed and tested on Ubuntu (Intrepid) for Linux, IBM BG/P machines and Cray XT4 machines
+This release of FTB has been developed and tested on Ubuntu 9.04 for Linux, IBM BG/P machines and Cray XT4 machines
 
 
 Section 2.0: DOWNLOADING AND CONFIGURING FTB
