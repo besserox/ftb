@@ -75,6 +75,9 @@ extern "C" {
 #define FTB_MAX_PID_TIME             32
 #define FTB_MAX_PAYLOAD_DATA         368
 
+/*FTB_MAX_SUBSCRIPTION_STYLE included as part of an event message */
+#define FTB_MAX_SUBSCRIPTION_STYLE	 32 
+
 /*
  * The FTB_EVENT_SIZE field size is just sufficient for the event +
  * event_handle (and event_type), if needed
@@ -100,7 +103,7 @@ typedef char FTB_client_jobid_t[FTB_MAX_CLIENT_JOBID];
 typedef char FTB_severity_t[FTB_MAX_SEVERITY];
 typedef char FTB_event_name_t[FTB_MAX_EVENT_NAME];
 typedef char FTB_hostip_t[FTB_MAX_HOST_ADDR];
-typedef char FTB_subscription_style_t[32];
+typedef char FTB_subscription_style_t[FTB_MAX_SUBSCRIPTION_STYLE];
 typedef char FTB_pid_starttime_t[FTB_MAX_PID_TIME];
 
 #ifdef FTB_TAG
