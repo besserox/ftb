@@ -23,7 +23,9 @@ extern "C" {
 /* *INDENT-ON* */
 
 #define FTBU_ERR_ABORT(args...)  do {\
-    fprintf(FTBU_log_file_fp, "[FTB_ERROR][%s: line %d]", __FILE__, __LINE__); \
+	char hostname[32]; \
+	FTBU_get_output_of_cmd("hostname", hostname, 32); \
+    fprintf(FTBU_log_file_fp, "[FTB_ERROR][%s: line %d][hostname:%s]", __FILE__, __LINE__,hostname); \
     fprintf(FTBU_log_file_fp, args); \
     fprintf(FTBU_log_file_fp, "\n"); \
     fflush(FTBU_log_file_fp);\
@@ -31,7 +33,9 @@ extern "C" {
 } while (0)
 
 #define FTBU_WARNING(args...)  do {\
-    fprintf(FTBU_log_file_fp, "[FTBU_WARNING][%s: line %d]", __FILE__, __LINE__); \
+	char hostname[32]; \
+	FTBU_get_output_of_cmd("hostname", hostname, 32); \
+    fprintf(FTBU_log_file_fp, "[FTBU_WARNING][%s: line %d][hostname:%s]", __FILE__, __LINE__,hostname); \
     fprintf(FTBU_log_file_fp, args); \
     fprintf(FTBU_log_file_fp, "\n"); \
     fflush(FTBU_log_file_fp);\
@@ -39,7 +43,9 @@ extern "C" {
 
 #ifdef FTB_DEBUG
 #define FTBU_INFO(args...)  do {\
-    fprintf(FTBU_log_file_fp, "[FTBU_INFO][%s: line %d]", __FILE__, __LINE__); \
+	char hostname[32]; \
+	FTBU_get_output_of_cmd("hostname", hostname, 32); \
+    fprintf(FTBU_log_file_fp, "[FTBU_INFO][%s: line %d][hostname:%s]", __FILE__, __LINE__,hostname); \
     fprintf(FTBU_log_file_fp, args); \
     fprintf(FTBU_log_file_fp, "\n"); \
     fflush(FTBU_log_file_fp);\
