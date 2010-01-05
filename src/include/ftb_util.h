@@ -22,7 +22,7 @@ extern "C" {
 #endif
 /* *INDENT-ON* */
 
-#define FTB_ERR_ABORT(args...)  do {\
+#define FTBU_ERR_ABORT(args...)  do {\
     fprintf(FTBU_log_file_fp, "[FTB_ERROR][%s: line %d]", __FILE__, __LINE__); \
     fprintf(FTBU_log_file_fp, args); \
     fprintf(FTBU_log_file_fp, "\n"); \
@@ -30,22 +30,22 @@ extern "C" {
     exit(-1);\
 } while (0)
 
-#define FTB_WARNING(args...)  do {\
-    fprintf(FTBU_log_file_fp, "[FTB_WARNING][%s: line %d]", __FILE__, __LINE__); \
+#define FTBU_WARNING(args...)  do {\
+    fprintf(FTBU_log_file_fp, "[FTBU_WARNING][%s: line %d]", __FILE__, __LINE__); \
     fprintf(FTBU_log_file_fp, args); \
     fprintf(FTBU_log_file_fp, "\n"); \
     fflush(FTBU_log_file_fp);\
 } while (0)
 
 #ifdef FTB_DEBUG
-#define FTB_INFO(args...)  do {\
-    fprintf(FTBU_log_file_fp, "[FTB_INFO][%s: line %d]", __FILE__, __LINE__); \
+#define FTBU_INFO(args...)  do {\
+    fprintf(FTBU_log_file_fp, "[FTBU_INFO][%s: line %d]", __FILE__, __LINE__); \
     fprintf(FTBU_log_file_fp, args); \
     fprintf(FTBU_log_file_fp, "\n"); \
     fflush(FTBU_log_file_fp);\
 } while (0)
 #else
-#define FTB_INFO(...)
+#define FTBU_INFO(...)
 #endif
 
 /* Simple list-based implementation of map, set is just map with data as key */

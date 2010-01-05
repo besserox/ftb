@@ -44,7 +44,7 @@ static int FTBNI_util_send_bootstrap_msg(const FTBNI_bootstrap_pkt_t * pkt_send)
 
     hp = FTBNI_gethostbyname(FTBNI_bootstrap_config.server_name);
     if (hp == NULL) {
-        FTB_ERR_ABORT("Cannot find database server %s", FTBNI_bootstrap_config.server_name);
+        FTBU_ERR_ABORT("Cannot find database server %s", FTBNI_bootstrap_config.server_name);
     }
 
     memset((void *) &server, 0, sizeof(server));
@@ -53,15 +53,15 @@ static int FTBNI_util_send_bootstrap_msg(const FTBNI_bootstrap_pkt_t * pkt_send)
     server.sin_port = htons(FTBNI_bootstrap_config.server_port);
 
     if ((fd = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) == -1) {
-        FTB_ERR_ABORT("socket failed");
+        FTBU_ERR_ABORT("socket failed");
     }
 
-    FTB_INFO("sending pkt type %d", pkt_send->bootstrap_msg_type);
+    FTBU_INFO("sending pkt type %d", pkt_send->bootstrap_msg_type);
     if (sendto
         (fd, pkt_send, sizeof(FTBNI_bootstrap_pkt_t), 0, (struct sockaddr *) &server,
          sizeof(struct sockaddr_in)) != sizeof(FTBNI_bootstrap_pkt_t)) {
         close(fd);
-        FTB_ERR_ABORT("sendto failed");
+        FTBU_ERR_ABORT("sendto failed");
     }
 
     close(fd);
@@ -80,7 +80,7 @@ static int FTBNI_util_exchange_bootstrap_msg(const FTBNI_bootstrap_pkt_t * pkt_s
 
     hp = FTBNI_gethostbyname(FTBNI_bootstrap_config.server_name);
     if (hp == NULL) {
-        FTB_ERR_ABORT("cannot find database server %s", FTBNI_bootstrap_config.server_name);
+        FTBU_ERR_ABORT("cannot find database server %s", FTBNI_bootstrap_config.server_name);
     }
 
     memset((void *) &server, 0, sizeof(server));
@@ -89,7 +89,7 @@ static int FTBNI_util_exchange_bootstrap_msg(const FTBNI_bootstrap_pkt_t * pkt_s
     server.sin_port = htons(FTBNI_bootstrap_config.server_port);
 
     if ((fd = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) == -1) {
-        FTB_ERR_ABORT("socket failed");
+        FTBU_ERR_ABORT("socket failed");
     }
 
     flag = 0;
@@ -102,26 +102,26 @@ static int FTBNI_util_exchange_bootstrap_msg(const FTBNI_bootstrap_pkt_t * pkt_s
         timeout.tv_sec = timeout_milli / 1000;
         timeout.tv_usec = (timeout_milli % 1000 * 1000);
 
-        FTB_INFO("sending pkt type %d", pkt_send->bootstrap_msg_type);
+        FTBU_INFO("sending pkt type %d", pkt_send->bootstrap_msg_type);
         if (sendto
             (fd, pkt_send, sizeof(FTBNI_bootstrap_pkt_t), 0, (struct sockaddr *) &server,
              sizeof(struct sockaddr_in)) != sizeof(FTBNI_bootstrap_pkt_t)) {
             close(fd);
-            FTB_ERR_ABORT("sendto failed");
+            FTBU_ERR_ABORT("sendto failed");
         }
 
         if (select(fd + 1, &fds, NULL, NULL, &timeout) < 0) {
             if (errno == EINTR || errno == EAGAIN)
                 continue;
             close(fd);
-            FTB_ERR_ABORT("select failed");
+            FTBU_ERR_ABORT("select failed");
         }
 
         if (FD_ISSET(fd, &fds)) {
             if (recvfrom(fd, pkt_recv, sizeof(FTBNI_bootstrap_pkt_t), 0, NULL, 0) !=
                 sizeof(FTBNI_bootstrap_pkt_t)) {
                 close(fd);
-                FTB_ERR_ABORT("recvfrom failed");
+                FTBU_ERR_ABORT("recvfrom failed");
             }
             flag = 1;
             break;
@@ -189,7 +189,7 @@ int FTBNI_Bootstrap_get_parent_addr(uint16_t my_level, FTBN_addr_sock_t * parent
     if (ret != FTB_SUCCESS)
         return ret;
 
-    FTB_INFO("received msg type %d, parent hostname %s, port %d, level %u", pkt_recv.bootstrap_msg_type,
+    FTBU_INFO("received msg type %d, parent hostname %s, port %d, level %u", pkt_recv.bootstrap_msg_type,
              pkt_recv.addr.name, pkt_recv.addr.port, pkt_recv.level);
     if (pkt_recv.bootstrap_msg_type != FTBNI_BOOTSTRAP_MSG_TYPE_ADDR_REP) {
         return FTB_ERR_GENERAL;
@@ -228,7 +228,7 @@ int FTBNI_Bootstrap_register_addr(uint16_t my_level)
     pkt_send.level = my_level;
     memcpy(&pkt_send.addr, &FTBNI_bootstrap_my_addr, sizeof(FTBN_addr_sock_t));
 
-    FTB_INFO("Registering hostname %s, port %d, level %d as potential parent for other agents", pkt_send.addr.name, pkt_send.addr.port,
+    FTBU_INFO("Registering hostname %s, port %d, level %d as potential parent for other agents", pkt_send.addr.name, pkt_send.addr.port,
              pkt_send.level);
 
     ret = FTBNI_util_exchange_bootstrap_msg(&pkt_send, &pkt_recv);
@@ -239,7 +239,7 @@ int FTBNI_Bootstrap_register_addr(uint16_t my_level)
         return FTB_ERR_GENERAL;
     }
 	else {
-    	FTB_INFO("Received packet type %d, confirming my registration as potential parent for other agents", pkt_recv.bootstrap_msg_type);
+    	FTBU_INFO("Received packet type %d, confirming my registration as potential parent for other agents", pkt_recv.bootstrap_msg_type);
 	}
 
     return FTB_SUCCESS;
@@ -262,7 +262,7 @@ static int FTBNI_util_bootstrap_deregister_addr(int blocking)
         if (ret != FTB_SUCCESS)
             return ret;
 
-        FTB_INFO("received msg type %d, parent hostname %s, port %d", pkt_recv.bootstrap_msg_type,
+        FTBU_INFO("received msg type %d, parent hostname %s, port %d", pkt_recv.bootstrap_msg_type,
                  pkt_recv.addr.name, pkt_recv.addr.port);
 
         if (pkt_recv.bootstrap_msg_type != FTBNI_BOOTSTRAP_MSG_TYPE_DEREG_REP) {

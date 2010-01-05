@@ -31,14 +31,14 @@ extern FILE *FTBU_log_file_fp;
  */
 int FTBU_match_mask(const FTB_event_t * event, const FTB_event_t * mask)
 {
-    FTB_INFO("In FTBU_match_mask");
+    FTBU_INFO("In FTBU_match_mask");
 
-    FTB_INFO("FTBU_match_mask: event->client_name=%s and mask->client_name=%s", event->client_name,
+    FTBU_INFO("FTBU_match_mask: event->client_name=%s and mask->client_name=%s", event->client_name,
              mask->client_name);
-    FTB_INFO("FTBU_match_mask: event->region=%s and mask->region=%s", event->region, mask->region);
-    FTB_INFO("FTBU_match_mask: event->hostname=%s and mask->hostname=%s", event->hostname,
+    FTBU_INFO("FTBU_match_mask: event->region=%s and mask->region=%s", event->region, mask->region);
+    FTBU_INFO("FTBU_match_mask: event->hostname=%s and mask->hostname=%s", event->hostname,
              mask->hostname);
-    FTB_INFO("FTBU_match_mask: event->event_name=%s and mask->event_name=%s", event->event_name,
+    FTBU_INFO("FTBU_match_mask: event->event_name=%s and mask->event_name=%s", event->event_name,
              mask->event_name);
 
 
@@ -59,7 +59,7 @@ int FTBU_match_mask(const FTB_event_t * event, const FTB_event_t * mask)
 
         if (strcasecmp(mask->event_name, "ALL") != 0) {
             if (strcasecmp(event->event_name, mask->event_name) == 0) {
-                FTB_INFO("Out FTBU_match_mask");
+                FTBU_INFO("Out FTBU_match_mask");
                 return 1;
             }
         }
@@ -71,13 +71,13 @@ int FTBU_match_mask(const FTB_event_t * event, const FTB_event_t * mask)
                 && ((strcasecmp(event->comp, mask->comp) == 0)
                     || (strcasecmp(mask->comp, "ALL") == 0))) {
 
-                FTB_INFO("Out FTBU_match_mask");
+                FTBU_INFO("Out FTBU_match_mask");
                 return 1;
 
             }
         }
     }
-    FTB_INFO("Out FTBU_match_mask");
+    FTBU_INFO("Out FTBU_match_mask");
     return 0;
 }
 

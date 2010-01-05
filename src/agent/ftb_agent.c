@@ -43,7 +43,7 @@ void *progress_loop()
         ret = FTBM_Recv(&msg, &incoming_src);
 		pthread_mutex_lock(&lock);
         if (ret != FTB_SUCCESS) {
-            FTB_WARNING("FTBM_Wait failed %d", ret);
+            FTBU_WARNING("FTBM_Wait failed %d", ret);
             continue;
         }
         if (msg.msg_type == FTBM_MSG_TYPE_NOTIFY) {
@@ -52,7 +52,7 @@ void *progress_loop()
             memcpy(&msg_send.event, &msg.event, sizeof(FTB_event_t));
             ret = FTBM_Get_catcher_comp_list(&msg.event, &ids, &ids_len);
             if (ret != FTB_SUCCESS) {
-                FTB_WARNING("FTBM_Get_catcher_comp_list failed");
+                FTBU_WARNING("FTBM_Get_catcher_comp_list failed");
                 continue;
             }
             for (i = 0; i < ids_len; i++) {
@@ -62,12 +62,12 @@ void *progress_loop()
                     /*not send same msg back in case incoming source is another agent */
                     continue;
                 }
-                FTB_INFO("FTBM_MSG_TYPE_NOTIFY : Sending the message to destination =%s \n",
+                FTBU_INFO("FTBM_MSG_TYPE_NOTIFY : Sending the message to destination =%s \n",
                          ids[i].location_id.hostname);
                 memcpy(&msg_send.dst, &ids[i], sizeof(FTB_id_t));
                 ret = FTBM_Send(&msg_send);
                 if (ret != FTB_SUCCESS) {
-                    FTB_WARNING("FTBM_Send failed %d", ret);
+                    FTBU_WARNING("FTBM_Send failed %d", ret);
                 }
             }
             ret = FTBM_Release_comp_list(ids);
@@ -75,41 +75,41 @@ void *progress_loop()
         else if (msg.msg_type == FTBM_MSG_TYPE_CLIENT_REG) {
             ret = FTBM_Client_register(&msg.src);
             if (ret != FTB_SUCCESS) {
-                FTB_WARNING("FTBM_Client_register failed");
+                FTBU_WARNING("FTBM_Client_register failed");
             }
         }
         else if (msg.msg_type == FTBM_MSG_TYPE_CLIENT_DEREG) {
             ret = FTBM_Client_deregister(&msg.src);
             if (ret != FTB_SUCCESS) {
-                FTB_WARNING("FTBM_Client_register failed");
+                FTBU_WARNING("FTBM_Client_register failed");
             }
         }
         else if (msg.msg_type == FTBM_MSG_TYPE_REG_SUBSCRIPTION) {
             ret = FTBM_Register_subscription(&msg.src, &msg.event);
             if (ret != FTB_SUCCESS) {
-                FTB_WARNING("FTBM_Register_subscription failed");
+                FTBU_WARNING("FTBM_Register_subscription failed");
             }
         }
         else if (msg.msg_type == FTBM_MSG_TYPE_REG_PUBLISHABLE_EVENT) {
             ret = FTBM_Register_publishable_event(&msg.src, &msg.event);
             if (ret != FTB_SUCCESS) {
-                FTB_WARNING("FTBM_Register_publishable_event failed");
+                FTBU_WARNING("FTBM_Register_publishable_event failed");
             }
         }
         else if (msg.msg_type == FTBM_MSG_TYPE_SUBSCRIPTION_CANCEL) {
             ret = FTBM_Cancel_subscription(&msg.src, &msg.event);
             if (ret != FTB_SUCCESS) {
-                FTB_WARNING("FTBM_Cancel_subscription failed");
+                FTBU_WARNING("FTBM_Cancel_subscription failed");
             }
         }
         else if (msg.msg_type == FTBM_MSG_TYPE_PUBLISHABLE_EVENT_REG_CANCEL) {
             ret = FTBM_Publishable_event_registration_cancel(&msg.src, &msg.event);
             if (ret != FTB_SUCCESS) {
-                FTB_WARNING("FTBM_Publishable_event_registration_cancel failed");
+                FTBU_WARNING("FTBM_Publishable_event_registration_cancel failed");
             }
         }
         else {
-            FTB_WARNING("Unknown message type %d", msg.msg_type);
+            FTBU_WARNING("Unknown message type %d", msg.msg_type);
         }
     }
 }
@@ -147,7 +147,7 @@ int main(int argc, char *argv[])
 
     ret = FTBM_Init(0);
     if (ret != FTB_SUCCESS) {
-        FTB_ERR_ABORT("FTBM_Init failed %d", ret);
+        FTBU_ERR_ABORT("FTBM_Init failed %d", ret);
     }
 
 	signal(SIGINT, handler);

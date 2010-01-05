@@ -132,7 +132,7 @@ static inline void FTBNI_util_setup_config_sock(FTBNI_config_sock_t * config)
         FTBNI_get_data_from_config_file("FTB_AGENT_PORT", env, output_val, &retval);
         if (retval == -1) {
             config->agent_port = FTB_AGENT_PORT;
-            FTB_INFO ("Error in accessing agent port information from config file %s. Assigning default port to the agent %d\n", env, config->agent_port); 
+            FTBU_INFO ("Error in accessing agent port information from config file %s. Assigning default port to the agent %d\n", env, config->agent_port); 
         }
         else {
             config->agent_port = atoi(output_val);
@@ -140,7 +140,7 @@ static inline void FTBNI_util_setup_config_sock(FTBNI_config_sock_t * config)
     }
     else {
         config->agent_port = FTB_AGENT_PORT;
-        FTB_INFO("Assigning default port to the agent: %d", config->agent_port);
+        FTBU_INFO("Assigning default port to the agent: %d", config->agent_port);
     }
 
     if ((env = getenv("FTB_BSTRAP_PORT")) != NULL) {
@@ -153,7 +153,7 @@ static inline void FTBNI_util_setup_config_sock(FTBNI_config_sock_t * config)
         FTBNI_get_data_from_config_file("FTB_BSTRAP_PORT", env, output_val, &retval);
         if (retval == -1) {
             config->server_port = FTB_BSTRAP_PORT;
-            FTB_INFO("Error in accessing server port information from config file %s. Assigning default port for bootstrap server : %d", env, config->server_port);
+            FTBU_INFO("Error in accessing server port information from config file %s. Assigning default port for bootstrap server : %d", env, config->server_port);
         }
         else {
             config->server_port = atoi(output_val);
@@ -174,11 +174,11 @@ static inline void FTBNI_util_setup_config_sock(FTBNI_config_sock_t * config)
         if (retval == -1) {
 #ifdef FTB_BSTRAP_SERVER
             strncpy(config->server_name, FTB_BSTRAP_SERVER, FTB_MAX_HOST_ADDR);
-            FTB_WARNING
+            FTBU_WARNING
                 ("Error in accessing bootstrap server name information from config file %s. Assigning configure time server information: %s",
                  env, config->server_name);
 #else
-            FTB_ERR_ABORT("Cannot find boot-strap server ip address");
+            FTBU_ERR_ABORT("Cannot find boot-strap server ip address");
 #endif
         }
         else {
@@ -189,7 +189,7 @@ static inline void FTBNI_util_setup_config_sock(FTBNI_config_sock_t * config)
 #ifdef FTB_BSTRAP_SERVER
         strncpy(config->server_name, FTB_BSTRAP_SERVER, FTB_MAX_HOST_ADDR);
 #else
-        FTB_ERR_ABORT("Cannot find boot-strap server ip address");
+        FTBU_ERR_ABORT("Cannot find boot-strap server ip address");
 #endif
     }
 }
