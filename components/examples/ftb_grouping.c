@@ -1,7 +1,7 @@
 /**********************************************************************************/
 /* This file is part of FTB (Fault Tolerance Backplance) - the core of CIFTS
  * (Co-ordinated Infrastructure for Fault Tolerant Systems)
- * 
+ *
  * See http://www.mcs.anl.gov/research/cifts for more information.
  * 	
  */
@@ -52,7 +52,7 @@ int main(int argc, char *argv[])
 
     group_id = rank / GRP_SIZE;
     snprintf(new_client_name, 16, "%d", group_id);
-	memset(&cinfo, 0, sizeof(cinfo));
+    memset(&cinfo, 0, sizeof(cinfo));
     strcpy(cinfo.client_name, new_client_name);
     strcpy(cinfo.event_space, "FTB.MPI.EXAMPLE_MPI");
     strcpy(cinfo.client_schema_ver, "0.5");

@@ -1,7 +1,7 @@
 /**********************************************************************************/
 /* This file is part of FTB (Fault Tolerance Backplance) - the core of CIFTS
  * (Co-ordinated Infrastructure for Fault Tolerant Systems)
- * 
+ *
  * See http://www.mcs.anl.gov/research/cifts for more information.
  * 	
  */
@@ -41,7 +41,7 @@ void *progress_loop()
     while (1) {
         pthread_mutex_unlock(&lock);
         ret = FTBM_Recv(&msg, &incoming_src);
-		pthread_mutex_lock(&lock);
+        pthread_mutex_lock(&lock);
         if (ret != FTB_SUCCESS) {
             FTBU_WARNING("FTBM_Wait failed %d", ret);
             continue;
@@ -63,7 +63,7 @@ void *progress_loop()
                     continue;
                 }
                 FTBU_INFO("FTBM_MSG_TYPE_NOTIFY : Sending the message to destination =%s \n",
-                         ids[i].location_id.hostname);
+                          ids[i].location_id.hostname);
                 memcpy(&msg_send.dst, &ids[i], sizeof(FTB_id_t));
                 ret = FTBM_Send(&msg_send);
                 if (ret != FTB_SUCCESS) {
@@ -126,10 +126,11 @@ void handler(int sig)
 int main(int argc, char *argv[])
 {
     int ret;
-	int pid;
+    int pid;
 
-	pid = fork();
-	if (pid != 0) return 0;
+    pid = fork();
+    if (pid != 0)
+        return 0;
 
 #ifdef FTB_DEBUG
     if (argc >= 2 && strcmp("ION_AGENT", argv[1]) == 0) {
@@ -143,27 +144,28 @@ int main(int argc, char *argv[])
     }
     else
 #endif
-    FTBU_log_file_fp = stderr;
+        FTBU_log_file_fp = stderr;
 
     ret = FTBM_Init(0);
     if (ret != FTB_SUCCESS) {
         FTBU_ERR_ABORT("FTBM_Init failed %d", ret);
     }
 
-	signal(SIGINT, handler);
-	signal(SIGTERM, handler);
+    signal(SIGINT, handler);
+    signal(SIGTERM, handler);
 
     pthread_create(&progress_thread, NULL, FTBM_Fill_message_queue, NULL);
     pthread_create(&progress_thread_main, NULL, progress_loop, NULL);
 
-	while (!done) sleep (1);
-	
-	pthread_mutex_lock(&lock);
-	pthread_cancel(progress_thread);
-	pthread_cancel(progress_thread_main);
-	pthread_join(progress_thread, NULL);
-	pthread_join(progress_thread_main, NULL);
-	pthread_mutex_unlock(&lock);
+    while (!done)
+        sleep(1);
+
+    pthread_mutex_lock(&lock);
+    pthread_cancel(progress_thread);
+    pthread_cancel(progress_thread_main);
+    pthread_join(progress_thread, NULL);
+    pthread_join(progress_thread_main, NULL);
+    pthread_mutex_unlock(&lock);
 
     FTBM_Finalize();
 

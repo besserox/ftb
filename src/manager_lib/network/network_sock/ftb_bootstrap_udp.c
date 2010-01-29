@@ -1,7 +1,7 @@
 /**********************************************************************************/
 /* This file is part of FTB (Fault Tolerance Backplance) - the core of CIFTS
  * (Co-ordinated Infrastructure for Fault Tolerant Systems)
- * 
+ *
  * See http://www.mcs.anl.gov/research/cifts for more information.
  * 	
  */
@@ -132,8 +132,8 @@ static int FTBNI_util_exchange_bootstrap_msg(const FTBNI_bootstrap_pkt_t * pkt_s
     }
 
     close(fd);
-    if (flag == 0) 
-	return FTB_ERR_NETWORK_NO_ROUTE;
+    if (flag == 0)
+        return FTB_ERR_NETWORK_NO_ROUTE;
     return FTB_SUCCESS;
 }
 
@@ -190,7 +190,7 @@ int FTBNI_Bootstrap_get_parent_addr(uint16_t my_level, FTBN_addr_sock_t * parent
         return ret;
 
     FTBU_INFO("received msg type %d, parent hostname %s, port %d, level %u", pkt_recv.bootstrap_msg_type,
-             pkt_recv.addr.name, pkt_recv.addr.port, pkt_recv.level);
+              pkt_recv.addr.name, pkt_recv.addr.port, pkt_recv.level);
     if (pkt_recv.bootstrap_msg_type != FTBNI_BOOTSTRAP_MSG_TYPE_ADDR_REP) {
         return FTB_ERR_GENERAL;
     }
@@ -221,15 +221,15 @@ int FTBNI_Bootstrap_register_addr(uint16_t my_level)
     if (FTBNI_bootstrap_config_location.leaf)
         return FTB_ERR_NOT_SUPPORTED;
 
-	memset(&pkt_send, 0, sizeof(FTBNI_bootstrap_pkt_t));
-	memset(&pkt_recv, 0, sizeof(FTBNI_bootstrap_pkt_t));
+    memset(&pkt_send, 0, sizeof(FTBNI_bootstrap_pkt_t));
+    memset(&pkt_recv, 0, sizeof(FTBNI_bootstrap_pkt_t));
 
     pkt_send.bootstrap_msg_type = FTBNI_BOOTSTRAP_MSG_TYPE_REG_REQ;
     pkt_send.level = my_level;
     memcpy(&pkt_send.addr, &FTBNI_bootstrap_my_addr, sizeof(FTBN_addr_sock_t));
 
-    FTBU_INFO("Registering hostname %s, port %d, level %d as potential parent for other agents", pkt_send.addr.name, pkt_send.addr.port,
-             pkt_send.level);
+    FTBU_INFO("Registering hostname %s, port %d, level %d as potential parent for other agents",
+              pkt_send.addr.name, pkt_send.addr.port, pkt_send.level);
 
     ret = FTBNI_util_exchange_bootstrap_msg(&pkt_send, &pkt_recv);
     if (ret != FTB_SUCCESS)
@@ -238,9 +238,11 @@ int FTBNI_Bootstrap_register_addr(uint16_t my_level)
     if (pkt_recv.bootstrap_msg_type != FTBNI_BOOTSTRAP_MSG_TYPE_REG_REP) {
         return FTB_ERR_GENERAL;
     }
-	else {
-    	FTBU_INFO("Received packet type %d, confirming my registration as potential parent for other agents", pkt_recv.bootstrap_msg_type);
-	}
+    else {
+        FTBU_INFO
+            ("Received packet type %d, confirming my registration as potential parent for other agents",
+             pkt_recv.bootstrap_msg_type);
+    }
 
     return FTB_SUCCESS;
 }
@@ -263,7 +265,7 @@ static int FTBNI_util_bootstrap_deregister_addr(int blocking)
             return ret;
 
         FTBU_INFO("received msg type %d, parent hostname %s, port %d", pkt_recv.bootstrap_msg_type,
-                 pkt_recv.addr.name, pkt_recv.addr.port);
+                  pkt_recv.addr.name, pkt_recv.addr.port);
 
         if (pkt_recv.bootstrap_msg_type != FTBNI_BOOTSTRAP_MSG_TYPE_DEREG_REP) {
             return FTB_ERR_GENERAL;

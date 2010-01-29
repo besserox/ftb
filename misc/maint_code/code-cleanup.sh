@@ -6,7 +6,7 @@ indent_code()
 
     indent --k-and-r-style --line-length105 --else-endif-column1 --start-left-side-of-comments \
 	--break-after-boolean-operator --dont-cuddle-else --dont-format-comments --comment-indentation1 \
-	--indent-level4 \
+	--indent-level4 --no-tabs --tab-size4\
 	${file}
     rm -f ${file}~
     cp ${file} /tmp/${USER}.__tmp__ && \

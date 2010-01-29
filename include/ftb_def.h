@@ -1,7 +1,7 @@
 /**********************************************************************************/
 /* This file is part of FTB (Fault Tolerance Backplance) - the core of CIFTS
  * (Co-ordinated Infrastructure for Fault Tolerant Systems)
- * 
+ *
  * See http://www.mcs.anl.gov/research/cifts for more information.
  * 	
  */
@@ -76,7 +76,7 @@ extern "C" {
 #define FTB_MAX_PAYLOAD_DATA         368
 
 /*FTB_MAX_SUBSCRIPTION_STYLE included as part of an event message */
-#define FTB_MAX_SUBSCRIPTION_STYLE	 32 
+#define FTB_MAX_SUBSCRIPTION_STYLE	 32
 
 /*
  * The FTB_EVENT_SIZE field size is just sufficient for the event +

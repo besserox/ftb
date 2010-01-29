@@ -1,7 +1,7 @@
 /**********************************************************************************/
 /* This file is part of FTB (Fault Tolerance Backplance) - the core of CIFTS
  * (Co-ordinated Infrastructure for Fault Tolerant Systems)
- * 
+ *
  * See http://www.mcs.anl.gov/research/cifts for more information.
  * 	
  */
@@ -71,39 +71,39 @@ typedef union FTBU_map_key {
 *  The FTB_map_node_t data structure is used the create nodes in a
 *  'map-type' (ftb-terminology) doubly linked list. Typically, all nodes
 *  in a linked list contain data of similar semantics. In the 'map-type'
-*  doubly linked list, the elements of the first/head node of the linked 
+*  doubly linked list, the elements of the first/head node of the linked
 *  list have unique semantics. More specifically:
 *  (1) The 'FTBU_map_key_t key' will be ignored for the first node of the
-*  linked list. 
+*  linked list.
 *  (2) The 'void *data' will actually point to a 'comparison' function
 *  that will be used for comparing data available on the other nodes of
 *  the linked list. Different instances of the FTBU_map_node will thus
 *  contain data whose type and comparison criteria will be defined in the
 *  function available in this 'data' element of the head node.
-* 
+*
 *  The other nodes of the 'map-type' linked list will be semantically
 *  homogenous and will some information in the  'key' and 'data' elements.
-* 
+*
 */
 
 typedef struct FTBU_map_node {
     struct FTBU_map_node *next;
     struct FTBU_map_node *prev;
     FTBU_map_key_t key;
-    void *data;  /*For head node, data is a func ptr that points to a comparison function */                 
+    void *data;                 /*For head node, data is a func ptr that points to a comparison function */
 } FTBU_map_node_t;
 
 
 /*
  * The FTBU_list_node_t will be used to create instances of the doubly linked
- * list; where the semantics of all nodes are same 
+ * list; where the semantics of all nodes are same
  * This data type is created is order to clearly distinguish it from the
- * 'map-type' linked list 
+ * 'map-type' linked list
  */
 typedef struct FTBU_list_node {
-	struct FTBU_list_node *next;
-	struct FTBU_list_node *prev;
-	void *data;
+    struct FTBU_list_node *next;
+    struct FTBU_list_node *prev;
+    void *data;
 } FTBU_list_node_t;
 
 #define FTBU_list_for_each_readonly(pos, head) \
@@ -128,7 +128,7 @@ FTBU_map_key_t FTBU_map_get_key(FTBU_map_node_t * node);
 void *FTBU_map_get_data(FTBU_map_node_t * node);
 
 /* Get the next node */
-FTBU_map_node_t * FTBU_map_next_node(FTBU_map_node_t * node);
+FTBU_map_node_t *FTBU_map_next_node(FTBU_map_node_t * node);
 
 /*
  * Insert value in the map. Returns FTBU_SUCCESS if new element inserted

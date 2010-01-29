@@ -1,7 +1,7 @@
 /**********************************************************************************/
 /* This file is part of FTB (Fault Tolerance Backplance) - the core of CIFTS
  * (Co-ordinated Infrastructure for Fault Tolerant Systems)
- * 
+ *
  * See http://www.mcs.anl.gov/research/cifts for more information.
  * 	
  */
@@ -42,7 +42,7 @@ int main(int argc, char *argv[])
     }
     printf("Begin\n");
     /* Specify the client information and call FTB_Connect */
-	memset(&cinfo, 0, sizeof(cinfo));
+    memset(&cinfo, 0, sizeof(cinfo));
     strcpy(cinfo.event_space, "FTB.FTB_EXAMPLES.SIMPLE");
     strcpy(cinfo.client_schema_ver, "0.5");
     strcpy(cinfo.client_subscription_style, "FTB_SUBSCRIPTION_POLLING");
@@ -73,8 +73,10 @@ int main(int argc, char *argv[])
             /* Poll for an event */
             ret = FTB_Poll_event(shandle, &event);
             if (ret == FTB_SUCCESS) {
-                printf("Caught event: event_space: %s, severity: %s, event_name: %s from host: %s and pid: %d\n",
-                       event.event_space, event.severity, event.event_name, event.incoming_src.hostname, event.incoming_src.pid);
+                printf
+                    ("Caught event: event_space: %s, severity: %s, event_name: %s from host: %s and pid: %d\n",
+                     event.event_space, event.severity, event.event_name, event.incoming_src.hostname,
+                     event.incoming_src.pid);
             }
             else {
                 printf("No event\n");

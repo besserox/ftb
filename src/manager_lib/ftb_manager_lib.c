@@ -1,7 +1,7 @@
 /**********************************************************************************/
 /* This file is part of FTB (Fault Tolerance Backplance) - the core of CIFTS
  * (Co-ordinated Infrastructure for Fault Tolerant Systems)
- * 
+ *
  * See http://www.mcs.anl.gov/research/cifts for more information.
  * 	
  */
@@ -46,7 +46,7 @@ typedef struct FTBM_node_info {
     uint8_t err_handling;
     int leaf;
     volatile int waiting;
-    FTBMI_map_ftb_id_2_comp_info_t *peers;      /*the map of peers includes parent */
+    FTBMI_map_ftb_id_2_comp_info_t *peers;  /*the map of peers includes parent */
     FTBMI_map_event_mask_2_comp_info_map_t *catch_event_map;
 } FTBMI_node_info_t;
 
@@ -56,7 +56,7 @@ static FTBMI_node_info_t FTBMI_info;
 static volatile int FTBMI_initialized = 0;
 
 pthread_mutex_t message_queue_mutex;
-pthread_cond_t  message_queue_cond;
+pthread_cond_t message_queue_cond;
 FTBM_msg_node_t *message_queue_head = NULL;
 FTBM_msg_node_t *message_queue_tail = NULL;
 
@@ -146,7 +146,7 @@ static void FTBMI_util_reg_propagation(int msg_type, const FTB_event_t * event,
 
         memcpy(&msg.dst, id, sizeof(FTB_id_t));
         FTBU_INFO("FTBMI_util_reg_propagation - Sending msg type=%d to destination %s\n", msg.msg_type,
-                 msg.dst.location_id.hostname);
+                  msg.dst.location_id.hostname);
         ret = FTBN_Send_msg(&msg);
         if (ret != FTB_SUCCESS) {
             FTBU_INFO("Out FTBMI_util_reg_propagation\n");
@@ -255,7 +255,7 @@ static void FTBMI_util_reconnect()
         FTBU_INFO
             ("Going to call FTBU_map_insert() to insert as key=client_info->comp_info->id (parents id), data=comp_info (parents backplane) map=FTBMI_info.peers");
         if (FTBU_map_insert(FTBMI_info.peers, FTBU_MAP_PTR_KEY(&comp->id), (void *) comp) == FTBU_EXIST) {
-			free(comp);
+            free(comp);
             FTBU_INFO("Out FTBMI_util_reconnect - new client already present in peer list");
             return;
         }
@@ -358,7 +358,8 @@ int FTBM_Get_catcher_comp_list(const FTB_event_t * event, FTB_id_t ** list, int 
                  */
 
                 FTBU_INFO("Test whether client has already been added to receive this event");
-                if (FTBU_map_find_key(catcher_set, FTBU_MAP_PTR_KEY(&comp->id)) != FTBU_map_end(catcher_set)) {
+                if (FTBU_map_find_key(catcher_set, FTBU_MAP_PTR_KEY(&comp->id)) !=
+                    FTBU_map_end(catcher_set)) {
                     FTBU_INFO("Component has already counted in to receive this event. ");
                     continue;
                 }
@@ -389,7 +390,7 @@ int FTBM_Get_catcher_comp_list(const FTB_event_t * event, FTB_id_t ** list, int 
         temp_len--;
         memcpy(&((*list)[temp_len]), id, sizeof(FTB_id_t));
         FTBU_INFO("For this mask - send events to destination=%s client_name=%s\n",
-                 id->location_id.hostname, id->client_id.client_name);
+                  id->location_id.hostname, id->client_id.client_name);
     }
 
     /*
@@ -443,8 +444,8 @@ int FTBM_Init(int leaf)
             (FTBMI_map_event_mask_2_comp_info_map_t *) FTBU_map_init(FTBMI_util_is_equal_event_mask);
         FTBMI_info.err_handling = FTB_ERR_HANDLE_RECOVER;
 
-	pthread_mutex_init(&message_queue_mutex, NULL);
-	pthread_cond_init(&message_queue_cond, NULL);
+        pthread_mutex_init(&message_queue_mutex, NULL);
+        pthread_cond_init(&message_queue_cond, NULL);
     }
     else {
         FTBMI_info.peers = NULL;
@@ -485,7 +486,7 @@ int FTBM_Init(int leaf)
             ("Agent is going to call FTBU_map_insert() to insert as key=comp_id, data=comp(parents) map=FTBMI_info.peers");
         if (FTBU_map_insert(FTBMI_info.peers, FTBU_MAP_PTR_KEY(&comp->id), (void *) comp) == FTBU_EXIST) {
             FTBU_INFO("FTBM_Init Out - client already present in the peer list");
-			free(comp);
+            free(comp);
             return FTB_ERR_GENERAL;
         }
     }
@@ -495,7 +496,8 @@ int FTBM_Init(int leaf)
     FTBMI_initialized = 1;
     unlock_manager();
     FTBU_INFO("FTBM_Init Out - success");
-    FTBU_INFO("My location is %s and my parent is %s\n", FTBMI_info.self.location_id.hostname, FTBMI_info.parent.hostname);
+    FTBU_INFO("My location is %s and my parent is %s\n", FTBMI_info.self.location_id.hostname,
+              FTBMI_info.parent.hostname);
     return FTB_SUCCESS;
 }
 
@@ -609,8 +611,8 @@ int FTBM_Client_register(const FTB_id_t * id)
     if (FTBU_map_insert(FTBMI_info.peers, FTBU_MAP_PTR_KEY(&comp->id), (void *) comp) == FTBU_EXIST) {
         FTBU_WARNING("Client already registered as a peer");
         unlock_manager();
-		FTBU_map_finalize(comp->catch_event_set);
-		free(comp);
+        FTBU_map_finalize(comp->catch_event_set);
+        free(comp);
         FTBU_INFO("FTBM_Client_register Out");
         return FTB_ERR_INVALID_PARAMETER;
     }
@@ -669,8 +671,8 @@ int FTBM_Client_deregister(const FTB_id_t * id)
     }
 
     FTBU_INFO("client comp:%s comp_cat:%s client_name=%s  ext:%d from host %s pid %d, deregistering",
-             comp->id.client_id.comp, comp->id.client_id.comp_cat, comp->id.client_id.client_name,
-             comp->id.client_id.ext, comp->id.location_id.hostname, comp->id.location_id.pid);
+              comp->id.client_id.comp, comp->id.client_id.comp_cat, comp->id.client_id.client_name,
+              comp->id.client_id.ext, comp->id.location_id.hostname, comp->id.location_id.pid);
 
     lock_comp(comp);
     lock_manager();
@@ -741,7 +743,8 @@ int FTBM_Register_subscription(const FTB_id_t * id, FTB_event_t * event)
         return FTB_ERR_GENERAL;
 
     if (FTBMI_info.leaf) {
-        FTBU_INFO("FTBM_Register_subscription Out with Error - Routine can be called only by FTB agents");
+        FTBU_INFO
+            ("FTBM_Register_subscription Out with Error - Routine can be called only by FTB agents");
         return FTB_ERR_NOT_SUPPORTED;
     }
 
@@ -756,12 +759,11 @@ int FTBM_Register_subscription(const FTB_id_t * id, FTB_event_t * event)
 
     lock_comp(comp);
     /*
-     * Agent maintains a list of all components. For each component, 
-	 * it keep track of the unique subscription/masks that the component 
-	 * has subscribed to in the catch_event_set subfield.
+     * Agent maintains a list of all components. For each component,
+     * it keep track of the unique subscription/masks that the component
+     * has subscribed to in the catch_event_set subfield.
      */
-    FTBU_INFO
-        ("Agent inserting the new subscription/mask to the catch_event_set of the component");
+    FTBU_INFO("Agent inserting the new subscription/mask to the catch_event_set of the component");
     if (FTBU_map_insert(comp->catch_event_set, FTBU_MAP_PTR_KEY(temp_mask1), (void *) temp_mask1)
         == FTBU_EXIST) {
         free(temp_mask1);
@@ -787,22 +789,22 @@ int FTBM_Register_subscription(const FTB_id_t * id, FTB_event_t * event)
     iter = FTBU_map_find_key(FTBMI_info.catch_event_map, FTBU_MAP_PTR_KEY(temp_mask1));
     if (iter == FTBU_map_end(FTBMI_info.catch_event_map)) {
         FTBMI_map_ftb_id_2_comp_info_t *new_map;
-		
+
         temp_mask2 = (FTB_event_t *) malloc(sizeof(FTB_event_t));
         memcpy(temp_mask2, event, sizeof(FTB_event_t));
         new_map = (FTBMI_map_ftb_id_2_comp_info_t *) FTBU_map_init(FTBMI_util_is_equal_ftb_id);
 
         FTBU_INFO
-            ("Agent has received a new subscription string/mask for registration from host:%s", comp->id.location_id.hostname);
+            ("Agent has received a new subscription string/mask for registration from host:%s",
+             comp->id.location_id.hostname);
         FTBU_INFO
             ("Agent inserting the new subscription (as a key) and the corresponding component information (as data) in its global catch_event_map");
         /*
-		 * The received mask becomes the key and the data portion for this key is a map containing the component information.
-		 * The map, in turn, is a linked list with the ftb_id of the component as the key and the rest of the component
-		 * information as the data.
-		 */
-		FTBU_map_insert(FTBMI_info.catch_event_map, FTBU_MAP_PTR_KEY(temp_mask2),
-                        (void *) new_map);
+         * The received mask becomes the key and the data portion for this key is a map containing the component information.
+         * The map, in turn, is a linked list with the ftb_id of the component as the key and the rest of the component
+         * information as the data.
+         */
+        FTBU_map_insert(FTBMI_info.catch_event_map, FTBU_MAP_PTR_KEY(temp_mask2), (void *) new_map);
         FTBU_map_insert(new_map, FTBU_MAP_PTR_KEY(&comp->id), (void *) comp);
         FTBMI_util_reg_propagation(FTBM_MSG_TYPE_REG_SUBSCRIPTION, event, &id->location_id);
 
@@ -812,7 +814,7 @@ int FTBM_Register_subscription(const FTB_id_t * id, FTB_event_t * event)
 
         existing_map = (FTBMI_map_ftb_id_2_comp_info_t *) FTBU_map_get_data(iter);
         if (FTBU_map_insert(existing_map, FTBU_MAP_PTR_KEY(&comp->id), (void *) comp) == FTBU_EXIST) {
-		    /* FTBU_WARNING("Agent has received duplicate registration request for subscription string/mask and client combination; host = %s", comp->id.location_id.hostname); */
+            /* FTBU_WARNING("Agent has received duplicate registration request for subscription string/mask and client combination; host = %s", comp->id.location_id.hostname); */
         }
         else {
             FTBMI_util_reg_propagation(FTBM_MSG_TYPE_REG_SUBSCRIPTION, event, &id->location_id);
@@ -873,7 +875,7 @@ int FTBM_Cancel_subscription(const FTB_id_t * id, FTB_event_t * event)
     if (iter == FTBU_map_end(comp->catch_event_set)) {
         FTBU_WARNING("Not found throw entry");
         FTBU_INFO("FTBM_Cancel_subscription Out");
-		unlock_comp(comp);
+        unlock_comp(comp);
         return FTB_SUCCESS;
     }
     mask = (FTB_event_t *) FTBU_map_get_data(iter);
@@ -901,8 +903,8 @@ int FTBM_Send(const FTBM_msg_t * msg)
             FTBMI_comp_info_t *comp;
             comp = FTBMI_lookup_component(&msg->dst);
             FTBU_INFO("client %s:%s:%d from host %s pid %d, clean up",
-                     comp->id.client_id.comp, comp->id.client_id.comp_cat, comp->id.client_id.ext,
-                     comp->id.location_id.hostname, comp->id.location_id.pid);
+                      comp->id.client_id.comp, comp->id.client_id.comp_cat, comp->id.client_id.ext,
+                      comp->id.location_id.hostname, comp->id.location_id.pid);
             lock_comp(comp);
             lock_manager();
             FTBMI_util_clean_component(comp);
@@ -984,50 +986,52 @@ int FTBM_Wait(FTBM_msg_t * msg, FTB_location_id_t * incoming_src)
 
 int FTBM_Recv(FTBM_msg_t * msg, FTB_location_id_t * incoming_src)
 {
-	FTBM_msg_node_t *ptr;
-	pthread_mutex_lock(&message_queue_mutex);
+    FTBM_msg_node_t *ptr;
+    pthread_mutex_lock(&message_queue_mutex);
 
-	if (message_queue_head == NULL) {
-		pthread_cond_wait(&message_queue_cond, &message_queue_mutex);
-	}
+    if (message_queue_head == NULL) {
+        pthread_cond_wait(&message_queue_cond, &message_queue_mutex);
+    }
 
-	if (message_queue_head == NULL) {
-		pthread_mutex_unlock(&message_queue_mutex);
-		return FTBN_NO_MSG;
-	}
-     
-	memcpy(msg, message_queue_head->msg, sizeof(FTBM_msg_t));
-	memcpy(incoming_src, message_queue_head->incoming_src, sizeof(FTB_location_id_t));
-	ptr = message_queue_head;
-	message_queue_head = message_queue_head->next;
+    if (message_queue_head == NULL) {
+        pthread_mutex_unlock(&message_queue_mutex);
+        return FTBN_NO_MSG;
+    }
 
-	if (message_queue_head == NULL) message_queue_tail = NULL;  
+    memcpy(msg, message_queue_head->msg, sizeof(FTBM_msg_t));
+    memcpy(incoming_src, message_queue_head->incoming_src, sizeof(FTB_location_id_t));
+    ptr = message_queue_head;
+    message_queue_head = message_queue_head->next;
 
-	pthread_mutex_unlock(&message_queue_mutex);
-	free(ptr->msg);
-	free(ptr->incoming_src);
-	free(ptr);
+    if (message_queue_head == NULL)
+        message_queue_tail = NULL;
 
-	return FTB_SUCCESS;
+    pthread_mutex_unlock(&message_queue_mutex);
+    free(ptr->msg);
+    free(ptr->incoming_src);
+    free(ptr);
+
+    return FTB_SUCCESS;
 }
 
 void *FTBM_Fill_message_queue(void *arg)
 {
-	FTBM_msg_node_t *head, *tail;
-	while (1) {
-		head = tail = NULL;
-		
-		FTBN_Grab_messages(&head, &tail);
-		pthread_mutex_lock(&message_queue_mutex);
+    FTBM_msg_node_t *head, *tail;
+    while (1) {
+        head = tail = NULL;
 
-	 	if (head != NULL) {
-			if (message_queue_head == NULL) message_queue_head = head;
-			if (message_queue_tail != NULL) message_queue_tail->next = head;
-			message_queue_tail = tail;
-		}
-		
-		pthread_cond_signal(&message_queue_cond);
-		pthread_mutex_unlock(&message_queue_mutex);
-	}
+        FTBN_Grab_messages(&head, &tail);
+        pthread_mutex_lock(&message_queue_mutex);
+
+        if (head != NULL) {
+            if (message_queue_head == NULL)
+                message_queue_head = head;
+            if (message_queue_tail != NULL)
+                message_queue_tail->next = head;
+            message_queue_tail = tail;
+        }
+
+        pthread_cond_signal(&message_queue_cond);
+        pthread_mutex_unlock(&message_queue_mutex);
+    }
 }
-

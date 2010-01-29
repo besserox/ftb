@@ -1,7 +1,7 @@
 /**********************************************************************************/
 /* This file is part of FTB (Fault Tolerance Backplance) - the core of CIFTS
  * (Co-ordinated Infrastructure for Fault Tolerant Systems)
- * 
+ *
  * See http://www.mcs.anl.gov/research/cifts for more information.
  * 	
  */
@@ -60,7 +60,7 @@ int FTBN_Send_msg(const FTBM_msg_t * msg);
 
 int FTBN_Recv_msg(FTBM_msg_t * msg, FTB_location_id_t * incoming_src, int blocking);
 
-int FTBN_Grab_messages(FTBM_msg_node_t **head, FTBM_msg_node_t **tail);
+int FTBN_Grab_messages(FTBM_msg_node_t ** head, FTBM_msg_node_t ** tail);
 
 int FTBN_Disconnect_peer(const FTB_location_id_t * peer_location_id);
 

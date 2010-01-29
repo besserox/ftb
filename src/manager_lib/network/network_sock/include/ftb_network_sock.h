@@ -1,7 +1,7 @@
 /***********************************************************************************/
 /* This file is part of FTB (Fault Tolerance Backplance) - the core of CIFTS
  * (Co-ordinated Infrastructure for Fault Tolerant Systems)
- * 
+ *
  * See http://www.mcs.anl.gov/research/cifts for more information.
  * 	
  */
@@ -132,7 +132,9 @@ static inline void FTBNI_util_setup_config_sock(FTBNI_config_sock_t * config)
         FTBNI_get_data_from_config_file("FTB_AGENT_PORT", env, output_val, &retval);
         if (retval == -1) {
             config->agent_port = FTB_AGENT_PORT;
-            FTBU_INFO ("Error in accessing agent port information from config file %s. Assigning default port to the agent %d\n", env, config->agent_port); 
+            FTBU_INFO
+                ("Error in accessing agent port information from config file %s. Assigning default port to the agent %d\n",
+                 env, config->agent_port);
         }
         else {
             config->agent_port = atoi(output_val);
@@ -153,7 +155,9 @@ static inline void FTBNI_util_setup_config_sock(FTBNI_config_sock_t * config)
         FTBNI_get_data_from_config_file("FTB_BSTRAP_PORT", env, output_val, &retval);
         if (retval == -1) {
             config->server_port = FTB_BSTRAP_PORT;
-            FTBU_INFO("Error in accessing server port information from config file %s. Assigning default port for bootstrap server : %d", env, config->server_port);
+            FTBU_INFO
+                ("Error in accessing server port information from config file %s. Assigning default port for bootstrap server : %d",
+                 env, config->server_port);
         }
         else {
             config->server_port = atoi(output_val);

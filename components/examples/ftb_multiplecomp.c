@@ -1,7 +1,7 @@
 /**********************************************************************************/
 /* This file is part of FTB (Fault Tolerance Backplance) - the core of CIFTS
  * (Co-ordinated Infrastructure for Fault Tolerant Systems)
- * 
+ *
  * See http://www.mcs.anl.gov/research/cifts for more information.
  * 	
  */
@@ -67,7 +67,7 @@ int Client3_Init()
     FTB_client_t cinfo;
 
     /* Client3 calls FTB_Connect */
-	memset(&cinfo, 0, sizeof(cinfo));
+    memset(&cinfo, 0, sizeof(cinfo));
     strcpy(cinfo.event_space, "FTB.FTB_EXAMPLES.MULTICOMP_COMP3");
     strcpy(cinfo.client_schema_ver, "0.5");
     strcpy(cinfo.client_subscription_style, "FTB_SUBSCRIPTION_NOTIFY");
@@ -147,7 +147,7 @@ int Client2_Init()
 
     /* Client 2 specifies its information and calls FTB_Connect */
     printf("Client2: FTB_Connect\n");
-	memset(&cinfo, 0, sizeof(cinfo));
+    memset(&cinfo, 0, sizeof(cinfo));
     strcpy(cinfo.event_space, "FTB.FTB_EXAMPLES.MULTICOMP_COMP2");
     strcpy(cinfo.client_schema_ver, "0.5");
     strcpy(cinfo.client_subscription_style, "FTB_SUBSCRIPTION_POLLING");
@@ -208,7 +208,8 @@ int Client1_Finalize()
 int Client1_evt_handler(FTB_receive_event_t * evt, void *arg)
 {
     printf("Client1 caught event: event_space: %s, severity: %s, event_name %s, from host %s, pid %d\n",
-           evt->event_space, evt->severity, evt->event_name, evt->incoming_src.hostname, evt->incoming_src.pid);
+           evt->event_space, evt->severity, evt->event_name, evt->incoming_src.hostname,
+           evt->incoming_src.pid);
     return 0;
 }
 
@@ -234,7 +235,7 @@ int Client1_Init()
     FTB_event_info_t event_info[1] = { {"TEST_EVENT_1", "INFO"} };
 
     /* Specify Client1 properties and call FTB_Connect */
-	memset(&cinfo, 0, sizeof(cinfo));
+    memset(&cinfo, 0, sizeof(cinfo));
     strcpy(cinfo.event_space, "FTB.FTB_EXAMPLES.MULTICOMP_COMP1");
     strcpy(cinfo.client_schema_ver, "0.5");
     strcpy(cinfo.client_subscription_style, "FTB_SUBSCRIPTION_NOTIFY");

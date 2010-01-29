@@ -1,7 +1,7 @@
 /**********************************************************************************/
 /* This file is part of FTB (Fault Tolerance Backplance) - the core of CIFTS
  * (Co-ordinated Infrastructure for Fault Tolerant Systems)
- * 
+ *
  * See http://www.mcs.anl.gov/research/cifts for more information.
  * 	
  */
@@ -45,12 +45,12 @@ int event_logger(FTB_receive_event_t * evt, void *arg)
 {
     FILE *log_fp = (FILE *) arg;
     time_t current = time(NULL);
-	char buffer[26];
+    char buffer[26];
 
     fprintf(log_fp,
             "Current Time: %sEvent Caught with eventspace: %s, severity: %s, event_name: %s, client_name: %s, from host: %s, client_jobid: %s, seqnum: %d\n\n",
-            ctime_r(&current, buffer), evt->event_space, evt->severity, evt->event_name, evt->client_name,
-            evt->incoming_src.hostname, evt->client_jobid, evt->seqnum);
+            ctime_r(&current, buffer), evt->event_space, evt->severity, evt->event_name,
+            evt->client_name, evt->incoming_src.hostname, evt->client_jobid, evt->seqnum);
     fflush(log_fp);
 
     return 0;
@@ -91,7 +91,7 @@ int main(int argc, char *argv[])
     }
 
     /* Specify the client information */
-	memset(&cinfo, 0, sizeof(cinfo));
+    memset(&cinfo, 0, sizeof(cinfo));
     strcpy(cinfo.event_space, "FTB.FTB_EXAMPLES.NOTIFY_LOGGER");
     strcpy(cinfo.client_name, "notify");
     strcpy(cinfo.client_subscription_style, "FTB_SUBSCRIPTION_NOTIFY");
