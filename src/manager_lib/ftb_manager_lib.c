@@ -792,9 +792,9 @@ int FTBM_Register_subscription(const FTB_id_t * id, FTB_event_t * event)
         memcpy(temp_mask2, event, sizeof(FTB_event_t));
         new_map = (FTBMI_map_ftb_id_2_comp_info_t *) FTBU_map_init(FTBMI_util_is_equal_ftb_id);
 
-        FTB_INFO
+        FTBU_INFO
             ("Agent has received a new subscription string/mask for registration from host:%s", comp->id.location_id.hostname);
-        FTB_INFO
+        FTBU_INFO
             ("Agent inserting the new subscription (as a key) and the corresponding component information (as data) in its global catch_event_map");
         /*
 		 * The received mask becomes the key and the data portion for this key is a map containing the component information.
