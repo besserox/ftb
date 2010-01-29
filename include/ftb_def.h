@@ -3,7 +3,7 @@
  * (Co-ordinated Infrastructure for Fault Tolerant Systems)
  * 
  * See http://www.mcs.anl.gov/research/cifts for more information.
- *  
+ * 	
  */
 /* This software is licensed under BSD. See the file FTB/misc/license.BSD for
  * complete details on your rights to copy, modify, and use this software.
@@ -76,7 +76,7 @@ extern "C" {
 #define FTB_MAX_PAYLOAD_DATA         368
 
 /*FTB_MAX_SUBSCRIPTION_STYLE included as part of an event message */
-#define FTB_MAX_SUBSCRIPTION_STYLE   32 
+#define FTB_MAX_SUBSCRIPTION_STYLE	 32 
 
 /*
  * The FTB_EVENT_SIZE field size is just sufficient for the event +
@@ -159,7 +159,7 @@ typedef struct FTB_event_handle FTB_event_handle_t;
 
 /* *INDENT-OFF* */
 #ifdef __cplusplus
-}               /*extern "C" */
+}				/*extern "C" */
 #endif
 /* *INDENT-ON* */
 

@@ -3,7 +3,7 @@
  * (Co-ordinated Infrastructure for Fault Tolerant Systems)
  * 
  * See http://www.mcs.anl.gov/research/cifts for more information.
- *  
+ * 	
  */
 /* This software is licensed under BSD. See the file FTB/misc/license.BSD for
  * complete details on your rights to copy, modify, and use this software.
@@ -41,12 +41,11 @@ void *progress_loop()
     while (1) {
         pthread_mutex_unlock(&lock);
         ret = FTBM_Recv(&msg, &incoming_src);
-        pthread_mutex_lock(&lock);
+		pthread_mutex_lock(&lock);
         if (ret != FTB_SUCCESS) {
             FTBU_WARNING("FTBM_Wait failed %d", ret);
             continue;
         }
-
         if (msg.msg_type == FTBM_MSG_TYPE_NOTIFY) {
             msg_send.msg_type = FTBM_MSG_TYPE_NOTIFY;
             memcpy(&msg_send.src, &msg.src, sizeof(FTB_id_t));
@@ -127,10 +126,10 @@ void handler(int sig)
 int main(int argc, char *argv[])
 {
     int ret;
-    int pid;
+	int pid;
 
-    pid = fork();
-    if (pid != 0) return 0;
+	pid = fork();
+	if (pid != 0) return 0;
 
 #ifdef FTB_DEBUG
     if (argc >= 2 && strcmp("ION_AGENT", argv[1]) == 0) {
@@ -144,7 +143,6 @@ int main(int argc, char *argv[])
     }
     else
 #endif
-
     FTBU_log_file_fp = stderr;
 
     ret = FTBM_Init(0);
@@ -152,20 +150,20 @@ int main(int argc, char *argv[])
         FTBU_ERR_ABORT("FTBM_Init failed %d", ret);
     }
 
-    signal(SIGINT, handler);
-    signal(SIGTERM, handler);
+	signal(SIGINT, handler);
+	signal(SIGTERM, handler);
 
     pthread_create(&progress_thread, NULL, FTBM_Fill_message_queue, NULL);
     pthread_create(&progress_thread_main, NULL, progress_loop, NULL);
 
-    while (!done) sleep (1);
-    
-    pthread_mutex_lock(&lock);
-    pthread_cancel(progress_thread);
-    pthread_cancel(progress_thread_main);
-    pthread_join(progress_thread, NULL);
-    pthread_join(progress_thread_main, NULL);
-    pthread_mutex_unlock(&lock);
+	while (!done) sleep (1);
+	
+	pthread_mutex_lock(&lock);
+	pthread_cancel(progress_thread);
+	pthread_cancel(progress_thread_main);
+	pthread_join(progress_thread, NULL);
+	pthread_join(progress_thread_main, NULL);
+	pthread_mutex_unlock(&lock);
 
     FTBM_Finalize();
 

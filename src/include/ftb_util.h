@@ -3,7 +3,7 @@
  * (Co-ordinated Infrastructure for Fault Tolerant Systems)
  * 
  * See http://www.mcs.anl.gov/research/cifts for more information.
- *  
+ * 	
  */
 /* This software is licensed under BSD. See the file FTB/misc/license.BSD for
  * complete details on your rights to copy, modify, and use this software.
@@ -23,8 +23,8 @@ extern "C" {
 /* *INDENT-ON* */
 
 #define FTBU_ERR_ABORT(args...)  do {\
-    char hostname[32]; \
-    FTBU_get_output_of_cmd("hostname", hostname, 32); \
+	char hostname[32]; \
+	FTBU_get_output_of_cmd("hostname", hostname, 32); \
     fprintf(FTBU_log_file_fp, "[FTB_ERROR][%s: line %d][hostname:%s]", __FILE__, __LINE__,hostname); \
     fprintf(FTBU_log_file_fp, args); \
     fprintf(FTBU_log_file_fp, "\n"); \
@@ -33,8 +33,8 @@ extern "C" {
 } while (0)
 
 #define FTBU_WARNING(args...)  do {\
-    char hostname[32]; \
-    FTBU_get_output_of_cmd("hostname", hostname, 32); \
+	char hostname[32]; \
+	FTBU_get_output_of_cmd("hostname", hostname, 32); \
     fprintf(FTBU_log_file_fp, "[FTBU_WARNING][%s: line %d][hostname:%s]", __FILE__, __LINE__,hostname); \
     fprintf(FTBU_log_file_fp, args); \
     fprintf(FTBU_log_file_fp, "\n"); \
@@ -43,8 +43,8 @@ extern "C" {
 
 #ifdef FTB_DEBUG
 #define FTBU_INFO(args...)  do {\
-    char hostname[32]; \
-    FTBU_get_output_of_cmd("hostname", hostname, 32); \
+	char hostname[32]; \
+	FTBU_get_output_of_cmd("hostname", hostname, 32); \
     fprintf(FTBU_log_file_fp, "[FTBU_INFO][%s: line %d][hostname:%s]", __FILE__, __LINE__,hostname); \
     fprintf(FTBU_log_file_fp, args); \
     fprintf(FTBU_log_file_fp, "\n"); \
@@ -59,7 +59,7 @@ extern "C" {
 #define FTBU_EXIST         2
 #define FTBU_NOT_EXIST     3
 
-#define FTBU_NULL_PTR    (-1)
+#define FTBU_NULL_PTR	 (-1)
 
 #define FTBU_MAP_PTR_KEY(x)        ((FTBU_map_key_t)(void*)(x))
 
@@ -101,9 +101,9 @@ typedef struct FTBU_map_node {
  * 'map-type' linked list 
  */
 typedef struct FTBU_list_node {
-    struct FTBU_list_node *next;
-    struct FTBU_list_node *prev;
-    void *data;
+	struct FTBU_list_node *next;
+	struct FTBU_list_node *prev;
+	void *data;
 } FTBU_list_node_t;
 
 #define FTBU_list_for_each_readonly(pos, head) \

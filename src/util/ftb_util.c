@@ -3,7 +3,7 @@
  * (Co-ordinated Infrastructure for Fault Tolerant Systems)
  * 
  * See http://www.mcs.anl.gov/research/cifts for more information.
- *  
+ * 	
  */
 /* This software is licensed under BSD. See the file FTB/misc/license.BSD for
  * complete details on your rights to copy, modify, and use this software.
@@ -252,7 +252,7 @@ static inline int util_key_match(const FTBU_map_node_t * head, FTBU_map_key_t ke
                                  FTBU_map_key_t key2)
 {
     int (*is_equal_func_ptr) (const void *, const void *) = (int (*)(const void *, const void *)) head->data;
-    if (is_equal_func_ptr == NULL) return FTBU_NULL_PTR;
+	if (is_equal_func_ptr == NULL) return FTBU_NULL_PTR;
     return (*is_equal_func_ptr) (key1.key_ptr, key2.key_ptr);
 }
 
@@ -267,9 +267,9 @@ FTBU_map_node_t *FTBU_map_init(int (*is_equal_func_ptr) (const void *, const voi
 {
     FTBU_map_node_t *node = (FTBU_map_node_t *) malloc(sizeof(FTBU_map_node_t));
 
-    /* Point data of first node of the map to the function passed as argument */
+	/* Point data of first node of the map to the function passed as argument */
     node->data = (void *) is_equal_func_ptr; 
-    node->next = node->prev = node;
+	node->next = node->prev = node;
     return node;
 }
 
@@ -289,10 +289,10 @@ int FTBU_map_insert(FTBU_map_node_t * head, FTBU_map_key_t key, void *data)
     new_node = (FTBU_map_node_t *) malloc(sizeof(FTBU_map_node_t));
     new_node->key = key;
     new_node->data = data;
-    head->prev->next = new_node;
-    new_node->next = head;
-    new_node->prev = head->prev;
-    head->prev = new_node;
+	head->prev->next = new_node;
+	new_node->next = head;
+	new_node->prev = head->prev;
+	head->prev = new_node;
     return FTBU_SUCCESS;
 }
 
@@ -317,7 +317,7 @@ inline FTBU_map_node_t *FTBU_map_begin(const FTBU_map_node_t * head)
 FTBU_map_node_t *FTBU_map_find_key(const FTBU_map_node_t * head, FTBU_map_key_t key) 
 {
     FTBU_map_node_t *pos;
-    FTBU_list_for_each_readonly(pos, head) {
+	FTBU_list_for_each_readonly(pos, head) {
         if (util_key_match(head, pos->key, key))
             return pos;
     }
@@ -350,12 +350,12 @@ inline void *FTBU_map_get_data(FTBU_map_node_t *node)
 int FTBU_map_remove_key(FTBU_map_node_t * head, FTBU_map_key_t key) 
 {
     FTBU_map_node_t *pos; 
-    FTBU_map_node_t *temp;
+	FTBU_map_node_t *temp;
 
-    FTBU_list_for_each(pos, head, temp) {
+	FTBU_list_for_each(pos, head, temp) {
         if (util_key_match(head, pos->key, key)) {
-            pos->next->prev = pos->prev;
-            pos->prev->next = pos->next;
+			pos->next->prev = pos->prev;
+			pos->prev->next = pos->next;
             free(pos);
             return FTBU_SUCCESS;
         }
@@ -368,9 +368,9 @@ int FTBU_map_remove_key(FTBU_map_node_t * head, FTBU_map_key_t key)
  */
 int FTBU_map_remove_node(FTBU_map_node_t * node)
 {
-    node->next->prev = node->prev;
-    node->prev->next = node->next;
-    free(node);
+	node->next->prev = node->prev;
+	node->prev->next = node->next;
+	free(node);
     return FTBU_SUCCESS;
 }
 
@@ -382,11 +382,11 @@ int FTBU_map_remove_node(FTBU_map_node_t * node)
 int FTBU_map_finalize(FTBU_map_node_t * head) 
 {
     FTBU_map_node_t *pos; 
-    FTBU_map_node_t *temp;
+	FTBU_map_node_t *temp;
 
-    FTBU_list_for_each(pos, head, temp) {
-        pos->next->prev = pos->prev;
-        pos->prev->next = pos->next;
+	FTBU_list_for_each(pos, head, temp) {
+		pos->next->prev = pos->prev;
+		pos->prev->next = pos->next;
         free(pos);
     }
     free(head);
@@ -441,8 +441,8 @@ inline void FTBU_list_init(FTBU_list_node_t * list)
  */
 inline void FTBU_list_add_front(FTBU_list_node_t * list, FTBU_list_node_t* node) 
 {
-    list->next->prev = node; node->next = list->next; node->prev =
-    list; list->next = node;
+	list->next->prev = node; node->next = list->next; node->prev =
+	list; list->next = node;
 }
 
 
@@ -452,10 +452,10 @@ inline void FTBU_list_add_front(FTBU_list_node_t * list, FTBU_list_node_t* node)
  */
 inline void FTBU_list_add_back(FTBU_list_node_t * list, FTBU_list_node_t *node) 
 {
-    list->prev->next = node;
-    node->next = list;
-    node->prev = list->prev; 
-    list->prev = node;
+	list->prev->next = node;
+	node->next = list;
+	node->prev = list->prev; 
+	list->prev = node;
 }
 
 
@@ -464,8 +464,8 @@ inline void FTBU_list_add_back(FTBU_list_node_t * list, FTBU_list_node_t *node)
  */
 inline void FTBU_list_remove_node(FTBU_list_node_t * node)
 {
-    node->next->prev = node->prev;
-    node->prev->next = node->next;
+	node->next->prev = node->prev;
+	node->prev->next = node->next;
 }
 
 
