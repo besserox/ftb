@@ -3,7 +3,7 @@
  * (Co-ordinated Infrastructure for Fault Tolerant Systems)
  * 
  * See http://www.mcs.anl.gov/research/cifts for more information.
- * 	
+ *  
  */
 /* This software is licensed under BSD. See the file FTB/misc/license.BSD for
  * complete details on your rights to copy, modify, and use this software.
@@ -106,7 +106,7 @@ struct FTB_event_handle {
 
 /* *INDENT-OFF* */
 #ifdef __cplusplus
-}				/*extern "C" */
+}               /*extern "C" */
 #endif
 /* *INDENT-ON* */
 #endif /*FTB_CLIENT_LIB_DEFS_H */

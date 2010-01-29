@@ -3,7 +3,7 @@
  * (Co-ordinated Infrastructure for Fault Tolerant Systems)
  * 
  * See http://www.mcs.anl.gov/research/cifts for more information.
- * 	
+ *  
  */
 /* This software is licensed under BSD. See the file FTB/misc/license.BSD for
  * complete details on your rights to copy, modify, and use this software.
@@ -51,7 +51,7 @@ int main(int argc, char *argv[])
 
 
     /* Create namespace and other attributes before calling FTB_Connect */
-	memset(&cinfo, 0, sizeof(cinfo));
+    memset(&cinfo, 0, sizeof(cinfo));
     strcpy(cinfo.event_space, "FTB.MPI.EXAMPLE_MPI");
     strcpy(cinfo.client_schema_ver, "0.5");
     strcpy(cinfo.client_subscription_style, "FTB_SUBSCRIPTION_NONE");
@@ -94,9 +94,9 @@ int main(int argc, char *argv[])
         printf("AvgTime-%d-throws AvgTime-1-throw\n", count);
         printf("%0.5f %0.5f\n", avg, avg / count);
 /*
-	printf("***** AVG delay: %.5f for %d throws and %d for 1 throw *****\n", avg, count);
-	printf("***** MAX delay: %.5f for %d throws *****\n", max, count);
-	printf("***** MIN delay: %.5f for %d throws *****\n", min, count);
+    printf("***** AVG delay: %.5f for %d throws and %d for 1 throw *****\n", avg, count);
+    printf("***** MAX delay: %.5f for %d throws *****\n", max, count);
+    printf("***** MIN delay: %.5f for %d throws *****\n", min, count);
 */
     }
 

@@ -3,7 +3,7 @@
  * (Co-ordinated Infrastructure for Fault Tolerant Systems)
  * 
  * See http://www.mcs.anl.gov/research/cifts for more information.
- * 	
+ *  
  */
 /* This software is licensed under BSD. See the file FTB/misc/license.BSD for
  * complete details on your rights to copy, modify, and use this software.
@@ -45,7 +45,7 @@ int event_logger(FTB_receive_event_t * evt, void *arg)
 {
     FILE *log_fp = (FILE *) arg;
     time_t current = time(NULL);
-	char buffer[26];
+    char buffer[26];
 
     fprintf(log_fp,
             "Current Time: %sEvent Caught with eventspace: %s, severity: %s, event_name: %s, client_name: %s, from host: %s, client_jobid: %s, seqnum: %d\n\n",
@@ -91,7 +91,7 @@ int main(int argc, char *argv[])
     }
 
     /* Specify the client information */
-	memset(&cinfo, 0, sizeof(cinfo));
+    memset(&cinfo, 0, sizeof(cinfo));
     strcpy(cinfo.event_space, "FTB.FTB_EXAMPLES.NOTIFY_LOGGER");
     strcpy(cinfo.client_name, "notify");
     strcpy(cinfo.client_subscription_style, "FTB_SUBSCRIPTION_NOTIFY");

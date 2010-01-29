@@ -3,7 +3,7 @@
  * (Co-ordinated Infrastructure for Fault Tolerant Systems)
  * 
  * See http://www.mcs.anl.gov/research/cifts for more information.
- * 	
+ *  
  */
 /* This software is licensed under BSD. See the file FTB/misc/license.BSD for
  * complete details on your rights to copy, modify, and use this software.
@@ -102,10 +102,10 @@ int main(int argc, char *argv[])
 //      printf("Average Maximum Minumum Num_Events Cluster_Size\n");
         printf("%.5f %.5f %.5f %d %d\n", avg, max, min, NUM_EVENTS, size);
 /*
-	printf("***** AVG delay: %.5f for %d throws *****\n", avg, NUM_EVENTS);
-	printf("***** MAX delay: %.5f for %d throws *****\n", max, NUM_EVENTS);
-	printf("***** MIN delay: %.5f for %d throws *****\n", min, NUM_EVENTS);
-	printf("-----------------------------------------\n");
+    printf("***** AVG delay: %.5f for %d throws *****\n", avg, NUM_EVENTS);
+    printf("***** MAX delay: %.5f for %d throws *****\n", max, NUM_EVENTS);
+    printf("***** MIN delay: %.5f for %d throws *****\n", min, NUM_EVENTS);
+    printf("-----------------------------------------\n");
 */
     }
     FTB_Disconnect(handle);

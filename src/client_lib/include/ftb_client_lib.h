@@ -3,7 +3,7 @@
  * (Co-ordinated Infrastructure for Fault Tolerant Systems)
  * 
  * See http://www.mcs.anl.gov/research/cifts for more information.
- * 	
+ *  
  */
 /* This software is licensed under BSD. See the file FTB/misc/license.BSD for
  * complete details on your rights to copy, modify, and use this software.
@@ -31,10 +31,8 @@ int FTBC_Subscribe_with_polling(FTB_subscribe_handle_t * subscribe_handle,
 
 
 int FTBC_Subscribe_with_callback(FTB_subscribe_handle_t * subscribe_handle, FTB_client_handle_t handle,
-                                 const char *subscription_str, int (*callback) (FTB_receive_event_t *,
-                                                                                void *),
-                                 const void *arg);
-
+                                 const char *subscription_str, int (*callback) (FTB_receive_event_t *, 
+                                 void *), const void *arg);
 
 int FTBC_Unsubscribe(FTB_subscribe_handle_t * subscribe_handle);
 

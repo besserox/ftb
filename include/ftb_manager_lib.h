@@ -3,7 +3,7 @@
  * (Co-ordinated Infrastructure for Fault Tolerant Systems)
  * 
  * See http://www.mcs.anl.gov/research/cifts for more information.
- * 	
+ *  
  */
 /* This software is licensed under BSD. See the file FTB/misc/license.BSD for
  * complete details on your rights to copy, modify, and use this software.
@@ -34,16 +34,16 @@ extern "C" {
 #define FTBM_MSG_TYPE_SUBSCRIPTION_CANCEL           0x24
 
 typedef struct FTBM_msg {
-	int msg_type;
+    int msg_type;
     FTB_id_t src;
     FTB_id_t dst;
     FTB_event_t event;
 } FTBM_msg_t;
 
 typedef struct FTBM_msg_node {
-	struct FTBM_msg_node *next;
-	FTBM_msg_t *msg;
-	FTB_location_id_t *incoming_src;
+    struct FTBM_msg_node *next;
+    FTBM_msg_t *msg;
+    FTB_location_id_t *incoming_src;
 } FTBM_msg_node_t;
 
 int FTBM_Init(int leaf);

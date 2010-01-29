@@ -3,7 +3,7 @@
  * (Co-ordinated Infrastructure for Fault Tolerant Systems)
  * 
  * See http://www.mcs.anl.gov/research/cifts for more information.
- * 	
+ *  
  */
 /* This software is licensed under BSD. See the file FTB/misc/license.BSD for
  * complete details on your rights to copy, modify, and use this software.
@@ -51,7 +51,7 @@ int main(int argc, char *argv[])
     FTB_subscribe_handle_t shandle;
     FTB_client_t cinfo;
     int ret;
-	char buffer[26];
+    char buffer[26];
 
     if (argc >= 2) {
         if (strcasecmp(argv[1], "usage") == 0) {
@@ -77,7 +77,7 @@ int main(int argc, char *argv[])
         return -1;
     }
     /* Specify the event space and other details of the client */
-	memset(&cinfo, 0, sizeof(cinfo));
+    memset(&cinfo, 0, sizeof(cinfo));
     strcpy(cinfo.event_space, "FTB.FTB_EXAMPLES.polling_LOGGER");
     strcpy(cinfo.client_schema_ver, "0.5");
     strcpy(cinfo.client_subscription_style, "FTB_SUBSCRIPTION_POLLING");

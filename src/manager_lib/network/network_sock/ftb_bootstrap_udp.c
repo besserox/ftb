@@ -3,7 +3,7 @@
  * (Co-ordinated Infrastructure for Fault Tolerant Systems)
  * 
  * See http://www.mcs.anl.gov/research/cifts for more information.
- * 	
+ *  
  */
 /* This software is licensed under BSD. See the file FTB/misc/license.BSD for
  * complete details on your rights to copy, modify, and use this software.
@@ -133,7 +133,7 @@ static int FTBNI_util_exchange_bootstrap_msg(const FTBNI_bootstrap_pkt_t * pkt_s
 
     close(fd);
     if (flag == 0) 
-	return FTB_ERR_NETWORK_NO_ROUTE;
+    return FTB_ERR_NETWORK_NO_ROUTE;
     return FTB_SUCCESS;
 }
 
@@ -221,8 +221,8 @@ int FTBNI_Bootstrap_register_addr(uint16_t my_level)
     if (FTBNI_bootstrap_config_location.leaf)
         return FTB_ERR_NOT_SUPPORTED;
 
-	memset(&pkt_send, 0, sizeof(FTBNI_bootstrap_pkt_t));
-	memset(&pkt_recv, 0, sizeof(FTBNI_bootstrap_pkt_t));
+    memset(&pkt_send, 0, sizeof(FTBNI_bootstrap_pkt_t));
+    memset(&pkt_recv, 0, sizeof(FTBNI_bootstrap_pkt_t));
 
     pkt_send.bootstrap_msg_type = FTBNI_BOOTSTRAP_MSG_TYPE_REG_REQ;
     pkt_send.level = my_level;
@@ -238,9 +238,9 @@ int FTBNI_Bootstrap_register_addr(uint16_t my_level)
     if (pkt_recv.bootstrap_msg_type != FTBNI_BOOTSTRAP_MSG_TYPE_REG_REP) {
         return FTB_ERR_GENERAL;
     }
-	else {
-    	FTBU_INFO("Received packet type %d, confirming my registration as potential parent for other agents", pkt_recv.bootstrap_msg_type);
-	}
+    else {
+        FTBU_INFO("Received packet type %d, confirming my registration as potential parent for other agents", pkt_recv.bootstrap_msg_type);
+    }
 
     return FTB_SUCCESS;
 }

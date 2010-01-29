@@ -3,7 +3,7 @@
  * (Co-ordinated Infrastructure for Fault Tolerant Systems)
  * 
  * See http://www.mcs.anl.gov/research/cifts for more information.
- * 	
+ *  
  */
 /* This software is licensed under BSD. See the file FTB/misc/license.BSD for
  * complete details on your rights to copy, modify, and use this software.
@@ -41,7 +41,7 @@ int main(int argc, char *argv[])
 
     printf("Begin\n");
     /* Specify the client information and call FTB_Connect */
-	memset(&cinfo, 0, sizeof(cinfo));
+    memset(&cinfo, 0, sizeof(cinfo));
     strcpy(cinfo.event_space, "FTB.FTB_EXAMPLES.SIMPLE");
     strcpy(cinfo.client_subscription_style, "FTB_SUBSCRIPTION_NONE");
 
