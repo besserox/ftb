@@ -14,26 +14,26 @@ usage()
     echo "Usage: $0 {clean}"
 }
 
-#if [ "$1" == "clean" ]; then
-#    echo -n "Cleaning up configuration files... "
-#    if test -f Makefile; then
-#        make clean
-#    fi
-#    rm -rf configure Makefile autom4te.cache `find . -name \*~` \
-#    `find . -name \*\.d` `find . -name Makefile` include/ftb_config.* config.*
-#    echo "done"
-#    exit
-#elif [ "$1" != "" ]; then
-#    usage;
-#    exit
-#else
+if [ "$1" == "clean" ]; then
+    echo -n "Cleaning up configuration files... "
+    if test -f Makefile; then
+        make clean
+    fi
+    rm -rf aclocal.m4 m4/lib* m4/lt* configure Makefile autom4te.cache confdb `find . -name \*~` \
+    `find . -name \*\.d` `find . -name Makefile` `find . -name Makefile.in` include/ftb_config.* config.*
+    echo "done"
+    exit
+elif [ "$1" != "" ]; then
+    usage;
+    exit
+else
     echo -n "Setting up configuration files... "
 #    aclocal
 #    autoheader
     autoreconf -i
 #    automake --add-missing
     echo done
-#fi
+fi
 
 echo "Please proceed with the configuration"
 
