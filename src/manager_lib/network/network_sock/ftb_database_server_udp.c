@@ -35,6 +35,7 @@
 #include "ftb_util.h"
 #include "ftb_manager_lib.h"
 #include "ftb_network.h"
+#include "ftb_network_sock.h"
 
 FILE *FTBU_log_file_fp;
 
