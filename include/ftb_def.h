@@ -126,7 +126,7 @@ typedef struct FTB_event_info {
 } FTB_event_info_t;
 
 typedef struct FTB_event_properties {
-    char event_type;
+    uint8_t event_type;
     char event_payload[FTB_MAX_PAYLOAD_DATA];
 } FTB_event_properties_t;
 

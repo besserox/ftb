@@ -725,7 +725,7 @@ static void *FTBCI_callback_component(void *arg)
                 strcpy(receive_event.client_jobid, entry->event_inst.client_jobid);
                 memcpy(&receive_event.client_extension, &entry->src.client_id.ext, sizeof(int));
                 memcpy(&receive_event.seqnum, &entry->event_inst.seqnum, sizeof(int));
-                memcpy(&receive_event.event_type, &entry->event_inst.event_type, sizeof(char));
+                memcpy(&receive_event.event_type, &entry->event_inst.event_type, sizeof(uint8_t));
                 memcpy(receive_event.event_payload, entry->event_inst.event_payload,
                        FTB_MAX_PAYLOAD_DATA);
                 memcpy(&receive_event.incoming_src, &entry->src.location_id, sizeof(FTB_location_id_t));
@@ -1342,7 +1342,7 @@ int FTBC_Publish(FTB_client_handle_t client_handle, const char *event_name,
     strcpy(msg.event.client_name, client_info->id->client_id.client_name);
     strcpy(msg.event.client_jobid, client_info->jobid);
     msg.event.seqnum = client_info->seqnum;
-    memcpy(&msg.event.event_type, &event_properties->event_type, sizeof(char));
+    memcpy(&msg.event.event_type, &event_properties->event_type, sizeof(uint8_t));
     memcpy(msg.event.event_payload, event_properties->event_payload, FTB_MAX_PAYLOAD_DATA);
     FTBM_Get_parent_location_id(&msg.dst.location_id);
     ret = FTBM_Send(&msg);
@@ -1412,7 +1412,7 @@ int FTBC_Poll_event(FTB_subscribe_handle_t subscribe_handle, FTB_receive_event_t
                 strcpy(receive_event->client_name, entry->event_inst.client_name);
                 memcpy(&receive_event->client_extension, &entry->src.client_id.ext, sizeof(int));
                 memcpy(&receive_event->seqnum, &entry->event_inst.seqnum, sizeof(int));
-                memcpy(&receive_event->event_type, &entry->event_inst.event_type, sizeof(char));
+                memcpy(&receive_event->event_type, &entry->event_inst.event_type, sizeof(uint8_t));
                 memcpy(receive_event->event_payload, entry->event_inst.event_payload,
                        FTB_MAX_PAYLOAD_DATA);
                 memcpy(&receive_event->incoming_src, &entry->src.location_id, sizeof(FTB_location_id_t));
@@ -1492,7 +1492,7 @@ int FTBC_Poll_event(FTB_subscribe_handle_t subscribe_handle, FTB_receive_event_t
                     strcpy(receive_event->client_name, msg.event.client_name);
                     memcpy(&receive_event->client_extension, &msg.src.client_id.ext, sizeof(int));
                     memcpy(&receive_event->seqnum, &msg.event.seqnum, sizeof(int));
-                    memcpy(&receive_event->event_type, &msg.event.event_type, sizeof(char));
+                    memcpy(&receive_event->event_type, &msg.event.event_type, sizeof(uint8_t));
                     memcpy(receive_event->event_payload, msg.event.event_payload, FTB_MAX_PAYLOAD_DATA);
                     memcpy(&receive_event->incoming_src, &msg.src.location_id,
                            sizeof(FTB_location_id_t));
@@ -1536,7 +1536,7 @@ int FTBC_Poll_event(FTB_subscribe_handle_t subscribe_handle, FTB_receive_event_t
                         strcpy(receive_event->client_name, entry->event_inst.client_name);
                         memcpy(&receive_event->client_extension, &entry->src.client_id.ext, sizeof(int));
                         memcpy(&receive_event->seqnum, &entry->event_inst.seqnum, sizeof(int));
-                        memcpy(&receive_event->event_type, &entry->event_inst.event_type, sizeof(char));
+                        memcpy(&receive_event->event_type, &entry->event_inst.event_type, sizeof(uint8_t));
                         memcpy(receive_event->event_payload, entry->event_inst.event_payload,
                                FTB_MAX_PAYLOAD_DATA);
                         memcpy(&receive_event->incoming_src, &entry->src.location_id,
