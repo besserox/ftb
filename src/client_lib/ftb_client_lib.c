@@ -996,7 +996,7 @@ int FTBCI_check_schema_file(const FTB_client_handle_t client_handle, const char 
     FTB_event_info_t einfo;
     char str[1024];
     FILE *fp;
-    int ret;
+    int ret, count;
     FTBCI_client_info_t *client_info;
 
     /* Set the schema script */
@@ -1007,7 +1007,7 @@ int FTBCI_check_schema_file(const FTB_client_handle_t client_handle, const char 
 
     fp = popen(schema_file_script, "r");
     while (!feof(fp)) {
-        fscanf(fp, "%s", str);
+        count = fscanf(fp, "%s", str);
         if (feof(fp))
             break;
         if ((state == INIT) || (state == EMPTY)) {

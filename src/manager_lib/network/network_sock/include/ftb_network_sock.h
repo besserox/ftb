@@ -95,7 +95,7 @@ int FTBNI_Bootstrap_abort(void);
 static inline void FTBNI_get_data_from_config_file(char *str, char *file, char *output_val, int *retval)
 {
     FILE *fp;
-    char *pos;
+    char *pos, *track;
     char line[FTBNI_CONFIG_FILE_VAL];
     int found = 0;
 
@@ -105,7 +105,7 @@ static inline void FTBNI_get_data_from_config_file(char *str, char *file, char *
         return;
     }
     while (!feof(fp)) {
-        fgets(line, FTBNI_CONFIG_FILE_VAL, fp);
+        track = fgets(line, FTBNI_CONFIG_FILE_VAL, fp);
         if ((pos = strstr(line, str)) != NULL) {
             while (*pos++ != '=');
             strcpy(output_val, pos);

@@ -198,7 +198,7 @@ void FTBU_get_output_of_cmd(const char *cmd, char *output, size_t len)
     }
     else if (strcasecmp(cmd, "grep ^BG_IP /proc/personality.sh | cut -f2 -d=") == 0) {
         FILE *fp;
-        char *pos;
+        char *pos, *track;
         char str[32];
         int found = 0;
 
@@ -210,7 +210,7 @@ void FTBU_get_output_of_cmd(const char *cmd, char *output, size_t len)
         }
 
         while (!feof(fp)) {
-            fgets(str, 32, fp);
+            track = fgets(str, 32, fp);
 
             if (((pos = strstr(str, "BG_IP=")) != NULL) || ((pos = strstr(str, "BGL_IP=")) != NULL)) {
                 while (*pos++ != '=');
@@ -230,6 +230,7 @@ void FTBU_get_output_of_cmd(const char *cmd, char *output, size_t len)
         char filename[FTB_BOOTSTRAP_UTIL_MAX_STR_LEN];
         char temp[FTB_BOOTSTRAP_UTIL_MAX_STR_LEN];
         FILE *fp;
+        int ret;
 
         sprintf(filename, "/tmp/temp_file.%d", getpid());
         sprintf(temp, "%s > %s", cmd, filename);
@@ -237,7 +238,7 @@ void FTBU_get_output_of_cmd(const char *cmd, char *output, size_t len)
             fprintf(stderr, "execute command failed\n");
         }
         fp = fopen(filename, "r");
-        fscanf(fp, "%s", temp);
+        ret = fscanf(fp, "%s", temp);
         fclose(fp);
         unlink(filename);
         strncpy(output, temp, len);
