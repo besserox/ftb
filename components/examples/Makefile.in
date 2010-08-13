@@ -1,0 +1,142 @@
+#***********************************************************************************
+# FTB:ftb-info 
+#  This file is part of FTB (Fault Tolerance Backplance) - the core of CIFTS
+#  (Co-ordinated Infrastructure for Fault Tolerant Systems)
+#  
+#  See http://www.mcs.anl.gov/research/cifts for more information.
+#  	
+# FTB:ftb-info 
+#
+# FTB:ftb-fillin
+#  FTB_Version: 0.6.2
+#  FTB_API_Version: 0.5
+#  FTB_Heredity:FOSS_ORIG
+#  FTB_License:BSD
+# FTB:ftb-fillin 
+#
+# FTB:ftb-bsd 
+#  This software is licensed under BSD. See the file FTB/misc/license.BSD for
+#  complete details on your rights to copy, modify, and use this software.
+# FTB:ftb-bsd 
+#***********************************************************************************
+
+@ZOID_HOME@
+@ZOID_LIBC_PATH@
+@CC_BLRTS@
+@AR_BLRTS@
+@BGSYS_LIB_PATH@
+clients=@clients@
+ZOID_CLIENT_DIR=@ZOID_CLIENT_DIR@
+FTB_HOME=@FTB_HOME@
+FTB_LIB_LINUX_NAME=@FTB_LIB_LINUX_NAME@
+FTB_LIB_PATH_SHARED=@FTB_LIB_PATH_SHARED@
+FTB_LIB_PATH_STATIC=@FTB_LIB_PATH_STATIC@
+FTB_INC_DIR=@FTB_INC_DIR@
+CC=@CC@
+HAVE_MPI=@HAVE_MPI@
+MPICC=@MPICC@
+LIBS_PTHREAD=@LIBS_PTHREAD@
+
+all: ${clients}
+
+linux: ftb_watchdog ftb_polling_logger ftb_simple_publisher ftb_simple_subscriber ftb_notify_logger ftb_multiplecomp ftb_pingpong ftb_example_callback_unsubscribe ftb_eventhandle_example ftb_ib_port_status_publisher ftb_throw_delay_mpi ftb_alltoall ftb_grouping
+
+bgl: ftb_simple_publisher_bgl ftb_simple_subscriber_bgl
+
+bgp: ftb_simple_publisher_bgp ftb_simple_subscriber_bgp ftb_watchdog_bgp
+
+CFLAGS_LINUX  = -Wall -g -I${FTB_INC_DIR}
+LDFLAGS_LINUX = -L${FTB_LIB_PATH_SHARED}
+LIBS_LINUX    = -l${FTB_LIB_LINUX_NAME} ${LIBS_PTHREAD}
+
+CFLAGS_BG     = -Wall -g -I${FTB_INC_DIR} -I${ZOID_HOME}/include -I${ZOID_CLIENT_DIR}
+LDFLAGS_CN    = -L${FTB_LIB_PATH_STATIC} -L${ZOID_LIBC_PATH} -L${BGSYS_LIB_PATH}
+LIBS_CN_BGL   = -lftb_blrts -lc -lmsglayer.rts -ldevices.rts -lrts.rts
+LIBS_CN_BGP   = -lftb_blrts -lzoid_cn -lpthread -lrt
+
+clean:
+	rm -f ftb_watchdog ftb_polling_logger ftb_simple_publisher ftb_simple_subscriber ftb_notify_logger ftb_multiplecomp ftb_pingpong ftb_example_callback_unsubscribe ftb_eventhandle_example  ftb_ib_port_status_publisher ftb_throw_delay_mpi ftb_alltoall ftb_grouping
+	rm -f ftb_simple_publisher_bgl ftb_simple_subscriber_bgl .bgl_env_test
+	rm -f ftb_simple_publisher_bgp ftb_simple_subscriber_bgp ftb_watchdog_bgp .bgp_env_test
+
+.bgl_env_test:
+	touch .bgl_env_test
+
+.bgp_env_test:
+	touch .bgp_env_test
+
+ftb_simple_publisher_bgl: .bgl_env_test ftb_simple_publisher.c
+	${CC_BLRTS} ${CFLAGS_BG} ${LDFLAGS_CN} -o $@ ftb_simple_publisher.c ${LIBS_CN_BGL}
+
+ftb_simple_subscriber_bgl: .bgl_env_test ftb_simple_subscriber.c
+	${CC_BLRTS} ${CFLAGS_BG} ${LDFLAGS_CN} -o $@ ftb_simple_subscriber.c ${LIBS_CN_BGL}
+
+ftb_simple_publisher_bgp: .bgp_env_test ftb_simple_publisher.c
+	${CC_BLRTS} ${CFLAGS_BG} ${LDFLAGS_CN} -o $@ ftb_simple_publisher.c ${LIBS_CN_BGP}
+
+ftb_simple_subscriber_bgp: .bgp_env_test ftb_simple_subscriber.c
+	${CC_BLRTS} ${CFLAGS_BG} ${LDFLAGS_CN} -o $@ ftb_simple_subscriber.c ${LIBS_CN_BGP}
+
+ftb_simple_publisher: ftb_simple_publisher.c
+	${CC} ${CFLAGS_LINUX} ${LDFLAGS_LINUX} -o $@ $< ${LIBS_LINUX}
+
+ftb_simple_subscriber: ftb_simple_subscriber.c
+	${CC} ${CFLAGS_LINUX} ${LDFLAGS_LINUX} -o $@ $< ${LIBS_LINUX}
+
+ftb_watchdog: ftb_watchdog.c
+	${CC} ${CFLAGS_LINUX} ${LDFLAGS_LINUX} -o $@ $< ${LIBS_LINUX}
+
+ftb_watchdog_bgp: .bgp_env_test ftb_watchdog.c
+	${CC_BLRTS} ${CFLAGS_BG} ${LDFLAGS_CN} -o $@ ftb_watchdog.c ${LIBS_CN_BGP}
+
+ftb_polling_logger: ftb_polling_logger.c
+	${CC} ${CFLAGS_LINUX} ${LDFLAGS_LINUX} -o $@ $< ${LIBS_LINUX}
+
+ftb_notify_logger: ftb_notify_logger.c
+	${CC} ${CFLAGS_LINUX} ${LDFLAGS_LINUX} -o $@ $< ${LIBS_LINUX}
+
+ftb_multiplecomp: ftb_multiplecomp.c
+	${CC} ${CFLAGS_LINUX} ${LDFLAGS_LINUX} -o $@ $< ${LIBS_LINUX}
+	
+ftb_pingpong: ftb_pingpong.c
+	${CC} ${CFLAGS_LINUX} ${LDFLAGS_LINUX} -o $@ $< ${LIBS_LINUX}
+
+ftb_example_callback_unsubscribe: ftb_example_callback_unsubscribe.c
+	${CC} ${CFLAGS_LINUX} ${LDFLAGS_LINUX} -o $@ $< ${LIBS_LINUX}
+
+ftb_eventhandle_example: ftb_eventhandle_example.c
+	${CC} ${CFLAGS_LINUX} ${LDFLAGS_LINUX} -o $@ $< ${LIBS_LINUX}
+
+CFLAGS_LINUX_OFED  = -Wall -g -I${FTB_INC_DIR} -I/usr/local/ofed/include
+LDFLAGS_LINUX_OFED = -L${FTB_LIB_PATH_SHARED} -L/usr/local/ofed/lib
+LIBS_LINUX_OFED    = -l${FTB_LIB_LINUX_NAME} ${LIBS_PTHREAD} -libverbs
+
+# This may not work is user has installed ofed using --prefix
+ftb_ib_port_status_publisher: ftb_ib_port_status_publisher.c
+ifeq ($(shell [ -d /usr/local/ofed ]), )
+	$(warning InfiniBand library not present. Not compiling ftb_ib_port_status_publisher)
+else
+	${CC} ${CFLAGS_LINUX_OFED} ${LDFLAGS_LINUX_OFED} -o $@ $< ${LIBS_LINUX_OFED}
+
+endif
+
+ftb_throw_delay_mpi: ftb_throw_delay_mpi.c
+ifeq ($(HAVE_MPI),1)
+	${MPICC} ${CFLAGS_LINUX} ${LDFLAGS_LINUX} -o $@ $< ${LIBS_LINUX}
+else
+	$(warning "MPI library not present. Not compiling ftb_throw_delay_mpi")
+endif        
+
+ftb_alltoall: ftb_alltoall.c
+ifeq ($(HAVE_MPI),1)
+	${MPICC} ${CFLAGS_LINUX} ${LDFLAGS_LINUX} -o $@ $< ${LIBS_LINUX}
+else
+	$(warning "MPI library not present. Not compiling ftb_alltoall")
+endif
+ 
+ftb_grouping: ftb_grouping.c
+ifeq ($(HAVE_MPI),1)
+	${MPICC} ${CFLAGS_LINUX} ${LDFLAGS_LINUX} -o $@ $< ${LIBS_LINUX}
+else
+	$(warning "MPI library not present. Not compiling ftb_grouping")
+endif

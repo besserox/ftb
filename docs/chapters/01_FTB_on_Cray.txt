@@ -1,0 +1,10 @@
+There are very minor differences between building FTB for CRAY and LINUX.
+The only difference is to use the "--with-platform=cray" option during
+configure time.
+
+Please refer to 01_FTB_on_Linux.txt for more information on FTB 0.6.2
+under Cray XT series that runs Compute Node Linux (CNL). For more details
+or information about the FTB installation at Cray XT4 (Jaguar) at ORNL,
+send an inquiry to parkbh@ornl.gov.
+
+Please refer to the 01_FTB_on_Linux.txt file for more instructions.

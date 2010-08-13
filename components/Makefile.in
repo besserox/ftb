@@ -1,0 +1,74 @@
+#***********************************************************************************
+# FTB:ftb-info 
+#  This file is part of FTB (Fault Tolerance Backplance) - the core of CIFTS
+#  (Co-ordinated Infrastructure for Fault Tolerant Systems)
+#  
+#  See http://www.mcs.anl.gov/research/cifts for more information.
+#  	
+# FTB:ftb-info 
+#
+# FTB:ftb-fillin
+#  FTB_Version: 0.6.2
+#  FTB_API_Version: 0.5
+#  FTB_Heredity:FOSS_ORIG
+#  FTB_License:BSD
+# FTB:ftb-fillin 
+#
+# FTB:ftb-bsd 
+#  This software is licensed under BSD. See the file FTB/misc/license.BSD for
+#  complete details on your rights to copy, modify, and use this software.
+# FTB:ftb-bsd 
+#***********************************************************************************
+
+#Please ignore blank spaces (if any) in the start of this file
+@ZOID_HOME@
+@ZOID_LIBC_PATH@
+@CC_BLRTS@
+@AR_BLRTS@
+@BGSYS_LIB_PATH@
+clients=@clients@
+ZOID_CLIENT_DIR=@ZOID_CLIENT_DIR@
+FTB_LIB_LINUX_NAME=@FTB_LIB_LINUX_NAME@
+FTB_LIB_PATH_SHARED=@FTB_LIB_PATH_SHARED@
+FTB_LIB_PATH_STATIC=@FTB_LIB_PATH_STATIC@
+FTB_INC_DIR=@FTB_INC_DIR@
+CC=@CC@
+LIBS_PTHREAD=@LIBS_PTHREAD@
+MPICC=@MPICC@
+HAVE_MPI=@HAVE_MPI@
+
+SUBDIRS = examples
+
+all: ftb_examples
+
+clean:
+	for i in ${SUBDIRS}; do ${MAKE} -C $$i $@; done
+
+ftb_examples:
+	${MAKE} -C examples all
+
+install:
+	install -v -b -d @prefix@; 
+	install -v -b -d @prefix@/examples;
+	install -v -b @abs_top_srcdir@/examples/ftb_eventhandle_example  @prefix@/examples;
+	install -v -b @abs_top_srcdir@/examples/ftb_example_callback_unsubscribe  @prefix@/examples;
+	install -v -b @abs_top_srcdir@/examples/ftb_multiplecomp    @prefix@/examples;
+	install -v -b @abs_top_srcdir@/examples/ftb_notify_logger @prefix@/examples;
+	install -v -b @abs_top_srcdir@/examples/ftb_pingpong @prefix@/examples;
+	install -v -b @abs_top_srcdir@/examples/ftb_polling_logger  @prefix@/examples;
+	install -v -b @abs_top_srcdir@/examples/ftb_simple_publisher  @prefix@/examples;
+	install -v -b @abs_top_srcdir@/examples/ftb_simple_subscriber  @prefix@/examples;
+	install -v -b @abs_top_srcdir@/examples/ftb_watchdog  @prefix@/examples;
+	install -v -b @abs_top_srcdir@/examples/watchdog_schema.ftb  @prefix@/examples;
+ifeq ($(shell [ -e examples/ftb_throw_delay_mpi ]), ftb_throw_delay_mpi )
+	install -v -b @abs_top_srcdir@/examples/ftb_throw_delay_mpi  @prefix@/examples;
+endif
+ifeq ($(shell [ -e examples/ftb_ib_port_status_publisher ]), ftb_ib_port_status_publisher)
+	install -v -b @abs_top_srcdir@/examples/ftb_ib_port_status_publisher  @prefix@/examples;
+endif
+ifeq ($(shell [ -e examples/ftb_alltoall ]), ftb_alltoall )
+	install -v -b @abs_top_srcdir@/examples/ftb_alltoall  @prefix@/examples;
+endif
+ifeq ($(shell [ -e examples/ftb_grouping ]), ftb_grouping )
+	install -v -b @abs_top_srcdir@/examples/ftb_grouping  @prefix@/examples;
+endif

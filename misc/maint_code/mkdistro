@@ -1,0 +1,24 @@
+#!/bin/bash
+
+link="https://svn.mcs.anl.gov/repos/cifts/ftb/branches/dev/ftb-0.6.2/"
+checkout_dir=checkedout-ftb-tmp
+version="0.6.2"
+
+# For ALPHA/BETA releases
+# ---------------------------------------------------------------------
+svn export $link $checkout_dir
+
+#Uncomment the below ONLY FOR FINAL release and not alpha/beta releases
+#------------------------------------------------------------------------
+#svn export $link $checkout_dir
+#
+#sh ./$checkout_dir/misc/maint_code/getfiles.sh > outputfiles
+#for i in `cat outputfiles`; do
+#./$checkout_dir/misc/maint_code/phbsrcfix --label=ftb-info --strip $i
+#./$checkout_dir/misc/maint_code/phbsrcfix --label=ftb-fillin --strip $i
+#./$checkout_dir/misc/maint_code/phbsrcfix --label=ftb-bsd --strip $i
+#done
+
+mv $checkout_dir ftb-$version
+tar czf ftb-$version.tgz ftb-$version
+

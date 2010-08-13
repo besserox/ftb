@@ -1,0 +1,90 @@
+#***********************************************************************************
+# FTB:ftb-info 
+#  This file is part of FTB (Fault Tolerance Backplance) - the core of CIFTS
+#  (Co-ordinated Infrastructure for Fault Tolerant Systems)
+#  
+#  See http://www.mcs.anl.gov/research/cifts for more information.
+#  	
+# FTB:ftb-info 
+#
+# FTB:ftb-fillin
+#  FTB_Version: 0.6.2
+#  FTB_API_Version: 0.5
+#  FTB_Heredity:FOSS_ORIG
+#  FTB_License:BSD
+# FTB:ftb-fillin 
+#
+# FTB:ftb-bsd 
+#  This software is licensed under BSD. See the file FTB/misc/license.BSD for
+#  complete details on your rights to copy, modify, and use this software.
+# FTB:ftb-bsd 
+#***********************************************************************************
+
+#Please ignore blank spaces (if any) in the start of this file
+@ZOID_HOME@
+@ZOID_LIBC_PATH@
+@BLRTS_PATH@
+@CC_BLRTS@
+@AR_BLRTS@
+@RANLIB_BLRTS@
+@BGSYS_LIB_PATH@
+sbindir=@sbindir@
+libdir=@libdir@
+abs_top_builddir=@abs_top_builddir@
+abs_top_srcdir=@abs_top_srcdir@
+exec_prefix=@exec_prefix@
+prefix=@prefix@
+clients=@clients@
+PLATFORM=@PLATFORM@
+network=@network@
+FTB_NETWORK_CFLAG=@FTB_NETWORK_CFLAG@
+ZOID_CLIENT_DIR=@ZOID_CLIENT_DIR@
+TEMPSBIN=@TEMPSBIN@
+TEMPLIB=@TEMPLIB@
+FTB_LIB_BG_CN_NAME=@FTB_LIB_BG_CN_NAME@
+FTB_LIB_LINUX_NAME=@FTB_LIB_LINUX_NAME@
+#FTB_LIB_PATH_SHARED=@FTB_LIB_PATH_SHARED@
+#FTB_LIB_PATH_STATIC=@FTB_LIB_PATH_STATIC@
+INC_DIR=@INC_DIR@
+AR=@AR@
+CFLAGS_FTB=@CFLAGS_FTB@
+CFLAGS_SRC=@CFLAGS_SRC@
+UTIL_OBJ=@UTIL_OBJ@
+#MANAGER_LIB_PATH_SHARED=@MANAGER_LIB_PATH_SHARED@
+#MANAGER_LIB_PATH_STATIC=@MANAGER_LIB_PATH_STATIC@
+MANAGER_LIB_NAME=@MANAGER_LIB_NAME@
+CFLAGS_CLIENT=@CFLAGS_CLIENT@
+CLIENT_LIB_OBJ=@CLIENT_LIB_OBJ@
+CFLAGS_MANAGER=@CFLAGS_MANAGER@
+MAKE=@MAKE@
+CC=@CC@
+RANLIB=@RANLIB@
+LIBS_PTHREAD=@LIBS_PTHREAD@
+
+SUBDIRS = src
+
+all: ftb
+
+clean:
+	for i in ${SUBDIRS}; do ${MAKE} -C $$i $@; done
+	rm -f .event_def .config_def
+	rm -rf @TEMPSBIN@;
+	rm -rf @TEMPLIB@;
+
+ftb: 
+	if [ ! -e @TEMPSBIN@ ]; then mkdir @TEMPSBIN@; fi				
+	if [ ! -e @TEMPLIB@ ]; then mkdir @TEMPLIB@; fi
+	${MAKE} -C src all
+
+ftb_examples:
+	${MAKE} -C components/examples all
+
+install:
+	install -v -b -d @prefix@; 
+	install -v -b -d @sbindir@;
+	install -v -b -d @includedir@;
+	install -v -b -d @libdir@; 
+	install -v -b @TEMPSBIN@/* @sbindir@;
+	install -v -b @TEMPLIB@/* @libdir@/;
+	install -v -b @abs_top_srcdir@/include/*.h @includedir@;
+#	install -v -b @abs_top_srcdir@/components/examples/*ftb* @prefix@/components/examples;

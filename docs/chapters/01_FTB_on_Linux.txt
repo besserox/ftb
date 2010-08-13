@@ -1,0 +1,252 @@
+					FTB Release 0.6.2
+				(implements FTB API Version 0.5)
+
+Table of Contents
+=======================
+1.0 Introduction
+2.0 Downloading and Configuring FTB
+3.0 Installing FTB
+4.0 Running FTB
+	4.1: Specifying boot-strap IP, boot-starp port and agent port information
+5.0 Trying out FTB examples
+	5.1: Configure and Make the FTB examples
+	5.2: Run the FTB examples
+
+
+Section 1.0 : INTRODUCTION 
+===============================
+This release of FTB has been developed and tested on Ubuntu 9.04 for Linux, IBM BG/P machines and Cray XT4 machines
+
+
+Section 2.0: DOWNLOADING AND CONFIGURING FTB
+============================================
+
+1. You can download the FTB software from the CIFTS website: http://www.mcs.anl.gov/research/cifts
+
+2. Unzip the ftb-0.6.2 tarball
+
+3. Change to the downloaded FTB directory and Run ./autogen.sh
+	The autogen script creates the configure and other additonal scripts
+   	Other options to ./autogen.sh
+	(a) clean
+		This removes the configure scripts, Makefiles and
+		other additional files and provides you with a clean
+		working environment
+
+3. Run ./configure 
+	There are no options required to run configure. You can however specify the following additional options:
+	(a) --with-bstrap-server=<server_ipaddress>
+		Default Value: There is no default value assigned.
+		The --with-bstrap-server=<server_ipaddress> is used
+		to specify the ip address of the BOOTSTRAP server.
+		Please note that the bootstrap server is REQUIRED
+		by FTB during run-time. The boot-strap server is
+		responsible for managing the topology infrastructure
+		of FTB agents.
+
+		Instead of specifying the bootstrap server during
+		configure time, tou also have a choice of specifying
+		the bootstrap server ip address in a config file
+		or through an environment variable, which are
+		accessed during run-time. The config file and the
+		environment variable options are described in the
+		"Running FTB" section.
+
+	(b) --with-bstrap-port=<port_number>
+	 	Default value: 14455 
+	 	This is the port used by the FTB agent and the FTB
+	 	clients to communicate to the bootstrap server. This value
+	 	can be overridden at run-time by specifying the environment
+		variable FTB_BSTRAP_PORT or through a config file.
+		Refer to the section "Running FTB" below to more
+		details on how to do this.
+
+	(c) --with-agent-port=<port_number>
+	 	Default value: 10809 
+	 	This is the port used by the FTB clients to connect to an FTB
+	 	agent. This value can be overriden at run-time by specifying
+	 	the environment variable FTB_AGENT_PORT or through a config file. 
+                Refer to the section "Running FTB" below to more
+                details on how to do this.
+
+	(d) --enable-debug=<Log Files Directory>
+		Default: no debug 
+	 	This option enables debug messages on the client as well as
+	 	the FTB side. The log files will be written in the specified
+		directory. If no directory is specified, the log
+		files are written onto stderr.
+
+	(e) --with-platform=<linux,bgl,bgp,cray>
+	 	Default: linux
+	 	This option is used by the user to specify the platform for this
+		FTB build.
+
+	(d) In addition, the user can use other standard options
+	 	like --with-prefix etc. ./configure --help will provide
+	 	more options
+
+
+Section 3.0: INSTALLING FTB
+============================
+After you are done configuring the FTB, you can quickly install in on your system using the below commands
+
+1. Run make
+	This builds the FTB
+
+2. Run make install
+	This installs the FTB binaries (which include the lib, sbin
+	and include files) in the directory specified by --prefix
+	during ./configure. Default prefix is /usr/local
+
+3. The FTB is built and ready to go.
+
+
+
+Section 4.0: RUNNING FTB
+==========================
+
+The first step towards getting FTB up and running is to get the
+bootstrap server and the ftb agents - up and running.
+
+1. Launch the ftb_database_server in the background
+	This binary will be found in your 'sbin' directory. If you
+	used --prefix option at configure time, the sbin directory
+	would be located under the --prefix directory.
+
+	Note that only a single instance of the ftb_database_server
+	is required to manage the entire FTB topology. If there are
+	more than one ftb_database_servers present, conflicts may
+	arise during run-time. 
+	
+	A good place to start the ftb_database_server is your
+	front-end node or a node that is accessible by all the other
+	nodes in your cluster.
+
+	An ftb_database_server will usually start silently unless
+	you have used the --enable-debug option during configure
+	time.
+
+2. Launch the ftb_agent
+	Similar to the ftb_database_server, the ftb_agent can be
+	found in the sbin directory.
+
+	You can multiple FTB agents in a system. The FTB agents
+	will contact the ftb_database_server to form a topology
+	among themselves, which will form the communication
+	infrastructure for FTB.
+
+
+Subsection 4.1: SPECIFYING BOOT-STRAP IP, BOOT-STRAP PORT AND AGENT-PORT INFORMATION
+-----------------------------------------------------------------------------------
+BOOT-STRAP SERVER IP: For an FTB agent to contact the ftb_database_server,
+	it should know the IP address of the boot-strap server. This
+	information NEEDS to be specified by the end-user. There
+	are multiple ways to specify this information, as discussed
+	below
+
+BOOT-STRAP SERVER PORT: The FTB agents contact the boot-strap server using 
+	the boot-strap server IP address on a specific Port. This
+	port is called as the boot-strap port. There 
+	are multiple ways to specify this port to FTB, as discussed
+	below. However, FTB does assign a default port '14455', in
+	the event that the user has not specified one.
+
+AGENT PORT: Every FTb-enabled software instance that is running will need 
+	to attach itself to an FTB agent. The end-user can specify
+	a port where FTB agents can listen for new clients. Such a
+	port is designated as the AGENT PORT. There
+        are multiple ways to specify this port to FTB, as discussed 
+        below. However, FTB does assign a default port '10809', in 
+        the event that the user has not specified one.
+
+There are 3 ways to specify this information
+
+1. Using Environment variables during run-time. 
+	Note that Environment variables receive the highest priority
+	and can override any pre-defined value for the above
+	variables.
+
+	The boostrap server, bootstrap port and agent port can be
+	specified by the FTB_BSTRAP_SERVER, FTB_BSTRAP_PORT and the
+	FTB_AGENT_PORT environment variables respectively.
+
+2. Using a Config file
+	The name and location of the file needs to be provided
+	through an environment variable called FTB_CONFIG_FILE.
+	Note that the config file needs to be available at run-time
+	
+	The boostrap server, bootstrap port and agent port can be 
+        specified as follows in the config file:
+
+	FTB_BSTRAP_SERVER=foo.mcs.anl.gov
+	FTB_BSTRAP_PORT=14333
+	FTB_AGENT_PORT=1111
+
+3. Using the ./configure options
+	As discussed in "Downloading and Configuring FTB" Section,
+	you can specify this during configure time, as well.
+
+4. Default Values
+	The boot-strap port and agent port have default port values
+	to fall-back on. However, if the boot-strap server is not
+	specified in one of the above 3 methods, the program will
+	abort.
+
+At this stage, your FTB is built and launched and ready to communicate with any of the FTB clients
+----------------------------------------------------------------------------------------------------
+
+
+SECTION 5.0: TRYING OUT FTB EXAMPLES
+====================================
+The current release of FTB comes with some sample components, which
+can be used to test the FTB and establish its working status. These
+examples also serve as a starting point for other FTB-enabled developers
+
+Section 5.1: CONFIGURE AND MAKE THE FTB EXAMPLES
+-----------------------------------------------
+
+1. CD to the components directory. This directory is present under the main FTB directory
+
+2. Run ./autogen.sh
+
+3. Run ./configure --with-ftb=<path_to_ftb_binaries>
+	The --with-ftb path specifies the path where the FTB-enabled software can find the ftb library.
+	The default directory to --with-ftb is /usr/local/ftb.
+
+   	Additional options to above are:
+
+	(a) --with-platform=<linux, bgp>
+	 	Default: linux
+	 	This option is used to specify the platform for which the
+	 	components are to be built for.
+
+	(b) In addition, the user can use other standard option
+	 	like --with-prefix etc. ./configure --help will provide
+	 	more options
+
+4. Run make
+
+5. Run make install (default prefix=/usr/local)
+
+At this stage, your examples should be built. Note that some examples
+in the components directory are IBM BG, or InfiniBand or Cray
+specific and might not get built. ONLY examples for linux will get
+built
+
+Section 5.2: RUN THE FTB EXAMPLES
+-------------------------------------
+
+1. Ensure that the ftb_database_server and ftb_agents daemons are
+	up and running. This is a part of the "Running FTB" section
+
+2. Ensure that required information related to boot-strap server
+	IP address, boot-strap server port, and agent port is
+	specified. Refer to Section "Running FTB" for more information.
+
+3. Ensure that LD_LIBRARY_PATH environment variable points to the
+	lib directory in FTB_HOME(or whenever the compiled FTB libraries
+	are present).
+
+4. Launch the software
+   Run ./ftb_watchdog.
+

@@ -1,0 +1,34 @@
+FTB 0.6.2 TROUBLE-SHOOTING
+=====================
+We will keep adding trouble shooting issues in here. You are free to email cifts_discuss@googlegroups.com for any issues.
+
+
+1) Nothing is happening! ftb_database_server is launched, ftb_agent
+is launched and the examples have been launched! But, nothing
+can be seen on the screen.
+	
+There might be multiple reasons why things may not be working.
+(a) Check if you specified the IP address of the boot-strap server and not the HOSTNAME
+(b) Did you change the boot-strap port or agent port information?
+(c) Before launching the FTB-enabled software, ensure that
+the ftb_database_server and ftb_agent can communicate. You
+can do this by configuring FTB with --enable-debug and
+seeing the messages that pop on the screen
+
+
+2) The following warnings are seen when an executing FTB client is killed using "Ctrl ^C"
+[FTB_WARNING][ftb_manager_lib.c: line 860]FTBN_Recv_msg failed -20
+[FTB_WARNING][ftb_agent.c: line 56]FTBM_Wait failed -20
+
+This happens because some the FTB library did not receive the
+expected messages. This would not occur is FTB_Disconnect was called
+to exit elegantly.
+
+
+3) On launching the FTB-enabled software example, you get the
+message: "error while loading shared libraries: libftb.so: cannot
+open shared object file: No such file or directory"
+
+You need to set the path to the FTB shared library. Use the
+LD_LIBARY_PATH environment variable or modify ld.so.conf
+

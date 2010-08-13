@@ -1,0 +1,279 @@
+					FTB Release 0.6.2
+
+Table of Contents
+=======================
+1.0 Intro
+2.0 Preparing your BG/P environment
+3.0 Downloading and Configuring FTB
+4.0 Installing FTB
+5.0 Modifying ZeptoOS image with FTB files
+6.0 Running FTB
+        6.1: Specifying boot-strap IP, boot-strap port and agent port information
+7.0 Trying out FTB examples
+        7.1: Configure and Make the FTB examples
+        7.2: Run the FTB examples
+
+Section 1.0 : INTRODUCTION
+===============================
+This release of FTB has been developed and tested ANL's Blue Gene/P systems.
+
+
+Section 2.0: PREPARING YOUR BG/P ENVIRONMENT
+=====================================================
+There are 2 facets on how to prepare your BG/P environment
+for FTB. They are dependent on whether you plan to use FTB-enabled
+software on the IBM Compute Nodes.
+
+The service nodes, login nodes and I/O nodes of the BG machines are
+light-weight linux machines. FTB would work directly on them, without
+the need to install any specific software.
+
+The IBM compute nodes use the IBM-proprietary Compute Node Kernel.
+The IBM compute nodes also forward all their I/O functions to the
+I/O nodes through the IBM function-forwarding mechanism called CIOD. 
+To support a software like FTB on the IBM compute nodes, the FTB
+routines need to be forwarded to the I/O nodes for execution. To
+forward *custom* functions, ANL has developed the open-source ZOID
+software - which is similar in functionality to CIOD. ZOID requires
+the support of the ZeptoOS (developed by ANL) operating system.
+Hence, support of FTB on the IBM Compute Nodes requires that the
+user install ZOID and ZeptoOS on the machine.
+
+The instructions to install ZeptoOS and ZOID can be found at:
+http://www.mcs.anl.gov/research/projects/zeptoos/ and are independent
+of FTB.  Some FTB-related packages have to be added to ZeptoOS image
+that gets installed - which will be discussed in the next sections.
+
+The ZeptoOS and ZOID installation requires that setting up many
+environment variables. Sample environment files can be found in the
+FTB/docs/chapters/bg_sample_files
+
+This FTB  release has been tested with the following
+ZeptoOS and ZOID versions.
+
+BG/L Machines
+-----------------------------
+ZeptoOS: ZeptoOS 1.5-V1R3M2 
+ZOID: Zoid 1.0
+
+
+BG/P Machines
+----------------------------
+ZeptoOS Version: ZeptoOS-2.0-V1R3M0
+This version of ZeptoOS comes with ZOID packaged in it.
+
+(a) Preparing ZeptoOS and ZOID
+# Download the ZeptoOS source from the ZeptoOS website located at: http://www.mcs.anl.gov/research/projects/zeptoos/downloads
+# Unpack the tarfile using the command 'tar xjf ZeptoOS-<version>.tar.bz2'
+
+
+Section 3.0: DOWNLOADING AND CONFIGURING FTB
+============================================
+
+0. You can download the FTB software from the CIFTS website: http://www.mcs.anl.gov/research/cifts
+
+1. Unzip the ftb-0.6.2 tarball
+
+2. The FTB requires that setting up some BG related environment variables.
+    Sample environment files can be found in the FTB/docs/chapters/bg_sample_files.
+    Please modify these files to match your environment and export the variables.
+
+3. Change to the downloaded FTB directory and Run ./autogen.sh
+        The autogen script creates the configure and other additonal scripts
+        Other options to ./autogen.sh
+        (a) clean
+                This removes the configure scripts, Makefiles and
+                other additional files and provides you with a clean
+                working environment
+
+3. Run ./configure --with-platform=bgp
+	Note that if you use --enable-debug, you will need to specify path to the Log files for BG systems.
+
+        There are no options required to run configure. You can however specify the following additional options:
+        (a) --with-bstrap-server=<server_ipaddress>
+                Default Value: There is no default value assigned.
+                The --with-bstrap-server=<server_ipaddress> is used
+                to specify the ip address of the BOOTSTRAP server.
+                Please note that the bootstrap server is REQUIRED
+                by FTB during run-time. The boot-strap server is
+                responsible for managing the topology infrastructure
+                of FTB agents.
+
+                Instead of specifying the bootstrap server during
+                configure time, tou also have a choice of specifying
+                the bootstrap server ip address in a config file
+                or through an environment variable, which are
+                accessed during run-time. The config file and the
+                environment variable options are described in the
+                "Running FTB" section.
+
+        (b) --with-bstrap-port=<port_number>
+                Default value: 14455
+                This is the port used by the FTB agent and the FTB
+                clients to communicate to the bootstrap server. This value
+                can be overridden at run-time by specifying the environment
+                variable FTB_BSTRAP_PORT or through a config file.
+                Refer to the section "Running FTB" below to more
+                details on how to do this.
+
+        (c) --with-agent-port=<port_number>
+                Default value: 10809
+                This is the port used by the FTB clients to connect to an FTB
+                agent. This value can be overriden at run-time by specifying
+                the environment variable FTB_AGENT_PORT or through a config file.
+                Refer to the section "Running FTB" below to more
+                details on how to do this.
+
+        (d) --enable-debug=<Log Files Directory>
+                Default: no debug
+                This option enables debug messages on the client as well as
+                the FTB side. The log files will be written in the specified
+                directory. If no directory is specified, the log
+                files are written onto stderr.
+
+        (e) --with-platform=<linux or bgp>
+                Default: linux
+                This option is used by the user to specify the platform for this
+                FTB build. Only BG/P and Linux are supported
+                at this point. Crays use the default 'Linux' option.
+
+        (d) In addition, the user can use other standard options
+                like --with-prefix etc. ./configure --help will provide
+                more options
+
+
+Section 4.0: INSTALLING FTB
+============================
+After you are done configuring the FTB, you can quickly install in on your system using the below commands
+
+1. Run make
+        This builds the FTB
+
+2. Run make install
+        This installs the FTB binaries (which include the lib, sbin
+        and include files) in the directory specified by --prefix
+        during ./configure. Default prefix is /usr/local
+
+3. The FTB is built and ready to go.
+
+
+Section 5.0: MODIFYING ZEPTOOS IMAGE FOR FTB
+====================================================
+The following steps are specific to the ANL system. Please contact
+us if you have any questions for your specific system configuration
+with ZeptoOS and FTB.
+
+
+For BG/P machines
+------------------
+
+(a) Go to the ZeptoOS directory:  cd ZeptoOS-<version> [We will use ZeptoOS as the name of the directory
+    for the remainder of the instructions]
+
+(b) Copy the FTB Agent from /FTB/sbin/ftb_agent to /ZeptoOS/ramdisk/ION/ramdisk-add/bin
+
+(c) Copy the FTB Zoid Client Libraries form /FTB/lib/ftb_zoid_client* to /ZeptoOS/ramdisk/ION/ramdisk-add/lib/
+
+(d) Copy the FTB Agent startup script from
+	src/client_lib/platforms/bg/init_scripts/ftb_agent_bgp to
+	/ZeptoOS/ramdisk/ION/ramdisk-add/etc/init.d/S66FTB_Agent
+and
+	src/client_lib/platforms/bg/init_scripts/ftb_agent_bgp to
+	/ZeptoOS/ramdisk/ION/ramdisk-add/etc/init.d/rc3.d/S66FTB_Agent
+
+
+(d) We need to add some FTB libraries to the ZOID startup script. Make the following edits to the
+    "/ZeptoOS/ramdisk/ION/ramdisk-add/etc/sysconfig/zoid" file.
+http://wiki.mcs.anl.gov/zeptoos/index.php/Configuration
+    o The ZOID_MODULES="unix_impl.so:unix_preload.so:mapping_impl.so:mapping_preload.so" needs to be edited to include
+        "ZOID_MODULES="unix_impl.so:unix_preload.so:mapping_impl.so:mapping_preload.so:ftb_zoid_client_impl.so:ftb_zoid_client_preload.so"
+
+
+(e) Since we have modified several directories of ZeptoOS, we need to rebuilt some parts of the ZeptoOS. The steps are for rebuilding 
+    ZeptoOS can be found in the ZeptoOS docuementaion available at: http://wiki.mcs.anl.gov/zeptoos/index.php/Configuration
+    
+    A quick recap of the steps is as follows:
+
+    (o) Run #cd ZeptoOS; followed by #./configure --edit"
+        The above step will display a menu which will allow you to change the paths to several BGP drivers
+    (o) Rebuild the following components/kernel images:
+            #make bgp-cn-linux          (Will create BGP-CN-zImage-with-initrd.elf file)
+            #make bgp-ion-ramdisk-cnl   (Will prompt you for a new I/O node root passwd and create BGP-ION-ramdisk-for-CNL.elf )
+            #make bgp-ion-linux         (Will create BGP-ION-zImage.elf)
+
+     This completes the configuration port of ZeptoOS
+
+(f) Installing and testing of ZeptoOS can be performed based
+    on the guidelines provided in the documentation, located at:
+    http://wiki.mcs.anl.gov/zeptoos/index.php/ZeptoOS_Documentation
+
+Section 6.0: RUNNING FTB
+==========================
+
+The first step towards getting FTB up and running is to get the
+bootstrap server and the ftb agents - up and running.
+
+1. Launch the ftb_database_server in the background on the login node
+        This binary will be found in your 'sbin' directory. If you
+        used --prefix option at configure time, the sbin directory
+        would be located under the --prefix directory.
+
+        Note that only a single instance of the ftb_database_server
+        is required to manage the entire FTB topology. If there are
+        more than one ftb_database_servers present, conflicts may
+        arise during run-time.
+
+        A good place to start the ftb_database_server is your
+        login node or a node that is accessible by all the other
+        nodes in your cluster.
+
+        An ftb_database_server will usually start silently unless
+        you have used the --enable-debug option during configure
+        time.
+
+2. Launching the ftb_agent
+	This should get launched automatically when the I/O node boots up.
+
+At this stage, your FTB is built and launched and ready to communicate with any of the FTB clients
+----------------------------------------------------------------------------------------------------
+
+
+SECTION 7.0: TRYING OUT FTB EXAMPLES
+====================================
+The current release of FTB comes with some sample components, which
+can be used to test the FTB and establish its working status. These
+examples also serve as a starting point for other FTB-enabled developers
+
+Section 7.1: CONFIGURE AND MAKE THE FTB EXAMPLES
+-----------------------------------------------
+
+1. CD to the components directory. This directory is present under the main FTB directory
+
+2. Run ./autogen.sh
+
+3. Run ./configure --with-ftb=<path_to_ftb_binaries> --with-platform=bgp
+        The --with-ftb path specifies the path where the FTB-enabled software can find the ftb library.
+        The default directory to --with-ftb is /usr/local/ftb.
+
+        Additional options to above are:
+
+        (a) --with-platform=<linux,bgp>
+                Default: linux
+                This option is used to specify the platform for which the
+                components are to be built for.
+
+        (b) In addition, the user can use other standard option
+                like --with-prefix etc. ./configure --help will provide
+                more options
+
+4. Run make
+
+5. Run make install (default prefix=/usr/local)
+
+At this stage, your examples should be built. 
+
+
+Section 7.2: RUN THE FTB EXAMPLES
+---------------------------------------
+1. Submit your examples using your job scheduler.
+
