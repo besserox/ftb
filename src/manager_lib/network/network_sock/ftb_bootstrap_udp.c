@@ -1,14 +1,28 @@
-/**********************************************************************************/
+/***********************************************************************************/
+/* FTB:ftb-info */
 /* This file is part of FTB (Fault Tolerance Backplance) - the core of CIFTS
  * (Co-ordinated Infrastructure for Fault Tolerant Systems)
  *
  * See http://www.mcs.anl.gov/research/cifts for more information.
  * 	
  */
+/* FTB:ftb-info */
+
+/* FTB:ftb-fillin */
+/* FTB_Version: 0.6.2
+ * FTB_API_Version: 0.5
+ * FTB_Heredity:FOSS_ORIG
+ * FTB_License:BSD
+ */
+/* FTB:ftb-fillin */
+
+/* FTB:ftb-bsd */
 /* This software is licensed under BSD. See the file FTB/misc/license.BSD for
  * complete details on your rights to copy, modify, and use this software.
  */
-/*********************************************************************************/
+/* FTB:ftb-bsd */
+/***********************************************************************************/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/time.h>
@@ -29,7 +43,6 @@
 #include "ftb_util.h"
 #include "ftb_manager_lib.h"
 #include "ftb_network.h"
-#include "ftb_network_sock.h"
 
 extern FILE *FTBU_log_file_fp;
 
@@ -184,19 +197,22 @@ int FTBNI_Bootstrap_get_parent_addr(uint16_t my_level, FTBN_addr_sock_t * parent
     pkt_send.bootstrap_msg_type = FTBNI_BOOTSTRAP_MSG_TYPE_ADDR_REQ;
     pkt_send.level = my_level;
 
-    memcpy(&pkt_send.addr, parent_addr, sizeof(FTBN_addr_sock_t));
+    memcpy(&pkt_send.parent_addr, parent_addr, sizeof(FTBN_addr_sock_t));
+
+    FTBN_Get_my_network_address(pkt_send.addr.name);
+    pkt_send.addr.port = FTBNI_bootstrap_config.agent_port;
 
     ret = FTBNI_util_exchange_bootstrap_msg(&pkt_send, &pkt_recv);
     if (ret != FTB_SUCCESS)
         return ret;
 
     FTBU_INFO("received msg type %d, parent hostname %s, port %d, level %u", pkt_recv.bootstrap_msg_type,
-              pkt_recv.addr.name, pkt_recv.addr.port, pkt_recv.level);
+              pkt_recv.parent_addr.name, pkt_recv.parent_addr.port, pkt_recv.level);
     if (pkt_recv.bootstrap_msg_type != FTBNI_BOOTSTRAP_MSG_TYPE_ADDR_REP) {
         return FTB_ERR_GENERAL;
     }
 
-    memcpy(parent_addr, (void *) &pkt_recv.addr, sizeof(FTBN_addr_sock_t));
+    memcpy(parent_addr, (void *) &pkt_recv.parent_addr, sizeof(FTBN_addr_sock_t));
     *parent_level = pkt_recv.level;
     return FTB_SUCCESS;
 }
@@ -227,7 +243,13 @@ int FTBNI_Bootstrap_register_addr(uint16_t my_level)
 
     pkt_send.bootstrap_msg_type = FTBNI_BOOTSTRAP_MSG_TYPE_REG_REQ;
     pkt_send.level = my_level;
+    /*
     memcpy(&pkt_send.addr, &FTBNI_bootstrap_my_addr, sizeof(FTBN_addr_sock_t));
+    */
+
+    FTBN_Get_my_network_address(pkt_send.addr.name);
+    pkt_send.addr.port = FTBNI_bootstrap_config.agent_port;
+
 
     FTBU_INFO("Registering hostname %s, port %d, level %d as potential parent for other agents",
               pkt_send.addr.name, pkt_send.addr.port, pkt_send.level);
@@ -258,7 +280,13 @@ static int FTBNI_util_bootstrap_deregister_addr(int blocking)
         return FTB_ERR_NOT_SUPPORTED;
 
     pkt_send.bootstrap_msg_type = FTBNI_BOOTSTRAP_MSG_TYPE_DEREG_REQ;
+
+    /*
     memcpy(&pkt_send.addr, &FTBNI_bootstrap_my_addr, sizeof(FTBN_addr_sock_t));
+    */
+
+    FTBN_Get_my_network_address(pkt_send.addr.name);
+    pkt_send.addr.port = FTBNI_bootstrap_config.agent_port;
 
     if (blocking) {
         ret = FTBNI_util_exchange_bootstrap_msg(&pkt_send, &pkt_recv);

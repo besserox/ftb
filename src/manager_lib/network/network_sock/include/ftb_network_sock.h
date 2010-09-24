@@ -1,14 +1,28 @@
 /***********************************************************************************/
+/* FTB:ftb-info */
 /* This file is part of FTB (Fault Tolerance Backplance) - the core of CIFTS
  * (Co-ordinated Infrastructure for Fault Tolerant Systems)
  *
  * See http://www.mcs.anl.gov/research/cifts for more information.
  * 	
  */
+/* FTB:ftb-info */
+
+/* FTB:ftb-fillin */
+/* FTB_Version: 0.6.2
+ * FTB_API_Version: 0.5
+ * FTB_Heredity:FOSS_ORIG
+ * FTB_License:BSD
+ */
+/* FTB:ftb-fillin */
+
+/* FTB:ftb-bsd */
 /* This software is licensed under BSD. See the file FTB/misc/license.BSD for
  * complete details on your rights to copy, modify, and use this software.
  */
-/************************************************************************************/
+/* FTB:ftb-bsd */
+/***********************************************************************************/
+
 #ifndef FTB_NETWORK_TCP_H
 #define FTB_NETWORK_TCP_H
 
@@ -75,6 +89,7 @@ typedef struct FTBNI_config_sock {
 typedef struct FTBNI_bootstrap_pkt {
     uint8_t bootstrap_msg_type;
     FTBN_addr_sock_t addr;
+    FTBN_addr_sock_t parent_addr;
     uint16_t level;
 } FTBNI_bootstrap_pkt_t;
 
@@ -133,7 +148,7 @@ static inline void FTBNI_util_setup_config_sock(FTBNI_config_sock_t * config)
         if (retval == -1) {
             config->agent_port = FTB_AGENT_PORT;
             FTBU_INFO
-                ("Error in accessing agent port information from config file %s. Assigning default port to the agent %d\n",
+                ("Error in accessing agent port information from config file %s. Assigning default port for FTB agents %d\n",
                  env, config->agent_port);
         }
         else {
@@ -156,7 +171,7 @@ static inline void FTBNI_util_setup_config_sock(FTBNI_config_sock_t * config)
         if (retval == -1) {
             config->server_port = FTB_BSTRAP_PORT;
             FTBU_INFO
-                ("Error in accessing server port information from config file %s. Assigning default port for bootstrap server : %d",
+                ("Error in accessing server port information from config file %s. Assigning default port for FTB bootstrap/database server : %d",
                  env, config->server_port);
         }
         else {
@@ -234,7 +249,7 @@ static inline struct hostent *FTBNI_gethostbyname(const char *name)
     else {
         /* case when an IP address is passed as
          * a host name */
-        inet_aton(name, ((struct in_addr *) hp->h_addr));
+      inet_aton(name, ((struct in_addr *) hp->h_addr));
     }
 
     return hp;

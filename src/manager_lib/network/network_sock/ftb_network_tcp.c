@@ -1,14 +1,28 @@
 /***********************************************************************************/
+/* FTB:ftb-info */
 /* This file is part of FTB (Fault Tolerance Backplance) - the core of CIFTS
  * (Co-ordinated Infrastructure for Fault Tolerant Systems)
  *
  * See http://www.mcs.anl.gov/research/cifts for more information.
  * 	
  */
+/* FTB:ftb-info */
+
+/* FTB:ftb-fillin */
+/* FTB_Version: 0.6.2
+ * FTB_API_Version: 0.5
+ * FTB_Heredity:FOSS_ORIG
+ * FTB_License:BSD
+ */
+/* FTB:ftb-fillin */
+
+/* FTB:ftb-bsd */
 /* This software is licensed under BSD. See the file FTB/misc/license.BSD for
  * complete details on your rights to copy, modify, and use this software.
  */
+/* FTB:ftb-bsd */
 /***********************************************************************************/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/time.h>
@@ -26,12 +40,13 @@
 #include <sys/ioctl.h>
 #include <net/if.h>
 #include <fcntl.h>
+#include <ifaddrs.h>
+
 
 #include "ftb_def.h"
 #include "ftb_client_lib_defs.h"
 #include "ftb_manager_lib.h"
 #include "ftb_network.h"
-#include "ftb_network_sock.h"
 #include "ftb_util.h"
 
 extern FILE *FTBU_log_file_fp;
@@ -199,6 +214,7 @@ static int FTBNI_util_connect_to(const FTBN_addr_sock_t * addr, const FTBM_msg_t
     if (connect(entry->fd, (struct sockaddr *) &sa, sizeof(sa)) < 0) {
         close(entry->fd);
         free(entry);
+        FTBU_INFO("cannot connect to  host %s (%d)", addr->name, addr->port);
         return FTB_ERR_NETWORK_NO_ROUTE;
     }
 #ifdef FD_CLOEXEC
@@ -215,6 +231,7 @@ static int FTBNI_util_connect_to(const FTBN_addr_sock_t * addr, const FTBM_msg_t
     FTBNI_UTIL_WRITE(entry, &FTBN_my_location_id, sizeof(FTB_location_id_t));
     FTBNI_UTIL_WRITE(entry, reg_msg, sizeof(FTBM_msg_t));
     FTBNI_UTIL_READ(entry, entry->dst, sizeof(FTB_location_id_t));
+
     if (entry->err_flag) {
         close(entry->fd);
         free(entry->dst);
@@ -239,7 +256,12 @@ static int FTBNI_util_connect_to(const FTBN_addr_sock_t * addr, const FTBM_msg_t
 int FTBN_Init(const FTB_location_id_t * my_id, const FTBN_config_info_t * config_info)
 {
     int ret;
+
     FTBU_INFO("FTBN_Init In");
+    pthread_mutex_init(&FTBNI_conn_table_lock, NULL);
+    pthread_mutex_init(&FTBNI_recv_lock, NULL);
+    FTBNI_listen_fd = -1;
+    FTBN_my_level = 0 - 1;
     FTBNI_connection_table = (FTBU_list_node_t *) malloc(sizeof(FTBU_list_node_t));
     FTBU_list_init(FTBNI_connection_table);
     memcpy(&FTBN_my_location_id, my_id, sizeof(FTB_location_id_t));
@@ -261,6 +283,7 @@ int FTBN_Connect(const FTBM_msg_t * reg_msg, FTB_location_id_t * parent_location
     uint16_t parent_level;
     FTBN_addr_sock_t addr;
     struct timespec delay;
+    char myipaddr[64];
 
     delay.tv_sec = 0;
     delay.tv_nsec = FTBN_CONNECT_BACKOFF_INIT_TIMEOUT * 1E6;
@@ -293,7 +316,7 @@ int FTBN_Connect(const FTBM_msg_t * reg_msg, FTB_location_id_t * parent_location
             }
         }
     }
-
+    
     do {
         if (retry > 0) {
             nanosleep(&delay, NULL);
@@ -307,7 +330,8 @@ int FTBN_Connect(const FTBM_msg_t * reg_msg, FTB_location_id_t * parent_location
 
         /*Pass current parent_addr to this function in the case of reconnecting */
         ret = FTBNI_Bootstrap_get_parent_addr(FTBN_my_level, &FTBN_parent_addr, &parent_level);
-        if (ret == FTB_ERR_NETWORK_NO_ROUTE) {
+	/*        if (ret == FTB_ERR_NETWORK_NO_ROUTE) { */
+	if (ret != FTB_SUCCESS ) {
             FTBU_WARNING("Failed to contact database server. Return code = %d", ret);
             FTBN_parent_addr.port = 0;
             if (retry < FTBN_CONNECT_RETRY_COUNT) {
@@ -321,6 +345,7 @@ int FTBN_Connect(const FTBM_msg_t * reg_msg, FTB_location_id_t * parent_location
         }
 
         if (FTBN_parent_addr.port == 0) {   /*It is the root */
+            FTBN_Get_my_network_address(myipaddr);
             parent_location_id->pid = 0;
             FTBN_my_level = parent_level + 1;
             ret = FTBNI_Bootstrap_register_addr(FTBN_my_level);
@@ -333,10 +358,13 @@ int FTBN_Connect(const FTBM_msg_t * reg_msg, FTB_location_id_t * parent_location
             }
         }
         else {
+            FTBN_Get_my_network_address(myipaddr);
             /* Non-root agent or a component tried to connect to its parent */
             ret = FTBNI_util_connect_to(&FTBN_parent_addr, reg_msg, parent_location_id);
             if (ret == FTB_ERR_NETWORK_NO_ROUTE) {
                 FTBNI_Bootstrap_report_conn_failure(&FTBN_parent_addr);
+
+		/* ??? Why do we set FTBN_parent_addr.port to 2 ? */
                 FTBN_parent_addr.port = 2;
                 retry = 0;
             }
@@ -377,12 +405,16 @@ int FTBN_Finalize()
         FTB_connection_entry_t *entry = (FTB_connection_entry_t *) node->data;
         close(entry->fd);
         free(entry->dst);
+        pthread_mutex_destroy(&(entry->lock));
         free(entry);
         free(node);
     }
     if (FTBNI_listen_fd != -1)
         close(FTBNI_listen_fd);
     free(FTBNI_connection_table);
+    pthread_mutex_destroy(&FTBNI_conn_table_lock);
+    pthread_mutex_destroy(&FTBNI_recv_lock);
+
     FTBU_INFO("FTBN_Finalize Out");
     return FTB_SUCCESS;
 }
@@ -418,6 +450,7 @@ int FTBN_Disconnect_peer(const FTB_location_id_t * peer_location_id)
 
     free(conn->dst);
     close(conn->fd);
+    pthread_mutex_destroy(&conn->lock);
     free(conn);
     FTBU_list_remove_node(node);
     free(node);
@@ -489,11 +522,6 @@ int FTBN_Recv_msg(FTBM_msg_t * msg, FTB_location_id_t * incoming_src, int blocki
         }
         FD_ZERO(&fds);
 
-        if (FTBNI_listen_fd != -1) {
-            max_fd = FTBNI_listen_fd;
-            FD_SET(FTBNI_listen_fd, &fds);
-        }
-
         FTBNI_lock_conn_table();
         FTBU_list_for_each_readonly(pos, FTBNI_connection_table) {
             FTBU_list_node_t *node = pos;
@@ -506,64 +534,11 @@ int FTBN_Recv_msg(FTBM_msg_t * msg, FTB_location_id_t * incoming_src, int blocki
 
         if (select(max_fd + 1, &fds, NULL, NULL, timeout) < 0) {
             if (errno == EINTR || errno == EAGAIN) {
-                if (blocking)
-                    continue;
-                else
-                    break;
+                continue;
             }
             FTBNI_unlock_recv();
             FTBU_INFO("FTBN_Recv_msg Out");
             return FTB_ERR_NETWORK_GENERAL;
-        }
-
-        if (FTBNI_listen_fd != -1 && FD_ISSET(FTBNI_listen_fd, &fds)) {
-            /*New connection */
-            uint32_t system_id;
-            FTB_connection_entry_t *entry =
-                (FTB_connection_entry_t *) malloc(sizeof(FTB_connection_entry_t));
-            entry->err_flag = 0;
-            entry->ref_count = 0;
-            entry->fd = accept(FTBNI_listen_fd, NULL, NULL);
-            if (entry->fd < 0) {
-                perror("accept");
-                free(entry);
-                FTBU_ERR_ABORT("accept failed");
-            }
-            FTBNI_UTIL_READ(entry, &system_id, sizeof(uint32_t));
-            if (system_id != FTBN_config_location.FTB_system_id) {
-                FTBU_WARNING("FTB system id doesn't match");
-                close(entry->fd);
-                free(entry);
-                if (blocking)
-                    continue;
-                else
-                    break;
-            }
-            pthread_mutex_init(&(entry->lock), NULL);
-            entry->dst = (FTB_location_id_t *) malloc(sizeof(FTB_location_id_t));
-            FTBNI_UTIL_READ(entry, entry->dst, sizeof(FTB_location_id_t));
-            FTBNI_UTIL_READ(entry, msg, sizeof(FTBM_msg_t));
-            memcpy(incoming_src, entry->dst, sizeof(FTB_location_id_t));
-
-            if (entry->err_flag) {
-                close(entry->fd);
-                free(entry->dst);
-                free(entry);
-                if (blocking)
-                    continue;
-                else
-                    break;
-            }
-            FTBNI_UTIL_WRITE(entry, &FTBN_my_location_id, sizeof(FTB_location_id_t));
-
-            FTBU_list_node_t *node = (FTBU_list_node_t *) malloc(sizeof(FTBU_list_node_t));
-            node->data = (void *) entry;
-            FTBNI_lock_conn_table();
-            FTBU_list_add_front(FTBNI_connection_table, node);
-            FTBNI_unlock_conn_table();
-            FTBNI_unlock_recv();
-            FTBU_INFO("FTBN_Recv_msg Out");
-            return FTB_SUCCESS;
         }
 
         FTBNI_lock_conn_table();
@@ -607,7 +582,8 @@ int FTBN_Recv_msg(FTBM_msg_t * msg, FTB_location_id_t * incoming_src, int blocki
  * have to be replaced so that we dont have any special functions
  * for the agent
  */
-int FTBN_Grab_messages(FTBM_msg_node_t ** msg_head, FTBM_msg_node_t ** msg_tail)
+int FTBN_Grab_messages(FTBM_msg_node_t ** msg_head, FTBM_msg_node_t ** msg_tail,
+                       FTB_location_id_t * problem_location)
 {
     fd_set fds;
     FTBU_list_node_t *pos;
@@ -635,7 +611,7 @@ int FTBN_Grab_messages(FTBM_msg_node_t ** msg_head, FTBM_msg_node_t ** msg_tail)
             if (errno == EINTR || errno == EAGAIN) {
                 continue;
             }
-            return FTB_ERR_NETWORK_GENERAL;
+            /*return FTB_ERR_NETWORK_GENERAL; */
         }
 
         if (FTBNI_listen_fd != -1 && FD_ISSET(FTBNI_listen_fd, &fds)) {
@@ -709,6 +685,7 @@ int FTBN_Grab_messages(FTBM_msg_node_t ** msg_head, FTBM_msg_node_t ** msg_tail)
                 FTBM_msg_t *msg = (FTBM_msg_t *) malloc(sizeof(FTBM_msg_t));
                 FTBNI_UTIL_READ(conn, msg, sizeof(FTBM_msg_t));
                 if (conn->err_flag) {
+                    memcpy(problem_location, conn->dst, sizeof(FTB_location_id_t));
                     free(conn->dst);
                     FTBU_list_remove_node(node);
                     close(conn->fd);
@@ -739,35 +716,25 @@ int FTBN_Grab_messages(FTBM_msg_node_t ** msg_head, FTBM_msg_node_t ** msg_tail)
     }
 }
 
-int FTBN_Get_my_network_address(char *ipaddr)
+int FTBN_Get_my_network_address(char *ipaddr) 
 {
-    int i;
-    int s = socket(PF_INET, SOCK_STREAM, 0);
+    struct ifaddrs *netaddr;
+    struct ifaddrs *netaddrhead;
 
-    for (i = 1;; i++) {
-        struct ifreq ifr;
-        struct sockaddr_in *sin = (struct sockaddr_in *) &ifr.ifr_addr;
-
-        ifr.ifr_ifindex = i;
-
-        /*
-         * FIXME: Remove references to ioctl since it is not
-         * portable! Figure out a different solution to get the ipaddress
-         * of the network
-         */
-        if (ioctl(s, SIOCGIFNAME, &ifr) < 0)
-            break;
-
-        /* now ifr.ifr_name is set */
-        if (ioctl(s, SIOCGIFADDR, &ifr) < 0)
-            continue;
-
-        sprintf(ipaddr, "%s", inet_ntoa(sin->sin_addr));
-        if (strcmp(ipaddr, "127.0.0.1") != 0) {
-            close(s);
-            return 1;
-        }
+    if(getifaddrs(&netaddrhead) == 0) {
+        netaddr = netaddrhead;
+        do {
+            if(netaddr->ifa_addr->sa_family == AF_INET && strncmp(netaddr->ifa_name, "lo", 2) != 0) {
+                struct sockaddr_in* sockInfoIP = (struct sockaddr_in*)netaddr->ifa_addr;
+                if(sockInfoIP != NULL) {
+                    strcpy(ipaddr, inet_ntoa(sockInfoIP->sin_addr));
+                    freeifaddrs(netaddrhead);
+                    return 1;
+                }
+            }
+        } while((netaddr = netaddr->ifa_next) != NULL);
     }
-    close(s);
+
+    freeifaddrs(netaddrhead);
     return -1;
 }

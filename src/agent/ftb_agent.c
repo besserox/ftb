@@ -1,14 +1,28 @@
-/**********************************************************************************/
+/***********************************************************************************/
+/* FTB:ftb-info */
 /* This file is part of FTB (Fault Tolerance Backplance) - the core of CIFTS
  * (Co-ordinated Infrastructure for Fault Tolerant Systems)
  *
  * See http://www.mcs.anl.gov/research/cifts for more information.
  * 	
  */
+/* FTB:ftb-info */
+
+/* FTB:ftb-fillin */
+/* FTB_Version: 0.6.2
+ * FTB_API_Version: 0.5
+ * FTB_Heredity:FOSS_ORIG
+ * FTB_License:BSD
+ */
+/* FTB:ftb-fillin */
+
+/* FTB:ftb-bsd */
 /* This software is licensed under BSD. See the file FTB/misc/license.BSD for
  * complete details on your rights to copy, modify, and use this software.
  */
-/*********************************************************************************/
+/* FTB:ftb-bsd */
+/***********************************************************************************/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -43,7 +57,7 @@ void *progress_loop()
         ret = FTBM_Recv(&msg, &incoming_src);
         pthread_mutex_lock(&lock);
         if (ret != FTB_SUCCESS) {
-            FTBU_WARNING("FTBM_Wait failed %d", ret);
+            FTBU_WARNING("FTBM_Recv failed %d", ret);
             continue;
         }
         if (msg.msg_type == FTBM_MSG_TYPE_NOTIFY) {
@@ -81,13 +95,19 @@ void *progress_loop()
         else if (msg.msg_type == FTBM_MSG_TYPE_CLIENT_DEREG) {
             ret = FTBM_Client_deregister(&msg.src);
             if (ret != FTB_SUCCESS) {
-                FTBU_WARNING("FTBM_Client_register failed");
+                FTBU_WARNING("FTBM_Client_deregister failed");
+            }
+        }
+        else if (msg.msg_type == FTBM_MSG_TYPE_CLEANUP_CONN) {
+            ret = FTBM_Cleanup_connection(&incoming_src);
+            if (ret != FTB_SUCCESS) {
+                FTBU_INFO("FTBM_Cleanup_connection: no component to clean up");
             }
         }
         else if (msg.msg_type == FTBM_MSG_TYPE_REG_SUBSCRIPTION) {
             ret = FTBM_Register_subscription(&msg.src, &msg.event);
             if (ret != FTB_SUCCESS) {
-                FTBU_WARNING("FTBM_Register_subscription failed");
+	      FTBU_WARNING("FTBM_Register_subscription failed: %d", ret);
             }
         }
         else if (msg.msg_type == FTBM_MSG_TYPE_REG_PUBLISHABLE_EVENT) {
@@ -126,11 +146,17 @@ void handler(int sig)
 int main(int argc, char *argv[])
 {
     int ret;
-    int pid;
+    pthread_mutex_init(&lock, NULL);
+    done = 0;
 
+
+#ifndef FTB_CRAY
+    int pid;
     pid = fork();
     if (pid != 0)
         return 0;
+#endif
+
 
 #ifdef FTB_DEBUG
     if (argc >= 2 && strcmp("ION_AGENT", argv[1]) == 0) {
@@ -172,6 +198,7 @@ int main(int argc, char *argv[])
     if (FTBU_log_file_fp != stderr) {
         fclose(FTBU_log_file_fp);
     }
+    pthread_mutex_destroy(&lock);
 
     return 0;
 }

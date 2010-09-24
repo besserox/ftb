@@ -1,14 +1,28 @@
-/**********************************************************************************/
+/***********************************************************************************/
+/* FTB:ftb-info */
 /* This file is part of FTB (Fault Tolerance Backplance) - the core of CIFTS
  * (Co-ordinated Infrastructure for Fault Tolerant Systems)
  *
  * See http://www.mcs.anl.gov/research/cifts for more information.
  * 	
  */
+/* FTB:ftb-info */
+
+/* FTB:ftb-fillin */
+/* FTB_Version: 0.6.2
+ * FTB_API_Version: 0.5
+ * FTB_Heredity:FOSS_ORIG
+ * FTB_License:BSD
+ */
+/* FTB:ftb-fillin */
+
+/* FTB:ftb-bsd */
 /* This software is licensed under BSD. See the file FTB/misc/license.BSD for
  * complete details on your rights to copy, modify, and use this software.
  */
-/*********************************************************************************/
+/* FTB:ftb-bsd */
+/***********************************************************************************/
+
 #include <stdio.h>
 #include <errno.h>
 #include <time.h>
@@ -42,6 +56,10 @@ typedef struct FTBCI_callback_entry {
     void *arg;
 } FTBCI_callback_entry_t;
 
+typedef struct FTBCI_polling_entry {
+    FTB_event_t *mask;
+} FTBCI_polling_entry_t;
+
 #ifdef FTB_TAG
 typedef struct FTBCI_tag_entry {
     FTB_tag_t tag;
@@ -64,6 +82,8 @@ typedef struct FTBCI_client_info {
     int event_queue_size;
     FTBU_list_node_t *event_queue;  /* entry type: event_inst_list */
     FTBU_list_node_t *callback_event_queue; /* entry type: event_inst_list */
+
+    FTBCI_map_mask_2_callback_entry_t *polling_map;
     FTBCI_map_mask_2_callback_entry_t *callback_map;
     FTBCI_map_publishable_event_index_to_event_details *declared_events_map;
     int total_publish_events;
@@ -566,6 +586,21 @@ static void FTBCI_util_push_to_comp_polling_list(FTBCI_client_info_t * client_in
     }
 }
 
+static void FTBCI_util_add_to_polling_map(FTBCI_client_info_t * client_info, const FTB_event_t * event)
+{
+    FTBCI_polling_entry_t *entry = (FTBCI_polling_entry_t *) malloc(sizeof(FTBCI_polling_entry_t));
+
+    FTBU_INFO("In FTBCI_util_add_to_polling_map");
+    entry->mask = (FTB_event_t *) malloc(sizeof(FTB_event_t));
+    memcpy(entry->mask, event, sizeof(FTB_event_t));
+
+    FTBU_INFO
+        ("Going to call FTBU_map_insert() to insert as key=polling_entry->mask, data=polling_entry map=client_info->polling_map");
+    FTBCI_lock_client(client_info);
+    FTBU_map_insert(client_info->polling_map, FTBU_MAP_PTR_KEY(entry->mask), (void *) entry);
+    FTBCI_unlock_client(client_info);
+    FTBU_INFO("Out FTBCI_util_add_to_polling_map");
+}
 
 static void FTBCI_util_add_to_callback_map(FTBCI_client_info_t * client_info, const FTB_event_t * event,
                                            int (*callback) (FTB_receive_event_t *, void *), void *arg)
@@ -585,7 +620,7 @@ static void FTBCI_util_add_to_callback_map(FTBCI_client_info_t * client_info, co
     FTBU_INFO("Out FTBCI_util_add_to_callback_map");
 }
 
-
+#if 0
 static void FTBCI_util_remove_from_callback_map(FTBCI_client_info_t * client_info,
                                                 const FTB_event_t * event)
 {
@@ -604,6 +639,71 @@ static void FTBCI_util_remove_from_callback_map(FTBCI_client_info_t * client_inf
     free(entry->mask);
     free(entry);
     FTBU_INFO("Out FTBCI_util_remove_from_callback_map");
+}
+#endif
+
+static void FTBCI_util_remove_from_subscription_map(FTBCI_client_info_t * client_info,
+                                                const FTB_event_t * event)
+{
+    FTBU_INFO("In FTBCI_util_remove_from_subscription_map");
+    FTBCI_lock_client(client_info);
+
+    if ( client_info->polling_map != NULL )
+      FTBU_map_remove_key(client_info->polling_map, FTBU_MAP_PTR_KEY(event));
+
+    if ( client_info->callback_map != NULL )
+      FTBU_map_remove_key(client_info->callback_map, FTBU_MAP_PTR_KEY(event));
+
+    FTBCI_unlock_client(client_info);
+    FTBU_INFO("Out FTBCI_util_remove_from_subscription_map");
+}
+
+static void FTBCI_util_reconnect()
+{
+    FTBCI_client_info_t *client_info;
+    FTBCI_polling_entry_t *polling_entry;
+    FTBCI_callback_entry_t *callback_entry;
+    FTBU_map_node_t *iter, *siter;
+    FTBM_msg_t msg;
+    int ret;
+
+    FTBCI_lock_client_lib();
+
+    iter = FTBU_map_begin(FTBCI_client_info_map);
+    
+    while ( iter != FTBU_map_end(FTBCI_client_info_map)) {
+      client_info = (FTBCI_client_info_t *) FTBU_map_get_data(iter);
+      memcpy(&msg.src, client_info->id, sizeof(FTB_id_t));
+      msg.msg_type = FTBM_MSG_TYPE_CLIENT_REG;
+      FTBM_Get_parent_location_id(&msg.dst.location_id);
+      ret = FTBM_Send(&msg);
+
+      msg.msg_type = FTBM_MSG_TYPE_REG_SUBSCRIPTION;
+      
+      if ( client_info->polling_map != NULL ) {
+	siter = FTBU_map_begin(client_info->polling_map);
+	while ( siter != FTBU_map_end(client_info->polling_map) ) {
+	  polling_entry = (FTBCI_polling_entry_t *) FTBU_map_get_data(siter);
+	  memcpy(&msg.event, polling_entry->mask, sizeof(FTB_event_t));
+	  ret = FTBM_Send(&msg);
+	  siter = siter->next;
+	}
+      }
+
+      if ( client_info->callback_map != NULL ) {
+	siter = FTBU_map_begin(client_info->callback_map);
+	while ( siter != FTBU_map_end(client_info->callback_map) ) {
+	  callback_entry = (FTBCI_callback_entry_t *) FTBU_map_get_data(siter);
+	  memcpy(&msg.event, callback_entry->mask, sizeof(FTB_event_t));
+	  ret = FTBM_Send(&msg);
+	  siter = siter->next;
+	}
+      }
+
+      iter = iter->next;
+    }
+
+    FTBCI_unlock_client_lib();
 }
 
 static void FTBCI_util_handle_FTBM_msg(FTBM_msg_t * msg)
@@ -641,14 +741,65 @@ static void FTBCI_util_handle_FTBM_msg(FTBM_msg_t * msg)
     FTBCI_lock_client(client_info);
     if (client_info->subscription_type & FTB_SUBSCRIPTION_NOTIFY) {
         /*has notification thread */
-        FTBU_list_add_back(client_info->callback_event_queue, node);
-        pthread_cond_signal(&client_info->cond);
+        FTBU_INFO("Test whether belonging to any asynchronous notification subscription string");
+        FTBU_map_node_t *iter;
+        iter = FTBU_map_begin(client_info->callback_map);
+        while (iter != FTBU_map_end(client_info->callback_map)) {
+            FTBCI_callback_entry_t *callback_entry = (FTBCI_callback_entry_t *) FTBU_map_get_data(iter);
+            if (FTBU_match_mask(&msg->event, callback_entry->mask)) {
+                FTBU_list_node_t *node = (FTBU_list_node_t *) malloc(sizeof(FTBU_list_node_t));
+                entry = (FTBCI_event_inst_list_t *) malloc(sizeof(FTBCI_event_inst_list_t));
+                memcpy(&entry->event_inst, &msg->event, sizeof(FTB_event_t));
+                memcpy(&entry->src, &msg->src, sizeof(FTB_id_t));
+                node->data = (void *) entry;
+                FTBU_INFO("Adding received event to the FTB client callback_event_queue");
+                FTBU_list_add_back(client_info->callback_event_queue, node);
+                pthread_cond_signal(&client_info->cond);
+                FTBCI_unlock_client(client_info);
+                FTBU_INFO("Out FTBCI_util_handle_FTBM_msg");
+                return;
+            }
+            iter = FTBU_map_next_node(iter);
+        }
     }
-    else {
-        FTBCI_util_push_to_comp_polling_list(client_info, node);
-    }
+    FTBU_INFO("Did not find a matching asynchronous notification subscription string for the event");
+    FTBU_INFO("Inserted event in polling queue for the client");
+    /*
+     * If event was not subscribed using an asynchronous notifcation subscription string,
+     * then add the event to the polling queue.
+     * Note that we are not currently checking if a mask matching an event was subscribed
+     * using a polling subscription string - this needs to be taken care in the future
+     */
+    FTBCI_util_push_to_comp_polling_list(client_info, node);
     FTBCI_unlock_client(client_info);
     FTBU_INFO("Out FTBCI_util_handle_FTBM_msg");
+    return;
+}
+
+int FTBCI_Check_progress()
+{
+    FTBM_msg_t msg;
+    FTB_location_id_t incoming_src;
+    int ret;
+
+    FTBU_INFO("In FTBCI_Check_progress");
+    if ( enable_callback > 0 ) {
+        FTBU_INFO("Out FTBCI_Check_progress - a callback thread already present for progress check");
+        return FTB_SUCCESS;
+    }
+    while ((ret = FTBM_Get(&msg, &incoming_src, 0)) == FTB_SUCCESS) {
+        FTBCI_util_handle_FTBM_msg(&msg);
+    }
+
+    if ( ret == FTB_ERR_NETWORK_GENERAL ) {
+      FTBU_WARNING("FTBM_Get failed %d", ret);
+      FTBU_WARNING("Trying to reconnect ...");
+
+      FTBCI_util_reconnect();
+    }
+
+    FTBU_INFO("Out FTBCI_Check_progress - after doing a progress check");
+    return ret;
 }
 
 
@@ -664,12 +815,16 @@ static void *FTBCI_callback_thread_client(void *arg)
     pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS, NULL);
 
     while (1) {
-        ret = FTBM_Wait(&msg, &incoming_src);
-        if (ret != FTB_SUCCESS) {
-            FTBU_WARNING("FTBM_Wait failed %d", ret);
-            FTBU_INFO("Out FTBCI_callback_thread_client");
-            return NULL;
-        }
+        ret = FTBM_Get(&msg, &incoming_src,1);
+
+	if ( ret == FTB_ERR_NETWORK_GENERAL ) {
+	  FTBU_WARNING("FTBM_Get failed %d", ret);
+	  FTBU_WARNING("Trying to reconnect ...");
+	  FTBU_INFO("Out FTBCI_callback_thread_client");
+	  FTBCI_util_reconnect();
+	  return NULL;
+	}
+
         FTBCI_util_handle_FTBM_msg(&msg);
     }
     FTBU_INFO("Out FTBCI_callback_thread_client");
@@ -914,9 +1069,11 @@ int FTBC_Connect(FTB_client_t * cinfo, uint8_t extension, FTB_client_handle_t * 
     if (client_info->subscription_type & FTB_SUBSCRIPTION_POLLING) {
         client_info->event_queue = (FTBU_list_node_t *) malloc(sizeof(FTBU_list_node_t));
         FTBU_list_init(client_info->event_queue);
+        client_info->polling_map = FTBU_map_init(FTBCI_util_is_equal_event);
     }
     else {
         client_info->event_queue = NULL;
+	client_info->polling_map = NULL;
     }
 
     pthread_mutex_init(&client_info->lock, NULL);
@@ -929,8 +1086,8 @@ int FTBC_Connect(FTB_client_t * cinfo, uint8_t extension, FTB_client_handle_t * 
         FTBCI_lock_client_lib();
         if (enable_callback == 0) {
             pthread_create(&callback_thread, NULL, FTBCI_callback_thread_client, NULL);
-            enable_callback++;
         }
+        enable_callback++;
         FTBCI_unlock_client_lib();
         /*Create component level thread */
         {
@@ -978,10 +1135,13 @@ int FTBC_Connect(FTB_client_t * cinfo, uint8_t extension, FTB_client_handle_t * 
             free(client_info->callback_event_queue);
         free(client_info->id);
         free(client_info);
+
+	/* Hoony: should clean up map_node of this client_info */
         FTBU_INFO("FTBC_Connect Out");
         return ret;
     }
-
+    /* Check progress for other clients atleast */
+    FTBCI_Check_progress();
     FTBU_INFO("FTBC_Connect Out");
     return FTB_SUCCESS;
 }
@@ -1109,6 +1269,8 @@ int FTBC_Declare_publishable_events(FTB_client_handle_t client_handle, const cha
         FTBU_INFO("FTBC_Declare_publishable_events Out");
         return FTB_SUCCESS;
     }
+    /* Check progress for other clients atleast */
+    FTBCI_Check_progress();
     return FTB_SUCCESS;
 }
 
@@ -1147,10 +1309,16 @@ int FTBC_Subscribe_with_polling(FTB_subscribe_handle_t * subscribe_handle,
         return ret;
     }
 
+    /* Check progress for other clients atleast */
+    FTBCI_Check_progress();
+
     memcpy(&subscribe_handle->client_handle, &client_handle, sizeof(FTB_client_handle_t));
     memcpy(&subscribe_handle->subscription_event, subscription_event, sizeof(FTB_event_t));
     subscribe_handle->subscription_type = FTB_SUBSCRIPTION_POLLING;
     subscribe_handle->valid = 1;
+
+    /* Add subscription string into the polling_map. */
+    FTBCI_util_add_to_polling_map(client_info, subscription_event);
 
     memcpy(&msg.event, subscription_event, sizeof(FTB_event_t));
     memcpy(&msg.src, client_info->id, sizeof(FTB_id_t));
@@ -1199,6 +1367,9 @@ int FTBC_Subscribe_with_callback(FTB_subscribe_handle_t * subscribe_handle,
         return ret;
     }
 
+    /* Check progress for other clients atleast */
+    FTBCI_Check_progress();
+
     /*
      * Set the subscribe_handle to correct parameters in case the arg for
      * callback is using the subscribe handle itself
@@ -1240,6 +1411,8 @@ int FTBC_Get_event_handle(const FTB_receive_event_t receive_event, FTB_event_han
     strcpy(event_handle->event_name, receive_event.event_name);
     strcpy(event_handle->severity, receive_event.severity);
     event_handle->seqnum = receive_event.seqnum;
+    /* Check progress for other clients atleast */
+    FTBCI_Check_progress();
     FTBU_INFO("FTBC_Get_event_handle Out");
     return FTB_SUCCESS;
 }
@@ -1248,6 +1421,8 @@ int FTBC_Get_event_handle(const FTB_receive_event_t receive_event, FTB_event_han
 int FTBC_Compare_event_handles(const FTB_event_handle_t event_handle1,
                                const FTB_event_handle_t event_handle2)
 {
+    /* Check progress for other clients atleast */
+    FTBCI_Check_progress();
     if ((strcasecmp(event_handle1.client_id.region, event_handle2.client_id.region) == 0)
         && (strcasecmp(event_handle1.client_id.comp_cat, event_handle2.client_id.comp_cat) == 0)
         && (strcasecmp(event_handle1.client_id.comp, event_handle2.client_id.comp) == 0)
@@ -1296,6 +1471,7 @@ int FTBC_Publish(FTB_client_handle_t client_handle, const char *event_name,
         return FTB_ERR_INVALID_EVENT_NAME;
     }
 
+    FTBCI_Check_progress();
     FTBCI_LOOKUP_CLIENT_INFO(client_handle, client_info);
     event_index = (FTBCI_publish_event_index_t *) malloc(sizeof(FTBCI_publish_event_index_t));
     strcpy(event_index->event_name, event_name);
@@ -1363,14 +1539,12 @@ int FTBC_Publish(FTB_client_handle_t client_handle, const char *event_name,
     return ret;
 }
 
-
 int FTBC_Poll_event(FTB_subscribe_handle_t subscribe_handle, FTB_receive_event_t * receive_event)
 {
-    FTBM_msg_t msg;
-    FTB_location_id_t incoming_src;
     FTBCI_client_info_t *client_info;
     FTB_client_handle_t client_handle;
     FTBCI_event_inst_list_t *entry;
+    int z = 0, ret = 0;
 
     FTBU_INFO("FTBC_Poll_event In");
 
@@ -1392,184 +1566,58 @@ int FTBC_Poll_event(FTB_subscribe_handle_t subscribe_handle, FTB_receive_event_t
         return FTB_ERR_NOT_SUPPORTED;
     }
 
-    FTBCI_lock_client(client_info);
-    if (client_info->event_queue_size > 0) {
+    for (z = 0; z < 2; z++) {
+        ret = FTBCI_Check_progress();
+        FTBCI_lock_client(client_info);
+        if (client_info->event_queue_size > 0) {
 
-        int event_found = 0;
-        /* FTBU_list_node_t *start = client_info->event_queue->next */
-        FTBU_list_node_t *start = client_info->event_queue;
-        FTBU_list_node_t *current = client_info->event_queue->next;
+            int event_found = 0;
+            /* FTBU_list_node_t *start = client_info->event_queue->next */
+            FTBU_list_node_t *start = client_info->event_queue;
+            FTBU_list_node_t *current = client_info->event_queue->next;
 
-        entry = (FTBCI_event_inst_list_t *) current->data;
-        do {
-            if (FTBU_match_mask(&entry->event_inst, &subscribe_handle.subscription_event)) {
-                event_found = 1;
-                concatenate_strings(receive_event->event_space, entry->event_inst.region, ".",
-                                    entry->event_inst.comp_cat, ".", entry->event_inst.comp, NULL);
-                strcpy(receive_event->event_name, entry->event_inst.event_name);
-                strcpy(receive_event->severity, entry->event_inst.severity);
-                strcpy(receive_event->client_jobid, entry->event_inst.client_jobid);
-                strcpy(receive_event->client_name, entry->event_inst.client_name);
-                memcpy(&receive_event->client_extension, &entry->src.client_id.ext, sizeof(int));
-                memcpy(&receive_event->seqnum, &entry->event_inst.seqnum, sizeof(int));
-                memcpy(&receive_event->event_type, &entry->event_inst.event_type, sizeof(uint8_t));
-                memcpy(receive_event->event_payload, entry->event_inst.event_payload,
-                       FTB_MAX_PAYLOAD_DATA);
-                memcpy(&receive_event->incoming_src, &entry->src.location_id, sizeof(FTB_location_id_t));
-#ifdef FTB_TAG
-                memcpy(&receive_event->len, &entry->event_inst.len, sizeof(FTB_tag_len_t));
-                memcpy(receive_event->dynamic_data, entry->event_inst.dynamic_data,
-                       FTB_MAX_DYNAMIC_DATA_SIZE);
-#endif
-                break;
-            }
-            else {
-                current = current->next;
-                entry = (FTBCI_event_inst_list_t *) current->data;
-            }
-        } while (current != start);
-
-        if (event_found) {
-            FTBU_list_remove_node(current);
-            client_info->event_queue_size--;
-            FTBCI_unlock_client(client_info);
-            free(current->data);
-            free(current);
-            FTBU_INFO("FTBC_Poll_event Out");
-            return FTB_SUCCESS;
-        }
-    }
-
-    /*Then poll FTBM once */
-    while (FTBM_Poll(&msg, &incoming_src) == FTB_SUCCESS) {
-
-        FTB_client_handle_t temp_handle;
-
-        FTBCI_convert_clientid_to_clienthandle(msg.dst.client_id, &temp_handle);
-
-        if (FTBCI_util_is_equal_clienthandle(&temp_handle, &client_handle)) {
-
-            FTBU_INFO("Got an event for myself");
-            int is_for_callback = 0;
-
-            if (msg.msg_type != FTBM_MSG_TYPE_NOTIFY) {
-                FTBU_WARNING("unexpected message type %d", msg.msg_type);
-                continue;
-            }
-
-            if (client_info->subscription_type & FTB_SUBSCRIPTION_NOTIFY) {
-                FTBU_INFO("Test whether belonging to any callback subscription string");
-                FTBU_map_node_t *iter;
-                iter = FTBU_map_begin(client_info->callback_map);
-                while (iter != FTBU_map_end(client_info->callback_map)) {
-                    FTBCI_callback_entry_t *callback_entry =
-                        (FTBCI_callback_entry_t *) FTBU_map_get_data(iter);
-                    if (FTBU_match_mask(&msg.event, callback_entry->mask)) {
-                        FTBU_list_node_t *node = (FTBU_list_node_t *) malloc(sizeof(FTBU_list_node_t));
-                        entry = (FTBCI_event_inst_list_t *) malloc(sizeof(FTBCI_event_inst_list_t));
-                        memcpy(&entry->event_inst, &msg.event, sizeof(FTB_event_t));
-                        memcpy(&entry->src, &msg.src, sizeof(FTB_id_t));
-                        node->data = (void *) entry;
-                        FTBU_list_add_back(client_info->callback_event_queue, node);
-                        pthread_cond_signal(&client_info->cond);
-                        FTBU_INFO("The event belongs to my callback");
-                        is_for_callback = 1;
-                        break;
-                    }
-                    iter = FTBU_map_next_node(iter);
-                }
-            }
-
-            if (!is_for_callback) {
-
-                FTBU_INFO("Not for callback");
-                if (FTBU_match_mask(&msg.event, &subscribe_handle.subscription_event)) {
-                    concatenate_strings(receive_event->event_space, msg.event.region, ".",
-                                        msg.event.comp_cat, ".", msg.event.comp, NULL);
-                    strcpy(receive_event->event_name, msg.event.event_name);
-                    strcpy(receive_event->severity, msg.event.severity);
-                    strcpy(receive_event->client_jobid, msg.event.client_jobid);
-                    strcpy(receive_event->client_name, msg.event.client_name);
-                    memcpy(&receive_event->client_extension, &msg.src.client_id.ext, sizeof(int));
-                    memcpy(&receive_event->seqnum, &msg.event.seqnum, sizeof(int));
-                    memcpy(&receive_event->event_type, &msg.event.event_type, sizeof(uint8_t));
-                    memcpy(receive_event->event_payload, msg.event.event_payload, FTB_MAX_PAYLOAD_DATA);
-                    memcpy(&receive_event->incoming_src, &msg.src.location_id,
+            entry = (FTBCI_event_inst_list_t *) current->data;
+            do {
+                if (FTBU_match_mask(&entry->event_inst, &subscribe_handle.subscription_event)) {
+                    event_found = 1;
+                    concatenate_strings(receive_event->event_space, entry->event_inst.region, ".",
+                                        entry->event_inst.comp_cat, ".", entry->event_inst.comp, NULL);
+                    strcpy(receive_event->event_name, entry->event_inst.event_name);
+                    strcpy(receive_event->severity, entry->event_inst.severity);
+                    strcpy(receive_event->client_jobid, entry->event_inst.client_jobid);
+                    strcpy(receive_event->client_name, entry->event_inst.client_name);
+                    memcpy(&receive_event->client_extension, &entry->src.client_id.ext, sizeof(int));
+                    memcpy(&receive_event->seqnum, &entry->event_inst.seqnum, sizeof(int));
+                    memcpy(&receive_event->event_type, &entry->event_inst.event_type, sizeof(uint8_t));
+                    memcpy(receive_event->event_payload, entry->event_inst.event_payload,
+                           FTB_MAX_PAYLOAD_DATA);
+                    memcpy(&receive_event->incoming_src, &entry->src.location_id,
                            sizeof(FTB_location_id_t));
 #ifdef FTB_TAG
-                    memcpy(&receive_event->len, &msg.event.len, sizeof(FTB_tag_len_t));
-                    memcpy(receive_event->dynamic_data, msg.event.dynamic_data,
+                    memcpy(&receive_event->len, &entry->event_inst.len, sizeof(FTB_tag_len_t));
+                    memcpy(receive_event->dynamic_data, entry->event_inst.dynamic_data,
                            FTB_MAX_DYNAMIC_DATA_SIZE);
 #endif
-                    FTBCI_unlock_client(client_info);
-                    FTBU_INFO("FTBC_Poll_event Out");
-                    return FTB_SUCCESS;
+                    break;
                 }
                 else {
-                    FTBCI_unlock_client(client_info);
-                    FTBCI_util_handle_FTBM_msg(&msg);
-                    FTBU_INFO("FTBC_Poll_event Out");
-                    return FTB_GOT_NO_EVENT;
+                    current = current->next;
+                    entry = (FTBCI_event_inst_list_t *) current->data;
                 }
-            }
-        }
-        else {
-            FTBCI_unlock_client(client_info);
-            FTBU_INFO("Polled event for someone else");
-            FTBCI_util_handle_FTBM_msg(&msg);
-            FTBCI_lock_client(client_info);
-            FTBU_INFO("Testing whether someone else got my events");
-            int event_found = 0;
+            } while (current != start);
 
-            if (client_info->event_queue_size > 0) {
-                FTBU_list_node_t *start = client_info->event_queue;
-                FTBU_list_node_t *current = client_info->event_queue->next;
-                entry = (FTBCI_event_inst_list_t *) current->data;
-                do {
-                    if (FTBU_match_mask(&entry->event_inst, &subscribe_handle.subscription_event)) {
-                        concatenate_strings(receive_event->event_space, entry->event_inst.region, ".",
-                                            entry->event_inst.comp_cat, ".", entry->event_inst.comp,
-                                            NULL);
-                        strcpy(receive_event->event_name, entry->event_inst.event_name);
-                        strcpy(receive_event->severity, entry->event_inst.severity);
-                        strcpy(receive_event->client_jobid, entry->event_inst.client_jobid);
-                        strcpy(receive_event->client_name, entry->event_inst.client_name);
-                        memcpy(&receive_event->client_extension, &entry->src.client_id.ext, sizeof(int));
-                        memcpy(&receive_event->seqnum, &entry->event_inst.seqnum, sizeof(int));
-                        memcpy(&receive_event->event_type, &entry->event_inst.event_type, sizeof(uint8_t));
-                        memcpy(receive_event->event_payload, entry->event_inst.event_payload,
-                               FTB_MAX_PAYLOAD_DATA);
-                        memcpy(&receive_event->incoming_src, &entry->src.location_id,
-                               sizeof(FTB_location_id_t));
-#ifdef FTB_TAG
-                        memcpy(&receive_event->len, &entry->event_inst.len, sizeof(FTB_tag_len_t));
-                        memcpy(receive_event->dynamic_data, entry->event_inst.dynamic_data,
-                               FTB_MAX_DYNAMIC_DATA_SIZE);
-#endif
-                        event_found = 1;
-                        break;
-                    }
-                    else {
-                        current = current->next;
-                        entry = (FTBCI_event_inst_list_t *) current->data;
-                    }
-                } while (current != start);
-
-                if (event_found) {
-                    FTBU_list_remove_node(current);
-                    client_info->event_queue_size--;
-                    FTBCI_unlock_client(client_info);
-                    free(current->data);
-                    free(current);
-                    FTBU_INFO("FTBC_Poll_event Out");
-                    return FTB_SUCCESS;
-                }
+            if (event_found) {
+                FTBU_list_remove_node(current);
+                client_info->event_queue_size--;
                 FTBCI_unlock_client(client_info);
+                free(current->data);
+                free(current);
+                FTBU_INFO("FTBC_Poll_event Out");
+                return FTB_SUCCESS;
             }
-            FTBU_INFO("No events put in my queue, keep polling");
         }
+        FTBCI_unlock_client(client_info);
     }
-
     FTBCI_unlock_client(client_info);
     FTBU_INFO("FTBC_Poll_event Out");
     return FTB_GOT_NO_EVENT;
@@ -1602,14 +1650,23 @@ int FTBC_Unsubscribe(FTB_subscribe_handle_t * subscribe_handle)
         return ret;
     }
 
-    if (subscribe_handle->subscription_type & FTB_SUBSCRIPTION_NOTIFY) {
+    /* This is a potential bug. 
+     * A client may subscribe to both, and unsubscribe one with polling.
+     * Hoony:
+     */
+    //    if (subscribe_handle->subscription_type & FTB_SUBSCRIPTION_NOTIFY) {
         /* Subscription was registered for callback mechanism */
-        FTBCI_util_remove_from_callback_map(client_info, &subscribe_handle->subscription_event);
-    }
+    //        FTBCI_util_remove_from_callback_map(client_info, &subscribe_handle->subscription_event);
+    //    }
+
+    FTBCI_util_remove_from_subscription_map(client_info, &subscribe_handle->subscription_event);
+
     /* Nothing needs to be done if subscription was registered
      * using polling mechanism. Only the subscribe_handle->valid
      * needs to be set to 0
      */
+    /* Check progress for other clients atleast */
+    FTBCI_Check_progress();
     FTBU_INFO("FTBC_Unsubscribe Out");
     return ret;
 }
@@ -1667,6 +1724,8 @@ int FTBC_Disconnect(FTB_client_handle_t client_handle)
         FTBCI_client_info_map = NULL;
     }
     FTBCI_unlock_client_lib();
+    /* Check progress for other clients atleast */
+    FTBCI_Check_progress();
 
     FTBU_INFO("FTBC_Disconnect Out");
     return FTB_SUCCESS;

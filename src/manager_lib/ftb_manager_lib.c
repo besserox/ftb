@@ -1,14 +1,28 @@
-/**********************************************************************************/
+/***********************************************************************************/
+/* FTB:ftb-info */
 /* This file is part of FTB (Fault Tolerance Backplance) - the core of CIFTS
  * (Co-ordinated Infrastructure for Fault Tolerant Systems)
  *
  * See http://www.mcs.anl.gov/research/cifts for more information.
  * 	
  */
+/* FTB:ftb-info */
+
+/* FTB:ftb-fillin */
+/* FTB_Version: 0.6.2
+ * FTB_API_Version: 0.5
+ * FTB_Heredity:FOSS_ORIG
+ * FTB_License:BSD
+ */
+/* FTB:ftb-fillin */
+
+/* FTB:ftb-bsd */
 /* This software is licensed under BSD. See the file FTB/misc/license.BSD for
  * complete details on your rights to copy, modify, and use this software.
  */
-/*********************************************************************************/
+/* FTB:ftb-bsd */
+/***********************************************************************************/
+
 #include <stdio.h>
 #include <errno.h>
 #include <time.h>
@@ -207,7 +221,6 @@ static void FTBMI_util_clean_component(FTBMI_comp_info_t * comp)
     FTBU_map_finalize(comp->catch_event_set);
 }
 
-
 static inline FTBMI_comp_info_t *FTBMI_lookup_component(const FTB_id_t * id)
 {
     FTBMI_comp_info_t *comp = NULL;
@@ -217,6 +230,27 @@ static inline FTBMI_comp_info_t *FTBMI_lookup_component(const FTB_id_t * id)
     iter = FTBU_map_find_key(FTBMI_info.peers, FTBU_MAP_PTR_KEY(id));
     if (iter != FTBU_map_end(FTBMI_info.peers)) {
         comp = (FTBMI_comp_info_t *) FTBU_map_get_data(iter);
+    }
+    unlock_manager();
+
+    return comp;
+}
+
+static inline FTBMI_comp_info_t *FTBMI_lookup_component_by_location(const FTB_location_id_t * location_id)
+{
+    FTBMI_comp_info_t *comp = NULL;
+    FTBU_map_node_t *iter;
+
+    lock_manager();
+
+    iter = FTBU_map_begin(FTBMI_info.peers);
+
+    while ( iter != FTBU_map_end(FTBMI_info.peers)) {
+      comp = (FTBMI_comp_info_t *) FTBU_map_get_data(iter);
+      if ( FTBU_is_equal_location_id(location_id, &comp->id.location_id) ) {
+	return comp;
+      }
+      iter = iter->next;
     }
     unlock_manager();
     return comp;
@@ -239,12 +273,16 @@ static void FTBMI_util_reconnect()
         FTBU_INFO("Out FTBMI_util_reconnect - could not connect to ftb agent");
         return;
     }
+
     if (!FTBMI_info.leaf && FTBMI_info.parent.pid != 0) {
         FTBMI_comp_info_t *comp;
         FTBU_map_node_t *iter;
 
         FTBU_INFO("Adding parent to peers while reconecting");
         comp = (FTBMI_comp_info_t *) malloc(sizeof(FTBMI_comp_info_t));
+
+	memset(comp, 0, sizeof(FTBMI_comp_info_t));
+
         memcpy(&comp->id.location_id, &FTBMI_info.parent, sizeof(FTB_location_id_t));
         strcpy(comp->id.client_id.comp_cat, "FTB_COMP_CAT_BACKPLANE");
         strcpy(comp->id.client_id.comp, "FTB_COMP_MANAGER");
@@ -304,7 +342,6 @@ static void FTBMI_util_get_location_id(FTB_location_id_t * location_id)
     }
 }
 
-
 int FTBM_Get_catcher_comp_list(const FTB_event_t * event, FTB_id_t ** list, int *len)
 {
     FTBU_map_node_t *iter_comp;
@@ -335,6 +372,7 @@ int FTBM_Get_catcher_comp_list(const FTB_event_t * event, FTB_id_t ** list, int 
          iter_mask != FTBU_map_end(FTBMI_info.catch_event_map);
          iter_mask = FTBU_map_next_node(iter_mask)) {
         FTB_event_t *mask = (FTB_event_t *) FTBU_map_get_key(iter_mask).key_ptr;
+
 
         if (FTBU_match_mask(event, mask)) {
 
@@ -475,6 +513,8 @@ int FTBM_Init(int leaf)
         FTBMI_comp_info_t *comp;
         FTBU_INFO("Adding parent to peers");
         comp = (FTBMI_comp_info_t *) malloc(sizeof(FTBMI_comp_info_t));
+	
+	memset(comp, 0, sizeof(FTBMI_comp_info_t));
         memcpy(&comp->id.location_id, &FTBMI_info.parent, sizeof(FTB_location_id_t));
         strcpy(comp->id.client_id.comp_cat, "FTB_COMP_CAT_BACKPLANE");
         strcpy(comp->id.client_id.comp, "FTB_COMP_MANAGER");
@@ -739,6 +779,7 @@ int FTBM_Register_subscription(const FTB_id_t * id, FTB_event_t * event)
     FTBMI_comp_info_t *comp;
 
     FTBU_INFO("FTBM_Register_subscription In");
+
     if (!FTBMI_initialized)
         return FTB_ERR_GENERAL;
 
@@ -921,68 +962,93 @@ int FTBM_Send(const FTBM_msg_t * msg)
 
         if (FTBU_is_equal_location_id(&FTBMI_info.parent, &msg->dst.location_id)) {
             FTBU_WARNING("Lost connection to parent");
-            if (FTBMI_info.err_handling & FTB_ERR_HANDLE_RECOVER) {
-                FTBU_WARNING("Reconnecting");
-                lock_manager();
-                FTBMI_util_reconnect();
-                unlock_manager();
-            }
+            //if (FTBMI_info.err_handling & FTB_ERR_HANDLE_RECOVER) {
+            FTBU_WARNING("Reconnecting");
+            lock_manager();
+            FTBMI_util_reconnect();
+            unlock_manager();
+            //}
         }
     }
     FTBU_INFO("FTBM_Send Out");
     return ret;
 }
 
-int FTBM_Poll(FTBM_msg_t * msg, FTB_location_id_t * incoming_src)
+int FTBM_Cleanup_connection(const FTB_location_id_t * location_id)
+{
+    int count = 0;
+    FTBMI_comp_info_t *comp = NULL;
+    FTBU_map_node_t *iter, *temp;
+
+
+    if (!FTBMI_initialized)
+        return FTB_ERR_GENERAL;
+
+    FTBU_INFO("FTBM_Cleanup_connection In");
+
+    iter = FTBU_map_begin(FTBMI_info.peers);
+    while ( iter != FTBU_map_end(FTBMI_info.peers) ) {
+      comp = (FTBMI_comp_info_t *) FTBU_map_get_data(iter);
+      
+      if ( FTBU_is_equal_location_id(location_id, &comp->id.location_id ) ) {
+	     FTBU_INFO("client %s:%s:%d from host %s pid %d, clean up",
+		       comp->id.client_id.comp, comp->id.client_id.comp_cat, 
+		       comp->id.client_id.ext, comp->id.location_id.hostname, 
+		       comp->id.location_id.pid);
+	     lock_comp(comp);
+
+	     FTBMI_util_clean_component(comp);
+
+	     temp = iter;
+	     iter = iter->next;
+
+	     temp->next->prev = temp->prev;
+	     temp->prev->next = temp->next;
+	     free(temp);
+
+	     unlock_comp(comp);
+	     free(comp);
+	     count++;
+      }
+      else {
+	iter = iter->next;
+      }
+    }
+
+    if (FTBU_is_equal_location_id(&FTBMI_info.parent, location_id)) {
+      FTBU_WARNING("Lost connection to parent");
+      FTBU_WARNING("Reconnecting");
+      lock_manager();
+      FTBMI_util_reconnect();
+      unlock_manager();
+    }
+
+    FTBU_INFO("FTBM_Cleanup_connection Out");
+
+    /* Any good error code? */
+    return count > 0 ? FTB_SUCCESS : FTB_ERR_GENERAL;
+}
+
+int FTBM_Get(FTBM_msg_t * msg, FTB_location_id_t * incoming_src, int blocking)
 {
     int ret;
 
     if (!FTBMI_initialized)
         return FTB_ERR_GENERAL;
-    FTBU_INFO("FTBM_Poll In");
+    FTBU_INFO("FTBM_Get In");
 
-    lock_network();
-    if (FTBMI_info.waiting) {
-        unlock_network();
-        return FTBM_NO_MSG;
-    }
-
-    ret = FTBN_Recv_msg(msg, incoming_src, 0);
-    unlock_network();
-    if (ret == FTBN_NO_MSG)
-        return FTBM_NO_MSG;
-    if (ret != FTB_SUCCESS) {
-        FTBU_WARNING("FTBN_Recv_msg failed %d", ret);
-    }
-    FTBU_INFO("FTBM_Poll Out");
-    return ret;
-}
-
-int FTBM_Wait(FTBM_msg_t * msg, FTB_location_id_t * incoming_src)
-{
-    int ret;
-
-    if (!FTBMI_initialized)
-        return FTB_ERR_GENERAL;
-    FTBU_INFO("FTBM_Wait In");
-
-    lock_network();
-    FTBMI_info.waiting = 1;
-    unlock_network();
-
-    ret = FTBN_Recv_msg(msg, incoming_src, 1);
-    if (ret != FTB_SUCCESS) {
+    ret = FTBN_Recv_msg(msg, incoming_src, blocking);
+    if (ret == FTB_ERR_NETWORK_GENERAL) {
+        FTBU_WARNING("Client is going to try to reconnect");
+        lock_manager();
+        FTBMI_util_reconnect();
+        unlock_manager();
         FTBU_WARNING("FTBN_Recv_msg failed %d", ret);
     }
 
-    lock_network();
-    FTBMI_info.waiting = 0;
-    unlock_network();
-
-    FTBU_INFO("FTBM_Wait Out");
+    FTBU_INFO("FTBM_Get Out");
     return ret;
 }
-
 
 int FTBM_Recv(FTBM_msg_t * msg, FTB_location_id_t * incoming_src)
 {
@@ -1017,10 +1083,24 @@ int FTBM_Recv(FTBM_msg_t * msg, FTB_location_id_t * incoming_src)
 void *FTBM_Fill_message_queue(void *arg)
 {
     FTBM_msg_node_t *head, *tail;
+    FTB_location_id_t disconnected_location;
+    int ret;
+
     while (1) {
         head = tail = NULL;
+        if ((ret = FTBN_Grab_messages(&head, &tail, &disconnected_location)) == FTB_ERR_NETWORK_GENERAL) {
+            FTBM_msg_t *msg = (FTBM_msg_t *) malloc(sizeof(FTBM_msg_t));
 
-        FTBN_Grab_messages(&head, &tail);
+            msg->msg_type = FTBM_MSG_TYPE_CLEANUP_CONN;
+            FTBM_msg_node_t *msg_node = (FTBM_msg_node_t *) malloc(sizeof(FTBM_msg_node_t));
+            msg_node->msg = msg;
+            msg_node->incoming_src = (FTB_location_id_t *) malloc(sizeof(FTB_location_id_t));
+            memcpy(msg_node->incoming_src, &disconnected_location, sizeof(FTB_location_id_t));
+
+            msg_node->next = head;
+            head = msg_node;
+        }
+
         pthread_mutex_lock(&message_queue_mutex);
 
         if (head != NULL) {
