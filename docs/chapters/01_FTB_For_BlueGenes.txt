@@ -1,4 +1,4 @@
-					FTB Release 0.6.1
+					FTB Release 0.6.2
 
 Table of Contents
 =======================
@@ -40,35 +40,31 @@ Hence, support of FTB on the IBM Compute Nodes requires that the
 user install ZOID and ZeptoOS on the machine.
 
 The instructions to install ZeptoOS and ZOID can be found at:
-http://www-unix.mcs.anl.gov/zeptoos/ and are independent of FTB.
-Some FTB-related packages have to be added to ZeptoOS image that
-gets installed - which will be discussed in the next sections.
+http://www.mcs.anl.gov/research/projects/zeptoos/ and are independent
+of FTB.  Some FTB-related packages have to be added to ZeptoOS image
+that gets installed - which will be discussed in the next sections.
 
 The ZeptoOS and ZOID installation requires that setting up many
 environment variables. Sample environment files can be found in the
 FTB/docs/chapters/bg_sample_files
 
-The FTB version 0.6.1 release has been tested with the following
+This FTB  release has been tested with the following
 ZeptoOS and ZOID versions.
 
 BG/L Machines
--------------
+-----------------------------
 ZeptoOS: ZeptoOS 1.5-V1R3M2 
 ZOID: Zoid 1.0
 
 
 BG/P Machines
--------------
-ZeptoOS and ZOID: Based on the version released on 19th May 2008.
-Here are the steps to get started.
+----------------------------
+ZeptoOS Version: ZeptoOS-2.0-V1R3M0
+This version of ZeptoOS comes with ZOID packaged in it.
 
-(a) Preparing Zoid
-Download the Zoid source from SVN and make it
-# cd ~
-# mkdir zoid
-# cd zoid
-# svn co https://svn.mcs.anl.gov/repos/ZeptoOS/trunk/BGP/zoid/ .
-# cd cnl/client; make 
+(a) Preparing ZeptoOS and ZOID
+# Download the ZeptoOS source from the ZeptoOS website located at: http://www.mcs.anl.gov/research/projects/zeptoos/downloads
+# Unpack the tarfile using the command 'tar xjf ZeptoOS-<version>.tar.bz2'
 
 
 Section 3.0: DOWNLOADING AND CONFIGURING FTB
@@ -76,11 +72,11 @@ Section 3.0: DOWNLOADING AND CONFIGURING FTB
 
 0. You can download the FTB software from the CIFTS website: http://www.mcs.anl.gov/research/cifts
 
-1. Unzip the ftb-0.6.1 tarball
+1. Unzip the ftb-0.6.2 tarball
 
 2. The FTB requires that setting up some BG related environment variables.
-Sample environment files can be found in the FTB/docs/chapters/bg_sample_files
-
+    Sample environment files can be found in the FTB/docs/chapters/bg_sample_files.
+    Please modify these files to match your environment and export the variables.
 
 3. Change to the downloaded FTB directory and Run ./autogen.sh
         The autogen script creates the configure and other additonal scripts
@@ -171,32 +167,45 @@ with ZeptoOS and FTB.
 For BG/P machines
 ------------------
 
-(a) Download ZeptoOS
-# cd ~
-# mkdir ZeptoOS
-# cd ZeptoOS
-# svn co https://svn.mcs.anl.gov/repos/ZeptoOS/trunk/BGP/zepto-kernel/ .
+(a) Go to the ZeptoOS directory:  cd ZeptoOS-<version> [We will use ZeptoOS as the name of the directory
+    for the remainder of the instructions]
 
-(b) Copy the FTB Agent from /FTB/sbin/ftb_agent to /ZeptoOS/ramdisk/BGP/ION/ramdisk-add/bin/
+(b) Copy the FTB Agent from /FTB/sbin/ftb_agent to /ZeptoOS/ramdisk/ION/ramdisk-add/bin
 
-(c) Copy the FTB Zoid Client Libraries form /FTB/lib/ftb_zoid_client* to /ZeptoOS/ramdisk/BGP/ION/ramdisk-add/lib/
+(c) Copy the FTB Zoid Client Libraries form /FTB/lib/ftb_zoid_client* to /ZeptoOS/ramdisk/ION/ramdisk-add/lib/
 
 (d) Copy the FTB Agent startup script from
 	src/client_lib/platforms/bg/init_scripts/ftb_agent_bgp to
-	/ZeptoOS/ramdisk/BGP/ION/ramdisk-add/etc/init.d/S66FTB_Agent
+	/ZeptoOS/ramdisk/ION/ramdisk-add/etc/init.d/S66FTB_Agent
 and
 	src/client_lib/platforms/bg/init_scripts/ftb_agent_bgp to
-	/ZeptoOS/ramdisk/BGP/ION/ramdisk-add/etc/init.d/rc3.d/S66FTB_Agent
+	/ZeptoOS/ramdisk/ION/ramdisk-add/etc/init.d/rc3.d/S66FTB_Agent
 
 
-(d) Edit Zoid startup script
-	"/ZeptoOS/ramdisk/BGP/ION/ramdisk-add/etc/init.d/rc3.d/S51zoid" to include the FTB libraries.  
-	Append 'ftb_zoid_client_impl.so:ftb_zoid_client_preload.so' to the list of libraries.
+(d) We need to add some FTB libraries to the ZOID startup script. Make the following edits to the
+    "/ZeptoOS/ramdisk/ION/ramdisk-add/etc/sysconfig/zoid" file.
+http://wiki.mcs.anl.gov/zeptoos/index.php/Configuration
+    o The ZOID_MODULES="unix_impl.so:unix_preload.so:mapping_impl.so:mapping_preload.so" needs to be edited to include
+        "ZOID_MODULES="unix_impl.so:unix_preload.so:mapping_impl.so:mapping_preload.so:ftb_zoid_client_impl.so:ftb_zoid_client_preload.so"
 
-(e) Make the Zeptoos kernel images
-make bgp-cn-linux
-make bgp-ion-ramdisk-cnl
-make bgp-ion-linux
+
+(e) Since we have modified several directories of ZeptoOS, we need to rebuilt some parts of the ZeptoOS. The steps are for rebuilding 
+    ZeptoOS can be found in the ZeptoOS docuementaion available at: http://wiki.mcs.anl.gov/zeptoos/index.php/Configuration
+    
+    A quick recap of the steps is as follows:
+
+    (o) Run #cd ZeptoOS; followed by #./configure --edit"
+        The above step will display a menu which will allow you to change the paths to several BGP drivers
+    (o) Rebuild the following components/kernel images:
+            #make bgp-cn-linux          (Will create BGP-CN-zImage-with-initrd.elf file)
+            #make bgp-ion-ramdisk-cnl   (Will prompt you for a new I/O node root passwd and create BGP-ION-ramdisk-for-CNL.elf )
+            #make bgp-ion-linux         (Will create BGP-ION-zImage.elf)
+
+     This completes the configuration port of ZeptoOS
+
+(f) Installing and testing of ZeptoOS can be performed based
+    on the guidelines provided in the documentation, located at:
+    http://wiki.mcs.anl.gov/zeptoos/index.php/ZeptoOS_Documentation
 
 Section 6.0: RUNNING FTB
 ==========================

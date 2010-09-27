@@ -1,4 +1,4 @@
-6.0 TROUBLE-SHOOTING
+FTB 0.6.2 TROUBLE-SHOOTING
 =====================
 We will keep adding trouble shooting issues in here. You are free to email cifts_discuss@googlegroups.com for any issues.
 

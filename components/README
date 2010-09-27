@@ -18,7 +18,7 @@ examples also serve as a starting point for other component developers
 3. Run ./configure --with-ftb=<path_to_ftb_binaries>
 	The default directory to --with-ftb is /usr/local/ftb.
    Other options to above are:
-	(a) --with-platform=<linux,bgl>
+	(a) --with-platform=<linux,bgl,bgp,cray>
 	 Default: linux
 	 This option is used to specify the platform for which the
 	 components are to be built for
@@ -45,25 +45,24 @@ Running FTB and an FTB-enabled component
 
    Run ./sbin/ftb_database_server &
 
-2. Start the FTB agent by running ./sbin/ftb_agent &
+2. Start the FTB agent by running ./sbin/ftb_agent 
 
 3. Cd to the examples directory.
    Ensure that LD_LIBRARY_PATH environment variable points to the lib directory in FTB_HOME. 
-
-   Run ./ftb_watchdog. Ensure that the file watchdog_schema.ftb is
-present in the directory from where ./ftb_watchdog is launched.
+   Run ./ftb_watchdog. Ensure that the file watchdog_schema.ftb is present in the directory 
+   from where ./ftb_watchdog is launched.
 
 
 Understanding FTB Examples 
 ==========================
 o Examples can be found in the ftb source code in the components/examples directory
 o Please use the format "./example_name usage" to get the usage for the example
-o All the below examples work on linux. Some examples may require the MPI library 
+o All the below examples work on linux and cray machines. Some examples may require the MPI library 
   or the OFED InfiniBand software stack
 
 (1) ftb_simple_publisher and ftb_simple_subscriber
  Demonstrates: Connecting to FTB and publish event, Connecting to FTB and catching specific events using polling
-	     : This is the only working example on BGL for now.
+	     : These examples work on the BGL, BGP
  Description : Start the ftb_simple_subscriber and ftb_simple_publisher on two different machines. 
 	       ftb_simple_subscriber subscribes and polls events published by ftb_simple_publisher 
 
@@ -71,6 +70,7 @@ o All the below examples work on linux. Some examples may require the MPI librar
 (2) ftb_watchdog
  Demonstrates: Connecting to FTB, Declare publishable events using a schema 
 	       file, Subscribe (using polling) and Publish an event
+             : This example works on the BGL, BGP
  Description : This component publishes the watch_dog_event and subscribes to catch the same event. 
 	       This can be used to confirm the working of FTB
 
@@ -89,7 +89,7 @@ o All the below examples work on linux. Some examples may require the MPI librar
  Demonstrates: Multi-threading: Publish an event from the callback function, 
 	       which is called when an subscribed event arrives
  Description : This example is composed of the server and the client components. 
-               The client publishes an event, the server recives the event and responds
+               The client publishes an event, the server receives the event and responds
                with its own events. The client receives the server events and throws its
                own event. Events, thus, pingpong between the client and the server
 
@@ -99,8 +99,8 @@ o All the below examples work on linux. Some examples may require the MPI librar
 
 (7) ftb_example_callback_unsubscribe
  Demonstrates: Multi-threading: Calling unsubscribe from the callback
- 		function, triggered when a specific event, matching subscription
- 		string arrives.  
+     	       function, triggered when a specific event, matching subscription
+    	       string arrives.  
  Description : Refer to the code documentation for an understanding of how this example works
 
 (8) ftb_eventhandle_example
@@ -110,10 +110,25 @@ o All the below examples work on linux. Some examples may require the MPI librar
 (9) ftb_ib_port_status_publisher
  Demonstrates: An example of an FTB-enabled InfiniBand network library
  Description : This example throws an event when the InfiniBand port becomes active. The example
-	       needs the OFED stack to be present
+	           needs the OFED stack to be present
 
 (10) ftb_throw_delay_mpi
- Demonstrates: An example of how to FTb-enabled MPI application
+ Demonstrates: An example of an FTB-enabled MPI application
  Description : This example calculates the amount of time needed to publish events. The example
-               needs the MPI software to be present
+               needs the MPI software to be present and the MPICC environment variable needs to 
+               be set up.
+
+(11) ftb_all_to_all
+ Demonstrates: An example of an FTB-enabled MPI application that emulates an all-to-all operation. 
+               This is typically used to conduct FTB scalability testing.
+ Description : This calculates the amount of time it takes for a client to publish all its events and catch all
+               events being published by everyone, including itself. This is like an all-to-all test. The example
+               needs the MPI software to be present and the MPICC environment variable needs to be set up.
+
+(10) ftb_grouping
+ Demonstrates: Another example (which is used to do scalability testing) of an FTB-enabled MPI application 
+               that forms small groups and emulates all-to-all FTB traffic within those small groups.
+ Description : This creates group based on the user-input group size and sends events to all-nodes in the group 
+               in an all-to-all manner. The example needs the MPI software to be present and the MPICC 
+               environment variable needs to be set up.
 

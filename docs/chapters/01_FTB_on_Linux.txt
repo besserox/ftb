@@ -1,4 +1,4 @@
-					FTB Release 0.6.1
+					FTB Release 0.6.2
 				(implements FTB API Version 0.5)
 
 Table of Contents
@@ -23,7 +23,7 @@ Section 2.0: DOWNLOADING AND CONFIGURING FTB
 
 1. You can download the FTB software from the CIFTS website: http://www.mcs.anl.gov/research/cifts
 
-2. Unzip the ftb-0.6.1 tarball
+2. Unzip the ftb-0.6.2 tarball
 
 3. Change to the downloaded FTB directory and Run ./autogen.sh
 	The autogen script creates the configure and other additonal scripts
@@ -76,11 +76,10 @@ Section 2.0: DOWNLOADING AND CONFIGURING FTB
 		directory. If no directory is specified, the log
 		files are written onto stderr.
 
-	(e) --with-platform=<linux or bgp>
+	(e) --with-platform=<linux,bgl,bgp,cray>
 	 	Default: linux
 	 	This option is used by the user to specify the platform for this
-		FTB build. Only BGP and linux are supported
-		at this point. Crays use the default 'linux' option.
+		FTB build.
 
 	(d) In addition, the user can use other standard options
 	 	like --with-prefix etc. ./configure --help will provide
@@ -135,6 +134,7 @@ bootstrap server and the ftb agents - up and running.
 	will contact the ftb_database_server to form a topology
 	among themselves, which will form the communication
 	infrastructure for FTB.
+
 
 Subsection 4.1: SPECIFYING BOOT-STRAP IP, BOOT-STRAP PORT AND AGENT-PORT INFORMATION
 -----------------------------------------------------------------------------------
