@@ -39,7 +39,7 @@ typedef struct FTBN_config_info {
 } FTBN_config_info_t;
 
 #if defined(FTB_NETWORK_SOCK)
-#include "ftb_network_sock.h"
+#include "../network_sock/ftb_network_sock.h"
 #elif defined(FTB_NETWORK_SOME_OTHER_NETWORK)
 
 /* FILLME: some other header file for other networks */
