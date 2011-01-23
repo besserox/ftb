@@ -266,6 +266,11 @@ AC_CONFIG_FILES([Makefile
 		docs/chapters/Makefile
 		docs/chapters/bg_sample_files/Makefile
 		version/Makefile
+		src/client_lib/platforms/bg/Makefile
+		src/client_lib/platforms/bg/zoid_client/implementation/Makefile
+		src/client_lib/platforms/bg/zoid_client/Makefile
+		src/client_lib/platforms/bg/zoid_client/server/Makefile
+		src/client_lib/platforms/bg/zoid_client/client/Makefile
 ])
 AC_OUTPUT
 

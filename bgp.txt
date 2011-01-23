@@ -1,0 +1,23 @@
+# This is a just a sample file to export the Blue Gene environment variables
+# Please ensure that the correct paths matching your environment are mentioned 
+# in his file before it is exported.
+
+# ZOID_HOME - points to the prebuilt ZOID
+# ZOID_SRC  - points to the scanner.pl file in the ZOID source code. 
+# The scanner.pl is needed during FTB configuration
+
+export ZOID_HOME=$HOME/zeptoos/packages/zoid/prebuilt
+export ZOID_SRC=$HOME/zeptoos/packages/zoid/src
+
+# The  ZOID_LIBC_PATH variable ponits to the path leading to zoid library for compute nodes: libzoid_cn.a
+export ZOID_LIBC_PATH=$ZOID_HOME
+
+# The following is a list of paths to the BGP Compiler Toolchain
+# Please ensure they match your environement
+export BLRTS_PATH=/bgsys/drivers/ppcfloor/gnu-linux/powerpc-bgp-linux
+export CC_BLRTS=$BLRTS_PATH/bin/gcc
+export AR_BLRTS=$BLRTS_PATH/bin/ar
+export RANLIB_BLRTS=$BLRTS_PATH/bin/ranlib
+export BGSYS_LIB_PATH=$BLRTS_PATH/lib
+
+# The above variables need to be exported to your environment in order for FTB to compile successfully.
