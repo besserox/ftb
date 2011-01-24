@@ -2,8 +2,6 @@ AC_PREREQ([2.67])
 
 AC_INIT([FTB], [0.7], [cifts_discuss@googlegroups.com], [ftb],
 	       [http://www.mcs.anl.gov/research/cifts])
-AC_CONFIG_AUX_DIR(m4)
-AC_CONFIG_MACRO_DIR(m4)
 AM_INIT_AUTOMAKE([-Wall -Werror foreign 1.10])
 
 LT_PREREQ([2.2.6])
