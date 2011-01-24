@@ -30,7 +30,6 @@
 #include <stdlib.h>
 #include "zoid_api.h"
 
-#include "ftb_client_lib_defs.h"
 #include "ftb_def.h"
 
 /* START-ZOID-SCANNER ID=10 INIT=ftb_zoid_client_init FINI=ftb_zoid_client_fini PROC=NULL */

@@ -34,8 +34,6 @@
 #include <string.h>
 #include <ctype.h>
 
-#include "ftb_def.h"
-#include "ftb_client_lib_defs.h"
 #include "ftb_auxil.h"
 #include "ftb_util.h"
 #include "ftbm.h"

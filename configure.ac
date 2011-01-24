@@ -102,8 +102,8 @@ fi
 if test "$V5" -le 9 ; then V5=0$V5 ; fi
 
 FTB_NUMVERSION=`echo $V1$V2$V3$V4$V5 | sed -e 's/^0*//'`
-AC_DEFINE_UNQUOTED(FTB_NUMVERSION,$FTB_NUMVERSION,[FTB version number])
-AC_DEFINE_UNQUOTED(FTB_VERSION,"$FTB_VERSION",[FTB version string])
+AC_SUBST(FTB_VERSION)
+AC_SUBST(FTB_NUMVERSION)
 
 
 ## Get bootstrap server name
@@ -275,7 +275,8 @@ else
 	fi
 fi
 
-AC_CONFIG_FILES([Makefile])
+AC_CONFIG_FILES([Makefile \
+	include/ftb.h])
 AC_OUTPUT
 
 echo \

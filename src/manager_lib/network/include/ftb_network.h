@@ -26,8 +26,8 @@
 #ifndef FTB_NETWORK_H
 #define FTB_NETWORK_H
 
-#include "ftb_def.h"
 #include "ftbm.h"
+#include "ftb_config.h"
 
 /*
  * Generic information common for all network, used for authentication
