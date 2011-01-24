@@ -2,6 +2,8 @@ AC_PREREQ([2.67])
 
 AC_INIT([FTB], [0.7], [cifts_discuss@googlegroups.com], [ftb],
 	       [http://www.mcs.anl.gov/research/cifts])
+AC_CONFIG_AUX_DIR(config)
+AC_CONFIG_MACRO_DIR(config)
 AM_INIT_AUTOMAKE([-Wall -Werror foreign 1.10])
 
 LT_PREREQ([2.2.6])
@@ -29,23 +31,22 @@ save_cflags=$CFLAGS
 AC_PROG_CC
 CFLAGS=$save_cflags
 
+# Require C99 support
+AC_PROG_CC_C99
+if test "$ac_cv_prog_cc_c99" = "no" ; then
+   AC_ERROR([Compiler does not support C99. Aborting.])
+fi
+
 # Checks for header files.
 AC_CHECK_HEADERS([arpa/inet.h fcntl.h netdb.h netinet/in.h stdint.h stdlib.h string.h \
 	sys/ioctl.h sys/socket.h sys/time.h unistd.h pthread.h])
 
-# Checks for typedefs, structures, and compiler characteristics.
 AC_C_INLINE
 AC_TYPE_PID_T
-AC_TYPE_SIZE_T
-AC_TYPE_UINT16_T
-AC_TYPE_UINT32_T
-AC_TYPE_UINT8_T
 
 # Checks for library functions.
-AC_FUNC_FORK
-AC_FUNC_MALLOC
-AC_CHECK_FUNCS([gethostname gettimeofday inet_ntoa localtime_r memset select socket strcasecmp \
-	strncasecmp strstr])
+AC_CHECK_FUNCS([gethostname gettimeofday inet_ntoa localtime_r memset select socket \
+	strcasecmp strncasecmp strstr fork])
 
 # Checks for pthread library
 AC_SEARCH_LIBS([pthread_create], [pthread], [have_pthreads=yes],
@@ -105,42 +106,49 @@ AC_DEFINE_UNQUOTED(FTB_NUMVERSION,$FTB_NUMVERSION,[FTB version number])
 AC_DEFINE_UNQUOTED(FTB_VERSION,"$FTB_VERSION",[FTB version string])
 
 
-dnl Get bootstrap server name
+## Get bootstrap server name
 AC_ARG_WITH(bstrap-server, 
-	[  --with-bstrap-server=   <IP Address> IP Address of Bootstrapping server <no default>], 
-	 FTB_BSTRAP_SERVER=$withval)
+	AC_HELP_STRING([--with-bstrap-server=ip_address],
+		[IP Address of Bootstrapping server <no default>]),
+	FTB_BSTRAP_SERVER=$withval,
+	AC_WARN([No bootstrap server provided; provide at runtime]))
 AC_MSG_CHECKING(for bootstrap server IP Address)
 AC_MSG_RESULT($FTB_BSTRAP_SERVER)
 if test "x$FTB_BSTRAP_SERVER" != "x"; then
-	AC_DEFINE_UNQUOTED(FTB_BSTRAP_SERVER, "${FTB_BSTRAP_SERVER}", [IP Address for the FTB bootstrap server])
-fi
-if test "x$FTB_BSTRAP_SERVER" = "x"; then
-	echo "************** WARNING: Bootstrap IP address not provided. Expecting it to be provided as environment variable FTB_BSTRAP_SERVER during run-time"
-	warnings_set+="************** WARNING: Bootstrap IP address not provided. Expecting it to be provided as environment variable FTB_BSTRAP_SERVER during run-time"
-	warnings_set+=$'\n'
+	AC_DEFINE_UNQUOTED(FTB_BSTRAP_SERVER, "${FTB_BSTRAP_SERVER}",
+		[IP Address for the FTB bootstrap server])
 fi
 output_string+="	FTB_BSTRAP_SERVER = ${FTB_BSTRAP_SERVER}"$'\n'
 
-dnl Get bootstrap server port number
-AC_ARG_WITH(bstrap-port, [  --with-bstrap-port=<port number>	Port number of Bootstrapping server <14455>],
-	                 FTB_BSTRAP_PORT=$withval, FTB_BSTRAP_PORT=14455)
+
+## Get bootstrap server port number
+AC_ARG_WITH(bstrap-port,
+	AC_HELP_STRING([--with-bstrap-port=port_number],
+		[Port number of Bootstrapping server (default: 14455)]),
+	FTB_BSTRAP_PORT=$withval,FTB_BSTRAP_PORT=14455)
 AC_MSG_CHECKING(for bootstrap server port number)
 AC_MSG_RESULT($FTB_BSTRAP_PORT)
-AC_DEFINE_UNQUOTED(FTB_BSTRAP_PORT, ${FTB_BSTRAP_PORT}, [Port number for the FTB bootstrap server])
+AC_DEFINE_UNQUOTED(FTB_BSTRAP_PORT, ${FTB_BSTRAP_PORT},
+		[Port number for the FTB bootstrap server])
 output_string+="	FTB_BSTRAP_PORT   = ${FTB_BSTRAP_PORT}"$'\n'
 
-dnl Get agent port number
-AC_ARG_WITH(agent-port, [  --with-agent-port=<port number>	Port number on which agent is running <10809>],
-			FTB_AGENT_PORT=$withval, FTB_AGENT_PORT=10809)
+
+## Get agent port number
+AC_ARG_WITH(agent-port,
+	AC_HELP_STRING([--with-agent-port=port_number],
+		[Port number on which agent is running (default: 10809)]),
+	FTB_AGENT_PORT=$withval, FTB_AGENT_PORT=10809)
 AC_MSG_CHECKING(for agent port number)
 AC_MSG_RESULT($FTB_AGENT_PORT)
 AC_DEFINE_UNQUOTED(FTB_AGENT_PORT, ${FTB_AGENT_PORT}, [FTB Agent port])
 output_string+="	FTB_AGENT_PORT    = ${FTB_AGENT_PORT}"$'\n'
 
-dnl Get network type
+
+## Get network type
 FTB_NETWORK_TYPE_SOCK=false
-AC_ARG_WITH(network-type, [  --with-network-type=<network_type>	Type of network <sock>],
-			FTB_NETWORK_TYPE=$withval, FTB_NETWORK_TYPE="sock")
+AC_ARG_WITH(network-type,
+	AC_HELP_STRING([--with-network-type=network_type],[Type of network (default: sock)]),
+	FTB_NETWORK_TYPE=$withval,FTB_NETWORK_TYPE="sock")
 AC_MSG_CHECKING(for network type)
 AC_MSG_RESULT($FTB_NETWORK_TYPE)
 case "$FTB_NETWORK_TYPE" in
@@ -148,8 +156,8 @@ case "$FTB_NETWORK_TYPE" in
 		FTB_NETWORK_TYPE_SOCK=true
 	;;
 	*)
-#		AC_ERROR(FTB_NETWORK_TYPE is not a valid option)
-		echo "************** ERROR: FTB_NETWORK_TYPE is not a valid option to --with-network-type. Valid option is 'sock' (default) as of now. Exiting. Please run with the correct options"; (exit 1); exit 1;;
+		AC_ERROR([Invalid FTB network type])
+	;;
 esac
 AC_DEFINE_UNQUOTED(FTB_NETWORK_TYPE, ${FTB_NETWORK_TYPE}, [FTB Network Type]) 
 AC_DEFINE([FTB_NETWORK_SOCK], [1], [Define FTB_NETWORK_SOCK])
@@ -157,7 +165,10 @@ AM_CONDITIONAL([FTB_NETWORK_TYPE_SOCK], [$FTB_NETWORK_TYPE_SOCK])
 output_string+="	FTB_NETWORK_TYPE  = ${FTB_NETWORK_TYPE}"$'\n'
 
 
-AC_ARG_ENABLE(debug, [  --enable-debug: To enable debug messages. Default had debug disabled], FTB_DEBUG=$enableval, FTB_DEBUG=no)
+## Debug
+AC_ARG_ENABLE(debug,
+	AC_HELP_STRING([--enable-debug],[Enable debug messages]),
+	FTB_DEBUG=$enableval, FTB_DEBUG=no)
 AC_MSG_CHECKING(for debug log directory)
 AC_MSG_RESULT($FTB_DEBUG)
 if test "x$FTB_DEBUG" != "xno"; then
@@ -167,21 +178,25 @@ fi
 output_string+="	DEBUG_ENABLED with log directory location = ${FTB_DEBUG}"$'\n'
 echo "Attn Rinku: Need to clear up confusion with the --enable-debug:logdir"
 
-dnl Expose option for platform type
-AC_ARG_WITH(platform, [  --with-platform=<platform type>        Possible values: bgp, cray, linux],
-                      PLATFORM=$withval, PLATFORM=linux)
+
+## Expose option for platform type
+AC_ARG_WITH(platform,
+	AC_HELP_STRING([--with-platform=platform type],[Possible values: bgp, cray, linux]),
+	PLATFORM=$withval, PLATFORM=linux)
 AC_MSG_CHECKING(for platform support)
 AC_MSG_RESULT($PLATFORM)
 case "${PLATFORM}" in
-	linux);;
-	cray);;
-	bgp);;
-	*) echo "************** $PLATFORM is not a valid option to --with-platform. Valid options are bgp, cray, linux(default). Configure exiting. Please run with the correct options."; (exit 1); exit 1;;
+	linux|cray|bgp)
+	;;
+	*)
+		AC_ERROR([Invalid platform type])
+	;;
 esac
 AM_CONDITIONAL([PLATFORM_IS_LINUX], [test "x$PLATFORM" = "xlinux"])
 AM_CONDITIONAL([PLATFORM_IS_BGP], [test "x$PLATFORM" = "xbgp"])
 AM_CONDITIONAL([PLATFORM_IS_CRAY], [test "x$PLATFORM" = "xcray"])
 output_string+="	PLATFORM          = ${PLATFORM}"$'\n'
+
 
 dnl Expose option for BG environment file
 dnl Check if all the correct variables are present in the Blue Gene environment file
