@@ -1,21 +1,39 @@
-#                                               -*- Autoconf -*-
-# Process this file with autoconf to produce a configure script.
-
 AC_PREREQ([2.67])
-AC_INIT([FTB], [0.7], [cifts_discuss@googlegroups.com], [ftb], [http://www.mcs.anl.gov/research/cifts])
-AM_INIT_AUTOMAKE
+
+AC_INIT([FTB], [0.7], [cifts_discuss@googlegroups.com], [ftb],
+	       [http://www.mcs.anl.gov/research/cifts])
+AC_CONFIG_AUX_DIR(m4)
+AC_CONFIG_MACRO_DIR(m4)
+AM_INIT_AUTOMAKE([-Wall -Werror foreign 1.10])
+
+LT_PREREQ([2.2.6])
+
+# Bug in libtool adds -O2 and -g by default
+save_cflags=$CFLAGS
 LT_INIT
-AC_CONFIG_SRCDIR([src/util/ftb_util.c])
+CFLAGS=$save_cflags
+
+if test -s "$srcdir/VERSION" ; then
+    . $srcdir/VERSION
+else
+    AC_MSG_ERROR([Version information not found. Configuration aborted.])
+fi
+AC_SUBST(libftb_so_version)
+AC_SUBST(libftbm_so_version)
+
 AC_CONFIG_HEADERS([include/ftb_config.h])
 
-# Checks for programs.
-AC_PROG_CC
-AM_PROG_CC_C_O
+## Non-verbose make
+m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
 
-# Checks for libraries.
+# Checks for programs
+save_cflags=$CFLAGS
+AC_PROG_CC
+CFLAGS=$save_cflags
 
 # Checks for header files.
-AC_CHECK_HEADERS([arpa/inet.h fcntl.h netdb.h netinet/in.h stdint.h stdlib.h string.h sys/ioctl.h sys/socket.h sys/time.h unistd.h])
+AC_CHECK_HEADERS([arpa/inet.h fcntl.h netdb.h netinet/in.h stdint.h stdlib.h string.h \
+	sys/ioctl.h sys/socket.h sys/time.h unistd.h pthread.h])
 
 # Checks for typedefs, structures, and compiler characteristics.
 AC_C_INLINE
@@ -28,32 +46,19 @@ AC_TYPE_UINT8_T
 # Checks for library functions.
 AC_FUNC_FORK
 AC_FUNC_MALLOC
-AC_CHECK_FUNCS([gethostname gettimeofday inet_ntoa localtime_r memset select socket strcasecmp strncasecmp strstr])
+AC_CHECK_FUNCS([gethostname gettimeofday inet_ntoa localtime_r memset select socket strcasecmp \
+	strncasecmp strstr])
 
-#Checks for pthread library
-have_pthreads=no
-AC_SEARCH_LIBS([pthread_create], [pthread], [have_pthreads=yes])
+# Checks for pthread library
+AC_SEARCH_LIBS([pthread_create], [pthread], [have_pthreads=yes],
+	[AC_ERROR([Unable to find pthreads. Aborting.])])
 
 warnings_set="List of warning displayed during configure time :"$'\n'
 output_string="Variables_set :"$'\n'
-#check for pthreads header
-if test "x${have_pthreads}" = xyes; then
-	AC_CHECK_HEADERS([pthread.h],[], [have_pthreads=no])
-fi
 
-if test "x${have_pthreads}" = xno; then
-	echo "************** ERROR: Unable to find pthreads on this system. Configure exiting"
-	(exit 1); exit 1;
-fi
 
-# Try to find the version
-# The version code is taken from the MPICH2 software package from Argonne National Laboratory.
-if test -s "$srcdir/version/version" ; then
-    FTB_VERSION="`cat $srcdir/version/version`"
-else
-    AC_MSG_ERROR([Version information not found. Configuration aborted.])
-fi
-
+# The version code is taken from the MPICH2 software package from
+# Argonne National Laboratory.
 # Produce a numeric version assuming the following format:
 # Version: [MAJ].[MIN].[REV][EXT][EXT_NUMBER]
 # Example: 0.6.1rc1 has
@@ -135,16 +140,22 @@ AC_DEFINE_UNQUOTED(FTB_AGENT_PORT, ${FTB_AGENT_PORT}, [FTB Agent port])
 output_string+="	FTB_AGENT_PORT    = ${FTB_AGENT_PORT}"$'\n'
 
 dnl Get network type
+FTB_NETWORK_TYPE_SOCK=false
 AC_ARG_WITH(network-type, [  --with-network-type=<network_type>	Type of network <sock>],
 			FTB_NETWORK_TYPE=$withval, FTB_NETWORK_TYPE="sock")
 AC_MSG_CHECKING(for network type)
 AC_MSG_RESULT($FTB_NETWORK_TYPE)
 case "$FTB_NETWORK_TYPE" in
-	sock);;
-	*) echo "************** ERROR: FTB_NETWORK_TYPE is not a valid option to --with-network-type. Valid option is 'sock' (default) as of now. Exiting. Please run with the correct options"; (exit 1); exit 1;;
+	sock)
+		FTB_NETWORK_TYPE_SOCK=true
+	;;
+	*)
+#		AC_ERROR(FTB_NETWORK_TYPE is not a valid option)
+		echo "************** ERROR: FTB_NETWORK_TYPE is not a valid option to --with-network-type. Valid option is 'sock' (default) as of now. Exiting. Please run with the correct options"; (exit 1); exit 1;;
 esac
 AC_DEFINE_UNQUOTED(FTB_NETWORK_TYPE, ${FTB_NETWORK_TYPE}, [FTB Network Type]) 
 AC_DEFINE([FTB_NETWORK_SOCK], [1], [Define FTB_NETWORK_SOCK])
+AM_CONDITIONAL([FTB_NETWORK_TYPE_SOCK], [$FTB_NETWORK_TYPE_SOCK])
 output_string+="	FTB_NETWORK_TYPE  = ${FTB_NETWORK_TYPE}"$'\n'
 
 
@@ -248,30 +259,7 @@ else
 	fi
 fi
 
-AC_CONFIG_FILES([Makefile
-		include/Makefile
-		src/Makefile
-		src/util/Makefile
-		src/manager_lib/Makefile
-		src/manager_lib/network/Makefile
-		src/manager_lib/network/network_sock/Makefile
-		src/manager_lib/network/include/Makefile
-		src/agent/Makefile
-		src/client_lib/Makefile
-		src/client_lib/platforms/Makefile
-		src/client_lib/platforms/linux/Makefile
-		components/Makefile
-		components/examples/Makefile
-		docs/Makefile
-		docs/chapters/Makefile
-		docs/chapters/bg_sample_files/Makefile
-		version/Makefile
-		src/client_lib/platforms/bg/Makefile
-		src/client_lib/platforms/bg/zoid_client/implementation/Makefile
-		src/client_lib/platforms/bg/zoid_client/Makefile
-		src/client_lib/platforms/bg/zoid_client/server/Makefile
-		src/client_lib/platforms/bg/zoid_client/client/Makefile
-])
+AC_CONFIG_FILES([Makefile])
 AC_OUTPUT
 
 echo \
