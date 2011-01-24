@@ -25,18 +25,18 @@
 
 /*Compute node libftb wrapper based on ZOID for BG/L*/
 #include <string.h>
-#include "libftb.h"
+#include "ftb.h"
 
-#if defined(bgl)
+#if defined FTBI_PLATFORM_IS_BGL
 #include "ftb_zoid_client_bgl.h"
-#elif defined(bgp)
+#elif defined FTBI_PLATFORM_IS_BGP
 #include "ftb_zoid_client_bgp.h"
 #endif
 
 
 int FTB_Connect(const FTB_client_t * client_info, FTB_client_handle_t * client_handle)
 {
-#if defined(bgp)
+#if defined FTBI_PLATFORM_IS_BGP
     __zoid_init();
 #endif
     return ZOID_FTB_Connect(client_info, client_handle);

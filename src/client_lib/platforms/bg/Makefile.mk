@@ -1,3 +1,4 @@
+include src/client_lib/platforms/linux/Makefile.mk
 SUBDIRS = zoid_client
 
 if PLATFORM_IS_BGP
@@ -8,7 +9,7 @@ endif
 
 noinst_LTLIBRARIES = libftb_zoid_wrapper.lo
 libftb_zoid_wrapper_lo_SOURCES = ftb_zoid_wrapper.c
-libftb_zoid_wrapper_lo_CFLAGS = -I${top_srcdir}/include -I${ZOID_CLIENT_DIR} -D${PLATFORM} -I${ZOID_HOME}
+libftb_zoid_wrapper_lo_CFLAGS = -I${top_srcdir}/include -I${ZOID_CLIENT_DIR}  -I${ZOID_HOME}
 
 noinst_LTLIBRARIES = libblrts.la
 

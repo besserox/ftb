@@ -37,8 +37,6 @@ extern "C" {
 #endif
 /* *INDENT-ON* */
 
-/* #define FTB_TAG */
-
 #define FTB_SUCCESS                             0
 #define FTB_ERR_GENERAL                         (-1)
 #define FTB_ERR_EVENTSPACE_FORMAT               (-2)

@@ -23,8 +23,8 @@
 /* FTB:ftb-bsd */
 /***********************************************************************************/
 
-#ifndef FTB_MANAGER_H
-#define FTB_MANAGER_H
+#ifndef HAVE_FTBM_H
+#define HAVE_FTBM_H
 
 #include "ftb_def.h"
 
@@ -106,4 +106,4 @@ void *FTBM_Fill_message_queue(void *);
 #endif
 /* *INDENT-ON* */
 
-#endif /*FTB_MANAGER_H */
+#endif /* HAVE_FTBM_H */

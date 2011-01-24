@@ -25,7 +25,7 @@
 
 #include <stdio.h>
 #include <string.h>
-#include "libftb.h"
+#include "ftb.h"
 #include "ftb_client_lib.h"
 
 /*Linux wrapper for client_lib*/

@@ -186,7 +186,10 @@ AC_ARG_WITH(platform,
 AC_MSG_CHECKING(for platform support)
 AC_MSG_RESULT($PLATFORM)
 case "${PLATFORM}" in
-	linux|cray|bgp)
+	linux|cray)
+	;;
+	bgp) 
+		AC_DEFINE([FTBI_PLATFORM_IS_BGP],1, [Set Platform to BGP])
 	;;
 	*)
 		AC_ERROR([Invalid platform type])

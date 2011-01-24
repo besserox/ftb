@@ -45,7 +45,7 @@
 #include <time.h>
 #include <string.h>
 
-#include "libftb.h"
+#include "ftb.h"
 
 #define LOG_FILE "/tmp/ftb_log"
 

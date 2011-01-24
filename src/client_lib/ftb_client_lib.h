@@ -26,7 +26,7 @@
 #ifndef FTB_CLIENT_LIB_H
 #define FTB_CLIENT_LIB_H
 
-#include "ftb_manager_lib.h"
+#include "ftbm.h"
 #include "ftb_def.h"
 
 int FTBC_Connect(const FTB_client_t * cinfo, uint8_t extension, FTB_client_handle_t * client_handle);

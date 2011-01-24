@@ -46,7 +46,7 @@
 #include <errno.h>
 
 #include "ftb_util.h"
-#include "ftb_manager_lib.h"
+#include "ftbm.h"
 #include "ftb_network.h"
 
 FILE *FTBU_log_file_fp;

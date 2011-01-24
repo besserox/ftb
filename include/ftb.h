@@ -23,12 +23,11 @@
 /* FTB:ftb-bsd */
 /***********************************************************************************/
 
-#ifndef LIBFTB_H
-#define LIBFTB_H
+#ifndef HAVE_FTB_H
+#define HAVE_FTB_H
 
 #include "ftb_def.h"
 #include "ftb_client_lib_defs.h"
-#include "ftb_manager_lib.h"
 
 /* *INDENT-OFF* */
 #ifdef __cplusplus
@@ -97,4 +96,4 @@ int FTB_Read_tag(const FTB_receive_event_t * event, FTB_tag_t tag, char *tag_dat
 #endif
 /* *INDENT-ON* */
 
-#endif
+#endif /* HAVE_FTB_H */

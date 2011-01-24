@@ -38,7 +38,7 @@
 #include "ftb_client_lib_defs.h"
 #include "ftb_auxil.h"
 #include "ftb_util.h"
-#include "ftb_manager_lib.h"
+#include "ftbm.h"
 
 #define FTBCI_MAX_SUBSCRIPTION_FIELDS 10
 #define FTBCI_MAX_EVENTS_PER_CLIENT 100
