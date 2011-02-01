@@ -35,14 +35,14 @@ extern "C" {
 #endif
 /* *INDENT-ON* */
 
-#define FTBU_ERR_ABORT(args...)  do {\
+#define FTBU_ERR_ABORT_PRINT(args...)  do {\
 	char hostname[32]; \
 	FTBU_get_output_of_cmd("hostname", hostname, 32); \
     fprintf(FTBU_log_file_fp, "[FTB_ERROR][%s: line %d][hostname:%s]", __FILE__, __LINE__,hostname); \
     fprintf(FTBU_log_file_fp, args); \
     fprintf(FTBU_log_file_fp, "\n"); \
     fflush(FTBU_log_file_fp);\
-    exit(-1);\
+    return (FTB_ERR_CLASS_FATAL + FTB_ERR_FTBABORT);\
 } while (0)
 
 #define FTBU_WARNING(args...)  do {\
@@ -68,7 +68,6 @@ extern "C" {
 #endif
 
 /* Simple list-based implementation of map, set is just map with data as key */
-#define FTBU_SUCCESS       0
 #define FTBU_EXIST         2
 #define FTBU_NOT_EXIST     3
 
@@ -144,7 +143,7 @@ void *FTBU_map_get_data(FTBU_map_node_t * node);
 FTBU_map_node_t *FTBU_map_next_node(FTBU_map_node_t * node);
 
 /*
- * Insert value in the map. Returns FTBU_SUCCESS if new element inserted
+ * Insert value in the map. Returns FTB_SUCCESS if new element inserted
  * or FTBU_EXIST if the same element is already in the map
  */
 int FTBU_map_insert(FTBU_map_node_t * head, FTBU_map_key_t key, void *data);
@@ -156,7 +155,7 @@ int FTBU_map_insert(FTBU_map_node_t * head, FTBU_map_key_t key, void *data);
 FTBU_map_node_t *FTBU_map_find_key(const FTBU_map_node_t * head, FTBU_map_key_t key);
 
 /*
- * Remove one element from the map. Returns FTBU_SUCCESS if a same
+ * Remove one element from the map. Returns FTB_SUCCESS if a same
  * element is removed or FTBU_NOT_EXIST if no such element is in the map
  */
 int FTBU_map_remove_key(FTBU_map_node_t * head, FTBU_map_key_t key);
@@ -194,7 +193,7 @@ int FTBU_is_equal_event_mask(const FTB_event_t * lhs, const FTB_event_t * rhs);
 
 int FTBU_is_equal_clienthandle(const FTB_client_handle_t * lhs, const FTB_client_handle_t * rhs);
 
-void FTBU_get_output_of_cmd(const char *cmd, char *output, size_t len);
+int FTBU_get_output_of_cmd(const char *cmd, char *output, size_t len);
 
 /* *INDENT-OFF* */
 #ifdef __cplusplus

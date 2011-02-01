@@ -184,28 +184,37 @@ int FTBU_is_equal_clienthandle(const FTB_client_handle_t * lhs, const FTB_client
 /*
  * FTBU_get_output_of_cmd function returns the output of a command.
  * FIXME: This function needs to be reimplemented cleanly
+ * Many calling functions will ignore the return value. Implement this with void return value
  */
 #define FTB_BOOTSTRAP_UTIL_MAX_STR_LEN  128
 
-void FTBU_get_output_of_cmd(const char *cmd, char *output, size_t len)
+int FTBU_get_output_of_cmd(const char *cmd, char *output, size_t len)
 {
     if (strcasecmp(cmd, "hostname") == 0) {
-        char *name = (char *) malloc(len);
+        char *name;
+	if ((name= (char *) malloc(len)) == NULL) {
+            FTBU_INFO("Malloc error in FTB library");
+            return (FTB_ERR_CLASS_FATAL + FTB_ERR_MALLOC);
+	}
         if (gethostname(name, len) == 0) {
             strncpy(output, name, len);
         }
         else {
-            fprintf(stderr, "gethostname command failed\n");
+            FTBU_INFO("gethostname command failed");
         }
     }
     else if (strcasecmp(cmd, "date +%m-%d-%H-%M-%S") == 0) {
-        char *myDate = (char *) malloc(len);
+        char *myDate;
+	if ((myDate = (char *) malloc(len)) == NULL) {
+            FTBU_INFO("Malloc error in FTB library");
+            return (FTB_ERR_CLASS_FATAL + FTB_ERR_MALLOC);
+	}
         time_t myTime = time(NULL);
         if (strftime(myDate, len, "%m-%d-%H-%M-%S", gmtime(&myTime)) != 0) {
             strncpy(output, myDate, len);
         }
         else {
-            fprintf(stderr, "strftime command failed\n");
+            FTBU_WARNING("strftime command failed");
         }
     }
     else if (strcasecmp(cmd, "grep ^BG_IP /proc/personality.sh | cut -f2 -d=") == 0) {
@@ -217,8 +226,9 @@ void FTBU_get_output_of_cmd(const char *cmd, char *output, size_t len)
         fp = fopen("/proc/personality.sh", "r");
 
         if (!fp) {
-            fprintf(stderr, "Could not find /proc/personality.sh\n");
-            return;
+            FTBU_WARNING("Could not find /proc/personality.sh");
+/* FIXME: We need to return a specific error here */
+            return FTB_ERR_GENERAL;
         }
 
         while (!feof(fp)) {
@@ -233,8 +243,7 @@ void FTBU_get_output_of_cmd(const char *cmd, char *output, size_t len)
         }
 
         if (!found)
-            fprintf(stderr,
-                    "Could not find BG_IP parameter in file /proc/personality.sh on the BG machine");
+            FTBU_WARNING("Could not find BG_IP parameter in file /proc/personality.sh on the BG machine");
 
         fclose(fp);
     }
@@ -247,7 +256,7 @@ void FTBU_get_output_of_cmd(const char *cmd, char *output, size_t len)
         sprintf(filename, "/tmp/temp_file.%d", getpid());
         sprintf(temp, "%s > %s", cmd, filename);
         if (system(temp)) {
-            fprintf(stderr, "execute command failed\n");
+            FTBU_INFO("Execute command failed\n");
         }
         fp = fopen(filename, "r");
         ret = fscanf(fp, "%s", temp);
@@ -255,13 +264,14 @@ void FTBU_get_output_of_cmd(const char *cmd, char *output, size_t len)
         unlink(filename);
         strncpy(output, temp, len);
     }
+    return FTB_SUCCESS;
 }
 
 
 /*
  * Checks if the keys for the internal maps (organized as doubly linked lists) match
  */
-static inline int util_key_match(const FTBU_map_node_t * head, FTBU_map_key_t key1, FTBU_map_key_t key2)
+static int util_key_match(const FTBU_map_node_t * head, FTBU_map_key_t key1, FTBU_map_key_t key2)
 {
     int (*is_equal_func_ptr) (const void *, const void *) =
         (int (*)(const void *, const void *)) head->data;
@@ -279,8 +289,11 @@ static inline int util_key_match(const FTBU_map_node_t * head, FTBU_map_key_t ke
  */
 FTBU_map_node_t *FTBU_map_init(int (*is_equal_func_ptr) (const void *, const void *))
 {
-    FTBU_map_node_t *node = (FTBU_map_node_t *) malloc(sizeof(FTBU_map_node_t));
-
+    FTBU_map_node_t *node;
+    if ((node = (FTBU_map_node_t *) malloc(sizeof(FTBU_map_node_t))) == NULL) {
+            FTBU_INFO("Malloc error in FTB library");
+//            return (FTB_ERR_CLASS_FATAL + FTB_ERR_MALLOC);
+     }
     /* Point data of first node of the map to the function passed as argument */
     node->data = (void *) is_equal_func_ptr;
     node->next = node->prev = node;
@@ -300,14 +313,17 @@ int FTBU_map_insert(FTBU_map_node_t * head, FTBU_map_key_t key, void *data)
         if (util_key_match(head, pos->key, key))
             return FTBU_EXIST;
     }
-    new_node = (FTBU_map_node_t *) malloc(sizeof(FTBU_map_node_t));
+    if ((new_node = (FTBU_map_node_t *) malloc(sizeof(FTBU_map_node_t))) == NULL) {
+        FTBU_INFO("Malloc error in FTB library");
+        return (FTB_ERR_CLASS_FATAL + FTB_ERR_MALLOC);
+    }
     new_node->key = key;
     new_node->data = data;
     head->prev->next = new_node;
     new_node->next = head;
     new_node->prev = head->prev;
     head->prev = new_node;
-    return FTBU_SUCCESS;
+    return FTB_SUCCESS;
 }
 
 
@@ -371,7 +387,7 @@ int FTBU_map_remove_key(FTBU_map_node_t * head, FTBU_map_key_t key)
             pos->next->prev = pos->prev;
             pos->prev->next = pos->next;
             free(pos);
-            return FTBU_SUCCESS;
+            return FTB_SUCCESS;
         }
     }
     return FTBU_NOT_EXIST;
@@ -385,7 +401,7 @@ int FTBU_map_remove_node(FTBU_map_node_t * node)
     node->next->prev = node->prev;
     node->prev->next = node->next;
     free(node);
-    return FTBU_SUCCESS;
+    return FTB_SUCCESS;
 }
 
 
@@ -404,7 +420,7 @@ int FTBU_map_finalize(FTBU_map_node_t * head)
         free(pos);
     }
     free(head);
-    return FTBU_SUCCESS;
+    return FTB_SUCCESS;
 }
 
 

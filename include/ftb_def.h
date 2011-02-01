@@ -36,34 +36,44 @@ extern "C" {
 #endif
 /* *INDENT-ON* */
 
+/* #define FTB_TAG */
+
 #define FTB_SUCCESS                             0
-#define FTB_ERR_GENERAL                         (-1)
-#define FTB_ERR_EVENTSPACE_FORMAT               (-2)
-#define FTB_ERR_SUBSCRIPTION_STYLE              (-3)
-#define FTB_ERR_INVALID_VALUE                   (-4)
-#define FTB_ERR_DUP_CALL                        (-5)
-#define FTB_ERR_NULL_POINTER                    (-6)
-#define FTB_ERR_NOT_SUPPORTED                   (-7)
-#define FTB_ERR_INVALID_FIELD                   (-8)
-#define FTB_ERR_INVALID_HANDLE                  (-9)
-#define FTB_ERR_DUP_EVENT                       (-10)
-#define FTB_ERR_INVALID_SCHEMA_FILE             (-11)
-#define FTB_ERR_INVALID_EVENT_NAME              (-12)
-#define FTB_ERR_INVALID_EVENT_TYPE              (-13)
-#define FTB_ERR_SUBSCRIPTION_STR                (-14)
-#define FTB_ERR_FILTER_ATTR                     (-15)
-#define FTB_ERR_FILTER_VALUE                    (-16)
-#define FTB_GOT_NO_EVENT                        (-17)
-#define FTB_FAILURE                             (-18)
-#define FTB_ERR_INVALID_PARAMETER               (-19)
-#define FTB_ERR_NETWORK_GENERAL                 (-20)
-#define FTB_ERR_NETWORK_NO_ROUTE                (-21)
+#define FTB_ERR_GENERAL                         (1)
+#define FTB_ERR_EVENTSPACE_FORMAT               (2)
+#define FTB_ERR_SUBSCRIPTION_STYLE              (3)
+#define FTB_ERR_INVALID_VALUE                   (4)
+#define FTB_ERR_DUP_CALL                        (5)
+#define FTB_ERR_NULL_POINTER                    (6)
+#define FTB_ERR_NOT_SUPPORTED                   (7)
+#define FTB_ERR_INVALID_FIELD                   (8)
+#define FTB_ERR_INVALID_HANDLE                  (9)
+#define FTB_ERR_DUP_EVENT                       (10)
+#define FTB_ERR_INVALID_SCHEMA_FILE             (11)
+#define FTB_ERR_INVALID_EVENT_NAME              (12)
+#define FTB_ERR_INVALID_EVENT_TYPE              (13)
+#define FTB_ERR_SUBSCRIPTION_STR                (14)
+#define FTB_ERR_FILTER_ATTR                     (15)
+#define FTB_ERR_FILTER_VALUE                    (16)
+#define FTB_GOT_NO_EVENT                        (17)
+#define FTB_FAILURE                             (18)
+#define FTB_ERR_INVALID_PARAMETER               (19)
+#define FTB_ERR_NETWORK_GENERAL                 (20)
+#define FTB_ERR_NETWORK_NO_ROUTE                (21)
 
 #ifdef FTB_TAG
-#define FTB_ERR_TAG_NO_SPACE                    (-22)
-#define FTB_ERR_TAG_CONFLICT                    (-23)
-#define FTB_ERR_TAG_NOT_FOUND                   (-24)
+#define FTB_ERR_TAG_NO_SPACE                    (22)
+#define FTB_ERR_TAG_CONFLICT                    (23)
+#define FTB_ERR_TAG_NOT_FOUND                   (24)
 #endif
+
+#define FTB_ERR_MALLOC                         (25)
+#define FTB_ERR_FTBABORT                       (26)
+
+/* Error classes */
+#define FTB_ERR_CLASS_GENERAL                  (0)
+#define FTB_ERR_CLASS_FATAL                    (32768)
+
 
 /* If client will subscribe to any events */
 #define FTB_SUBSCRIPTION_NONE               0x0

@@ -172,7 +172,7 @@ int main(int argc, char *argv[])
 
     ret = FTBM_Init(0);
     if (ret != FTB_SUCCESS) {
-        FTBU_ERR_ABORT("FTBM_Init failed %d", ret);
+        FTBU_ERR_ABORT_PRINT("FTBM_Init failed %d", ret);
     }
 
     signal(SIGINT, handler);

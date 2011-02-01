@@ -72,10 +72,10 @@ typedef struct FTBNI_config_sock {
 #define FTBNI_BOOTSTRAP_BACKOFF_INIT_TIMEOUT          100
 
 /* every time the timeout times four */
-#define FTBNI_BOOTSTRAP_BACKOFF_RATIO                  4
+#define FTBNI_BOOTSTRAP_BACKOFF_RATIO                  2
 
 /* totally try ten times maximum */
-#define FTBNI_BOOTSTRAP_BACKOFF_RETRY_COUNT            5
+#define FTBNI_BOOTSTRAP_BACKOFF_RETRY_COUNT            2
 
 #define FTBNI_BOOTSTRAP_MSG_TYPE_ADDR_REQ    1
 #define FTBNI_BOOTSTRAP_MSG_TYPE_ADDR_REP    2
@@ -107,7 +107,7 @@ int FTBNI_Bootstrap_finalize(void);
 
 int FTBNI_Bootstrap_abort(void);
 
-static inline void FTBNI_get_data_from_config_file(char *str, char *file, char *output_val, int *retval)
+static void FTBNI_get_data_from_config_file(char *str, char *file, char *output_val, int *retval)
 {
     FILE *fp;
     char *pos, *track;
@@ -134,7 +134,7 @@ static inline void FTBNI_get_data_from_config_file(char *str, char *file, char *
     return;
 }
 
-static inline void FTBNI_util_setup_config_sock(FTBNI_config_sock_t * config)
+static void FTBNI_util_setup_config_sock(FTBNI_config_sock_t * config)
 {
     char *env;
 
@@ -197,7 +197,7 @@ static inline void FTBNI_util_setup_config_sock(FTBNI_config_sock_t * config)
                 ("Error in accessing bootstrap server name information from config file %s. Assigning configure time server information: %s",
                  env, config->server_name);
 #else
-            FTBU_ERR_ABORT("Cannot find boot-strap server ip address");
+            FTBU_ERR_ABORT_PRINT("Cannot find boot-strap server ip address");
 #endif
         }
         else {
@@ -208,7 +208,7 @@ static inline void FTBNI_util_setup_config_sock(FTBNI_config_sock_t * config)
 #ifdef FTB_BSTRAP_SERVER
         strncpy(config->server_name, FTB_BSTRAP_SERVER, FTB_MAX_HOST_ADDR);
 #else
-        FTBU_ERR_ABORT("Cannot find boot-strap server ip address");
+        FTBU_ERR_ABORT_PRINT("Cannot find boot-strap server ip address");
 #endif
     }
 }
@@ -216,22 +216,25 @@ static inline void FTBNI_util_setup_config_sock(FTBNI_config_sock_t * config)
 /*
  *  Function FTBNI_gethostbyname written by Hoony Park
  */
-static inline struct hostent *FTBNI_gethostbyname(const char *name)
+static struct hostent *FTBNI_gethostbyname(const char *name)
 {
     static struct hostent *hp = NULL;
 
     if (hp == NULL) {
         if ((hp = (struct hostent *) malloc(sizeof(struct hostent))) == NULL) {
-            exit(1);
+	    FTBU_INFO("Malloc error in FTB library");
+            return (FTB_ERR_CLASS_FATAL + FTB_ERR_MALLOC);
         }
         hp->h_length = 4;
 
         if ((hp->h_addr_list = (char **) malloc(sizeof(char *) * 2)) == NULL) {
-            exit(1);
+            FTBU_INFO("Malloc error in FTB library");
+            return (FTB_ERR_CLASS_FATAL + FTB_ERR_MALLOC);
         }
 
         if ((hp->h_addr_list[0] = (char *) malloc(sizeof(char) * 4)) == NULL) {
-            exit(1);
+            FTBU_INFO("Malloc error in FTB library");
+            return (FTB_ERR_CLASS_FATAL + FTB_ERR_MALLOC);
         }
 
         hp->h_addr_list[1] = 0;

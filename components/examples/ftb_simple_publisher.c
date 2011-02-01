@@ -61,7 +61,9 @@ int main(int argc, char *argv[])
 
     ret = FTB_Connect(&cinfo, &handle);
     if (ret != FTB_SUCCESS) {
-        printf("FTB_Connect did not return a success\n");
+	int ret1 = 0, error_class = 0, error_value = 0;
+	ret1 = FTB_Check_error_code(ret,&error_class,&error_value);
+	printf("FTB_Connect did not return a success. Return code = %d, Error class %d and Error value: %d\n", ret, error_class, error_value);
         exit(-1);
     }
 

@@ -219,7 +219,7 @@ static void FTBMI_util_clean_component(FTBMI_comp_info_t * comp)
     FTBU_map_finalize(comp->catch_event_set);
 }
 
-static inline FTBMI_comp_info_t *FTBMI_lookup_component(const FTB_id_t * id)
+static FTBMI_comp_info_t *FTBMI_lookup_component(const FTB_id_t * id)
 {
     FTBMI_comp_info_t *comp = NULL;
     FTBU_map_node_t *iter;
@@ -234,7 +234,7 @@ static inline FTBMI_comp_info_t *FTBMI_lookup_component(const FTB_id_t * id)
     return comp;
 }
 
-static inline FTBMI_comp_info_t *FTBMI_lookup_component_by_location(const FTB_location_id_t * location_id)
+static FTBMI_comp_info_t *FTBMI_lookup_component_by_location(const FTB_location_id_t * location_id)
 {
     FTBMI_comp_info_t *comp = NULL;
     FTBU_map_node_t *iter;
@@ -255,7 +255,7 @@ static inline FTBMI_comp_info_t *FTBMI_lookup_component_by_location(const FTB_lo
 }
 
 
-static void FTBMI_util_reconnect()
+static int FTBMI_util_reconnect()
 {
     FTBM_msg_t msg;
     int ret;
@@ -263,13 +263,13 @@ static void FTBMI_util_reconnect()
 
     memcpy(&msg.src, &FTBMI_info.self, sizeof(FTB_id_t));
     msg.msg_type = FTBM_MSG_TYPE_CLIENT_REG;
+    ret = FTBN_Connect(&msg, &FTBMI_info.parent);
 
-    FTBN_Connect(&msg, &FTBMI_info.parent);
-    if (FTBMI_info.leaf && FTBMI_info.parent.pid == 0) {
+    if ((FTBMI_info.leaf && FTBMI_info.parent.pid == 0) || (ret != FTB_SUCCESS)) {
         FTBU_WARNING("Can not connect to any ftb agent");
         FTBMI_initialized = 0;
         FTBU_INFO("Out FTBMI_util_reconnect - could not connect to ftb agent");
-        return;
+        return ret;
     }
 
     if (!FTBMI_info.leaf && FTBMI_info.parent.pid != 0) {
@@ -277,8 +277,9 @@ static void FTBMI_util_reconnect()
         FTBU_map_node_t *iter;
 
         FTBU_INFO("Adding parent to peers while reconecting");
-        comp = (FTBMI_comp_info_t *) malloc(sizeof(FTBMI_comp_info_t));
-
+        if ((comp = (FTBMI_comp_info_t *) malloc(sizeof(FTBMI_comp_info_t))) == NULL) {
+            FTBU_INFO("Malloc error in FTB library");
+        }
 	memset(comp, 0, sizeof(FTBMI_comp_info_t));
 
         memcpy(&comp->id.location_id, &FTBMI_info.parent, sizeof(FTB_location_id_t));
@@ -293,7 +294,7 @@ static void FTBMI_util_reconnect()
         if (FTBU_map_insert(FTBMI_info.peers, FTBU_MAP_PTR_KEY(&comp->id), (void *) comp) == FTBU_EXIST) {
             free(comp);
             FTBU_INFO("Out FTBMI_util_reconnect - new client already present in peer list");
-            return;
+            return FTB_SUCCESS; /*Should this be a success*/
         }
         FTBU_INFO("Register all catches");
         memcpy((void *) &msg.src, (void *) &FTBMI_info.self, sizeof(FTB_id_t));
@@ -310,7 +311,7 @@ static void FTBMI_util_reconnect()
             }
         }
     }
-    return;
+    return FTB_SUCCESS;
     FTBU_INFO("Out FTBMI_util_reconnect - successfully");
 }
 
@@ -412,7 +413,10 @@ int FTBM_Get_catcher_comp_list(const FTB_event_t * event, FTB_id_t ** list, int 
     }
     unlock_manager();
 
-    *list = (FTB_id_t *) malloc(sizeof(FTB_id_t) * temp_len);
+    if ((*list = (FTB_id_t *) malloc(sizeof(FTB_id_t) * temp_len)) == NULL) {
+        FTBU_INFO("Malloc error in FTB library");
+        return (FTB_ERR_CLASS_FATAL + FTB_ERR_MALLOC);
+    }
     *len = temp_len;
 
     /*
@@ -470,6 +474,7 @@ int FTBM_Init(int leaf)
 {
     FTBN_config_info_t config;
     FTBM_msg_t msg;
+    int ret =0 ;
 
     FTBU_INFO("FTBM_Init In");
 
@@ -500,7 +505,11 @@ int FTBM_Init(int leaf)
     memcpy(&msg.src, &FTBMI_info.self, sizeof(FTB_id_t));
     msg.msg_type = FTBM_MSG_TYPE_CLIENT_REG;
 
-    FTBN_Connect(&msg, &FTBMI_info.parent);
+    if ((ret = FTBN_Connect(&msg, &FTBMI_info.parent)) != FTB_SUCCESS) {
+	FTBU_INFO("FTBN_Connect failed\n");
+	return ret;
+    }
+    
     if (leaf && FTBMI_info.parent.pid == 0) {
         FTBU_WARNING("Can not connect to any ftb agent");
         FTBU_INFO("FTBM_Init Out - could not connect to any ftb agent");
@@ -510,8 +519,10 @@ int FTBM_Init(int leaf)
     if (!leaf && FTBMI_info.parent.pid != 0) {
         FTBMI_comp_info_t *comp;
         FTBU_INFO("Adding parent to peers");
-        comp = (FTBMI_comp_info_t *) malloc(sizeof(FTBMI_comp_info_t));
-	
+        if ((comp = (FTBMI_comp_info_t *) malloc(sizeof(FTBMI_comp_info_t))) == NULL) {
+            FTBU_INFO("Malloc error in FTB library");
+            return (FTB_ERR_CLASS_FATAL + FTB_ERR_MALLOC);
+        }
 	memset(comp, 0, sizeof(FTBMI_comp_info_t));
         memcpy(&comp->id.location_id, &FTBMI_info.parent, sizeof(FTB_location_id_t));
         strcpy(comp->id.client_id.comp_cat, "FTB_COMP_CAT_BACKPLANE");
@@ -636,7 +647,10 @@ int FTBM_Client_register(const FTB_id_t * id)
         return FTB_ERR_NOT_SUPPORTED;
     }
 
-    comp = (FTBMI_comp_info_t *) malloc(sizeof(FTBMI_comp_info_t));
+    if ((comp = (FTBMI_comp_info_t *) malloc(sizeof(FTBMI_comp_info_t))) == NULL) {
+        FTBU_INFO("Malloc error in FTB library");
+        return (FTB_ERR_CLASS_FATAL + FTB_ERR_MALLOC);
+    }
     memcpy(&comp->id, id, sizeof(FTB_id_t));
     pthread_mutex_init(&comp->lock, NULL);
     comp->catch_event_set = (FTBMI_set_event_mask_t *) FTBU_map_init(FTBMI_util_is_equal_event_mask);
@@ -730,10 +744,17 @@ int FTBM_Client_deregister(const FTB_id_t * id)
     if (is_parent) {
         FTBU_WARNING("Parent exiting");
         if (FTBMI_info.err_handling & FTB_ERR_HANDLE_RECOVER) {
+	    int ret1 = 0;
             FTBU_WARNING("Reconnecting");
             lock_manager();
-            FTBMI_util_reconnect();
+            ret1 = FTBMI_util_reconnect();
             unlock_manager();
+	    if (ret1 != FTB_SUCCESS) {
+                FTBU_WARNING("Reconnection to agent failed");
+		FTBU_INFO("FTBM_Client_deregister Out")
+		return ret1;
+            }	
+	    
         }
     }
 
@@ -793,7 +814,10 @@ int FTBM_Register_subscription(const FTB_id_t * id, FTB_event_t * event)
         return FTB_ERR_INVALID_PARAMETER;
     }
 
-    temp_mask1 = (FTB_event_t *) malloc(sizeof(FTB_event_t));
+    if ((temp_mask1 = (FTB_event_t *) malloc(sizeof(FTB_event_t))) == NULL) {
+        FTBU_INFO("Malloc error in FTB library");
+        return (FTB_ERR_CLASS_FATAL + FTB_ERR_MALLOC);
+    }
     memcpy(temp_mask1, event, sizeof(FTB_event_t));
 
     lock_comp(comp);
@@ -829,7 +853,10 @@ int FTBM_Register_subscription(const FTB_id_t * id, FTB_event_t * event)
     if (iter == FTBU_map_end(FTBMI_info.catch_event_map)) {
         FTBMI_map_ftb_id_2_comp_info_t *new_map;
 
-        temp_mask2 = (FTB_event_t *) malloc(sizeof(FTB_event_t));
+        if ((temp_mask2 = (FTB_event_t *) malloc(sizeof(FTB_event_t))) == NULL) {
+    	    FTBU_INFO("Malloc error in FTB library");
+            return (FTB_ERR_CLASS_FATAL + FTB_ERR_MALLOC);
+        }
         memcpy(temp_mask2, event, sizeof(FTB_event_t));
         new_map = (FTBMI_map_ftb_id_2_comp_info_t *) FTBU_map_init(FTBMI_util_is_equal_ftb_id);
 
@@ -959,11 +986,15 @@ int FTBM_Send(const FTBM_msg_t * msg)
         }
 
         if (FTBU_is_equal_location_id(&FTBMI_info.parent, &msg->dst.location_id)) {
+	    int ret1 = 0;
             FTBU_WARNING("Lost connection to parent");
             //if (FTBMI_info.err_handling & FTB_ERR_HANDLE_RECOVER) {
             FTBU_WARNING("Reconnecting");
             lock_manager();
-            FTBMI_util_reconnect();
+            ret1 = FTBMI_util_reconnect();
+	    if (ret1 != FTB_SUCCESS) {
+        	FTBU_WARNING("FTB could not connect to parent");
+      	    }
             unlock_manager();
             //}
         }
@@ -1014,11 +1045,15 @@ int FTBM_Cleanup_connection(const FTB_location_id_t * location_id)
     }
 
     if (FTBU_is_equal_location_id(&FTBMI_info.parent, location_id)) {
+      int ret1 = 0;
       FTBU_WARNING("Lost connection to parent");
       FTBU_WARNING("Reconnecting");
       lock_manager();
-      FTBMI_util_reconnect();
+      ret1 = FTBMI_util_reconnect();
       unlock_manager();
+      if (ret1 != FTB_SUCCESS) {
+	FTBU_WARNING("FTB could not connect to parent");
+      }
     }
 
     FTBU_INFO("FTBM_Cleanup_connection Out");
@@ -1038,10 +1073,14 @@ int FTBM_Get(FTBM_msg_t * msg, FTB_location_id_t * incoming_src, int blocking)
     ret = FTBN_Recv_msg(msg, incoming_src, blocking);
     if (ret == FTB_ERR_NETWORK_GENERAL) {
         FTBU_WARNING("Client is going to try to reconnect");
+	int ret1 = 0;
         lock_manager();
-        FTBMI_util_reconnect();
+        ret1 = FTBMI_util_reconnect();
         unlock_manager();
         FTBU_WARNING("FTBN_Recv_msg failed %d", ret);
+	if (ret1 != FTB_SUCCESS) {
+		FTBU_WARNING("Reconnection to agent failed");
+	}
     }
 
     FTBU_INFO("FTBM_Get Out");
@@ -1087,12 +1126,20 @@ void *FTBM_Fill_message_queue(void *arg)
     while (1) {
         head = tail = NULL;
         if ((ret = FTBN_Grab_messages(&head, &tail, &disconnected_location)) == FTB_ERR_NETWORK_GENERAL) {
-            FTBM_msg_t *msg = (FTBM_msg_t *) malloc(sizeof(FTBM_msg_t));
-
+            FTBM_msg_t *msg;
+	    FTBM_msg_node_t *msg_node;
+	    if ((msg = (FTBM_msg_t *) malloc(sizeof(FTBM_msg_t))) == NULL) {
+	        FTBU_INFO("Malloc error in FTB library");
+            }
             msg->msg_type = FTBM_MSG_TYPE_CLEANUP_CONN;
-            FTBM_msg_node_t *msg_node = (FTBM_msg_node_t *) malloc(sizeof(FTBM_msg_node_t));
+	
+            if ((msg_node = (FTBM_msg_node_t *) malloc(sizeof(FTBM_msg_node_t))) == NULL) {
+                FTBU_INFO("Malloc error in FTB library");
+            }
             msg_node->msg = msg;
-            msg_node->incoming_src = (FTB_location_id_t *) malloc(sizeof(FTB_location_id_t));
+            if ((msg_node->incoming_src = (FTB_location_id_t *) malloc(sizeof(FTB_location_id_t))) == NULL) {
+                FTBU_INFO("Malloc error in FTB library");
+            }
             memcpy(msg_node->incoming_src, &disconnected_location, sizeof(FTB_location_id_t));
 
             msg_node->next = head;

@@ -102,6 +102,11 @@ int FTB_Compare_event_handles(const FTB_event_handle_t event_handle1,
     return ZOID_FTB_Compare_event_handles(event_handle1, event_handle2);
 }
 
+int FTB_Check_error_code(const int error_code, int *error_class, int *error_value)
+{
+    return ZOID_FTB_Check_error_code(error_code, error_class, error_value);
+}
+
 
 #ifdef FTB_TAG
 

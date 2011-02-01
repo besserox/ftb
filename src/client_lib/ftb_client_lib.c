@@ -40,6 +40,9 @@
 
 #define FTBCI_MAX_SUBSCRIPTION_FIELDS 10
 #define FTBCI_MAX_EVENTS_PER_CLIENT 100
+#define FTBCI_NUM_ERROR_CLASS 61440
+#define FTBCI_NUM_ERROR_TYPE 4095
+
 
 extern FILE *FTBU_log_file_fp;
 
@@ -221,8 +224,8 @@ int FTBCI_split_namespace(const char *event_space, char *region_name, char *cate
     }
 
     if ((tempstr = (char *) malloc(strlen(event_space) + 1)) == NULL) {
-        perror("malloc error\n");
-        exit(-1);
+        FTBU_INFO("Malloc error in FTB library");
+        return (FTB_ERR_CLASS_FATAL + FTB_ERR_MALLOC);
     }
     ptr = tempstr;
     strcpy(tempstr, event_space);
@@ -387,8 +390,8 @@ int FTBCI_parse_subscription_string(const char *subscription_str, FTB_event_t * 
     }
 
     if ((tempstr = (char *) malloc(strlen(subscription_str) + 1)) == NULL) {
-        perror("malloc error\n");
-        exit(-1);
+        FTBU_INFO("Malloc error in FTB library");
+        return (FTB_ERR_CLASS_FATAL + FTB_ERR_MALLOC);
     }
     strcpy(tempstr, subscription_str);
     ptr = tempstr;
@@ -509,7 +512,10 @@ int FTBCI_store_declared_events(FTBCI_client_info_t * client_info, const FTB_eve
             return FTB_ERR_INVALID_FIELD;
         }
 
-        event_index = (FTBCI_publish_event_index_t *) malloc(sizeof(FTBCI_publish_event_index_t));
+        if ((event_index = (FTBCI_publish_event_index_t *) malloc(sizeof(FTBCI_publish_event_index_t))) == NULL) {
+            FTBU_INFO("Malloc error in FTB library");
+            return (FTB_ERR_CLASS_FATAL + FTB_ERR_MALLOC);
+	}
         strcpy(event_index->event_name, event_table[i].event_name);
 
         FTBCI_lock_client(client_info);
@@ -523,7 +529,10 @@ int FTBCI_store_declared_events(FTBCI_client_info_t * client_info, const FTB_eve
         }
         FTBCI_unlock_client(client_info);
 
-        event_details = (FTBCI_publish_event_details_t *) malloc(sizeof(FTBCI_publish_event_details_t));
+        if ((event_details = (FTBCI_publish_event_details_t *) malloc(sizeof(FTBCI_publish_event_details_t))) == NULL) {
+	    FTBU_INFO("Malloc error in FTB library");
+            return (FTB_ERR_CLASS_FATAL + FTB_ERR_MALLOC);
+	}
         strcpy(event_details->severity, event_table[i].severity);
         FTBU_INFO
             ("Inserting a declared event in the declared_event_map. Event name=%s and severity=%s\n",
@@ -584,12 +593,18 @@ static void FTBCI_util_push_to_comp_polling_list(FTBCI_client_info_t * client_in
     }
 }
 
-static void FTBCI_util_add_to_polling_map(FTBCI_client_info_t * client_info, const FTB_event_t * event)
+static int FTBCI_util_add_to_polling_map(FTBCI_client_info_t * client_info, const FTB_event_t * event)
 {
-    FTBCI_polling_entry_t *entry = (FTBCI_polling_entry_t *) malloc(sizeof(FTBCI_polling_entry_t));
-
     FTBU_INFO("In FTBCI_util_add_to_polling_map");
-    entry->mask = (FTB_event_t *) malloc(sizeof(FTB_event_t));
+    FTBCI_polling_entry_t *entry;
+    if ((entry = (FTBCI_polling_entry_t *) malloc(sizeof(FTBCI_polling_entry_t))) == NULL) {
+	FTBU_INFO("Malloc error in FTB library");
+        return (FTB_ERR_CLASS_FATAL + FTB_ERR_MALLOC);
+    }
+    if ((entry->mask = (FTB_event_t *) malloc(sizeof(FTB_event_t))) == NULL) {
+	FTBU_INFO("Malloc error in FTB library");
+        return (FTB_ERR_CLASS_FATAL + FTB_ERR_MALLOC);
+    }
     memcpy(entry->mask, event, sizeof(FTB_event_t));
 
     FTBU_INFO
@@ -598,15 +613,22 @@ static void FTBCI_util_add_to_polling_map(FTBCI_client_info_t * client_info, con
     FTBU_map_insert(client_info->polling_map, FTBU_MAP_PTR_KEY(entry->mask), (void *) entry);
     FTBCI_unlock_client(client_info);
     FTBU_INFO("Out FTBCI_util_add_to_polling_map");
+    return FTB_SUCCESS;
 }
 
-static void FTBCI_util_add_to_callback_map(FTBCI_client_info_t * client_info, const FTB_event_t * event,
+static int FTBCI_util_add_to_callback_map(FTBCI_client_info_t * client_info, const FTB_event_t * event,
                                            int (*callback) (FTB_receive_event_t *, void *), void *arg)
 {
-    FTBCI_callback_entry_t *entry = (FTBCI_callback_entry_t *) malloc(sizeof(FTBCI_callback_entry_t));
-
     FTBU_INFO("In FTBCI_util_add_to_callback_map");
-    entry->mask = (FTB_event_t *) malloc(sizeof(FTB_event_t));
+    FTBCI_callback_entry_t *entry;
+    if ((entry = (FTBCI_callback_entry_t *) malloc(sizeof(FTBCI_callback_entry_t))) == NULL) {
+	FTBU_INFO("Malloc error in FTB library");
+        return (FTB_ERR_CLASS_FATAL + FTB_ERR_MALLOC);
+    }
+    if ((entry->mask = (FTB_event_t *) malloc(sizeof(FTB_event_t))) == NULL) {
+        FTBU_INFO("Malloc error in FTB library");
+        return (FTB_ERR_CLASS_FATAL + FTB_ERR_MALLOC);
+    }
     memcpy(entry->mask, event, sizeof(FTB_event_t));
     entry->callback = callback;
     entry->arg = arg;
@@ -616,16 +638,22 @@ static void FTBCI_util_add_to_callback_map(FTBCI_client_info_t * client_info, co
     FTBU_map_insert(client_info->callback_map, FTBU_MAP_PTR_KEY(entry->mask), (void *) entry);
     FTBCI_unlock_client(client_info);
     FTBU_INFO("Out FTBCI_util_add_to_callback_map");
+    return FTB_SUCCESS;
 }
 
 #if 0
 static void FTBCI_util_remove_from_callback_map(FTBCI_client_info_t * client_info,
                                                 const FTB_event_t * event)
 {
-    FTBCI_callback_entry_t *entry = (FTBCI_callback_entry_t *) malloc(sizeof(FTBCI_callback_entry_t));
-
+    if ((FTBCI_callback_entry_t *entry = (FTBCI_callback_entry_t *) malloc(sizeof(FTBCI_callback_entry_t))) == NULL) {
+        FTBU_INFO("Malloc error in FTB library");
+        return (FTB_ERR_CLASS_FATAL + FTB_ERR_MALLOC);
+    }
     FTBU_INFO("In FTBCI_util_remove_from_callback_map");
-    entry->mask = (FTB_event_t *) malloc(sizeof(FTB_event_t));
+    if ((entry->mask = (FTB_event_t *) malloc(sizeof(FTB_event_t))) == NULL) {
+        FTBU_INFO("Malloc error in FTB library");
+        return (FTB_ERR_CLASS_FATAL + FTB_ERR_MALLOC);
+    }
     memcpy(entry->mask, event, sizeof(FTB_event_t));
     FTBCI_lock_client(client_info);
     FTBU_map_remove_key(client_info->callback_map, FTBU_MAP_PTR_KEY(entry->mask));
@@ -704,7 +732,7 @@ static void FTBCI_util_reconnect()
     FTBCI_unlock_client_lib();
 }
 
-static void FTBCI_util_handle_FTBM_msg(FTBM_msg_t * msg)
+static int FTBCI_util_handle_FTBM_msg(FTBM_msg_t * msg)
 {
     FTB_client_handle_t client_handle;
     FTBCI_client_info_t *client_info;
@@ -715,7 +743,7 @@ static void FTBCI_util_handle_FTBM_msg(FTBM_msg_t * msg)
     FTBU_INFO("In FTBCI_util_handle_FTBM_msg");
     if (msg->msg_type != FTBM_MSG_TYPE_NOTIFY) {
         FTBU_WARNING("unexpected message type %d", msg->msg_type);
-        return;
+        return -1;
     }
 
     FTBCI_convert_clientid_to_clienthandle(msg->dst.client_id, &client_handle);
@@ -726,13 +754,19 @@ static void FTBCI_util_handle_FTBM_msg(FTBM_msg_t * msg)
         FTBU_WARNING("Message for unregistered component");
         FTBCI_unlock_client_lib();
         FTBU_INFO("Out FTBCI_util_remove_from_callback_map");
-        return;
+        return 0;
     }
     client_info = (FTBCI_client_info_t *) FTBU_map_get_data(iter);
     FTBCI_unlock_client_lib();
 
-    node = (FTBU_list_node_t *) malloc(sizeof(FTBU_list_node_t));
-    entry = (FTBCI_event_inst_list_t *) malloc(sizeof(FTBCI_event_inst_list_t));
+    if ((node = (FTBU_list_node_t *) malloc(sizeof(FTBU_list_node_t))) == NULL) {
+        FTBU_INFO("Malloc error in FTB library");
+        return (FTB_ERR_CLASS_FATAL + FTB_ERR_MALLOC);
+    }
+    if ((entry = (FTBCI_event_inst_list_t *) malloc(sizeof(FTBCI_event_inst_list_t))) == NULL) {
+        FTBU_INFO("Malloc error in FTB library");
+        return (FTB_ERR_CLASS_FATAL + FTB_ERR_MALLOC);
+    }
     memcpy(&entry->event_inst, &msg->event, sizeof(FTB_event_t));
     memcpy(&entry->src, &msg->src, sizeof(FTB_id_t));
     node->data = (void *) entry;
@@ -745,8 +779,15 @@ static void FTBCI_util_handle_FTBM_msg(FTBM_msg_t * msg)
         while (iter != FTBU_map_end(client_info->callback_map)) {
             FTBCI_callback_entry_t *callback_entry = (FTBCI_callback_entry_t *) FTBU_map_get_data(iter);
             if (FTBU_match_mask(&msg->event, callback_entry->mask)) {
-                FTBU_list_node_t *node = (FTBU_list_node_t *) malloc(sizeof(FTBU_list_node_t));
-                entry = (FTBCI_event_inst_list_t *) malloc(sizeof(FTBCI_event_inst_list_t));
+		FTBU_list_node_t *node;
+                if ((node = (FTBU_list_node_t *) malloc(sizeof(FTBU_list_node_t))) == NULL) {
+		    FTBU_INFO("Malloc error in FTB library");
+		    return (FTB_ERR_CLASS_FATAL + FTB_ERR_MALLOC);
+		}
+                if ((entry = (FTBCI_event_inst_list_t *) malloc(sizeof(FTBCI_event_inst_list_t))) == NULL) {
+	            FTBU_INFO("Malloc error in FTB library");
+		    return (FTB_ERR_CLASS_FATAL + FTB_ERR_MALLOC);
+		}
                 memcpy(&entry->event_inst, &msg->event, sizeof(FTB_event_t));
                 memcpy(&entry->src, &msg->src, sizeof(FTB_id_t));
                 node->data = (void *) entry;
@@ -755,7 +796,7 @@ static void FTBCI_util_handle_FTBM_msg(FTBM_msg_t * msg)
                 pthread_cond_signal(&client_info->cond);
                 FTBCI_unlock_client(client_info);
                 FTBU_INFO("Out FTBCI_util_handle_FTBM_msg");
-                return;
+                return 0;
             }
             iter = FTBU_map_next_node(iter);
         }
@@ -771,7 +812,7 @@ static void FTBCI_util_handle_FTBM_msg(FTBM_msg_t * msg)
     FTBCI_util_push_to_comp_polling_list(client_info, node);
     FTBCI_unlock_client(client_info);
     FTBU_INFO("Out FTBCI_util_handle_FTBM_msg");
-    return;
+    return 0;
 }
 
 int FTBCI_Check_progress()
@@ -960,6 +1001,11 @@ static void FTBCI_util_finalize_component(FTBCI_client_info_t * client_info)
     FTBU_INFO("Out FTBCI_util_finalize_component");
 }
 
+int FTBC_Check_error_code (const int error_code, int *error_class, int *error_value) {
+       *error_class = (error_code & FTBCI_NUM_ERROR_CLASS);
+       *error_value = (error_code & FTBCI_NUM_ERROR_TYPE); 
+       return FTB_SUCCESS;
+}
 
 int FTBC_Connect(FTB_client_t * cinfo, uint8_t extension, FTB_client_handle_t * client_handle)
 {
@@ -972,10 +1018,13 @@ int FTBC_Connect(FTB_client_t * cinfo, uint8_t extension, FTB_client_handle_t * 
 
     FTBU_INFO("FTBC_Connect In");
 
-    if (client_handle == NULL)
+    if (client_handle == NULL) 
         return FTB_ERR_NULL_POINTER;
 
-    client_info = (FTBCI_client_info_t *) malloc(sizeof(FTBCI_client_info_t));
+    if ((client_info = (FTBCI_client_info_t *) malloc(sizeof(FTBCI_client_info_t))) == NULL) {
+	FTBU_INFO("Malloc error in FTB library");
+        return (FTB_ERR_CLASS_FATAL + FTB_ERR_MALLOC);
+    }
     memset(client_info, 0, sizeof(FTBCI_client_info_t));
 
     /* Set the subscription-related fields */
@@ -1027,12 +1076,21 @@ int FTBC_Connect(FTB_client_t * cinfo, uint8_t extension, FTB_client_handle_t * 
         FTBCI_tag_map = FTBU_map_init(FTBCI_util_is_equal_tag);
         memset(tag_string, 0, FTB_MAX_DYNAMIC_DATA_SIZE);
 #endif
-        FTBM_Init(1);
+	int ret1 = 0;
+        if ((ret1 = FTBM_Init(1)) != FTB_SUCCESS) {
+		FTBCI_unlock_client_lib();
+        	free(client_info);
+		return ret1;
+	};
     }
     num_components++;
     FTBCI_unlock_client_lib();
 
-    client_info->id = (FTB_id_t *) malloc(sizeof(FTB_id_t));
+    if ((client_info->id = (FTB_id_t *) malloc(sizeof(FTB_id_t))) == NULL) {
+        free(client_info);
+        FTBU_INFO("Malloc error in FTB library");
+        return (FTB_ERR_CLASS_FATAL + FTB_ERR_MALLOC);
+    }
     client_info->id->client_id.ext = extension;
     strcpy(client_info->id->client_id.region, region_name);
     strcpy(client_info->id->client_id.comp_cat, category_name);
@@ -1065,7 +1123,10 @@ int FTBC_Connect(FTB_client_t * cinfo, uint8_t extension, FTB_client_handle_t * 
     }
 
     if (client_info->subscription_type & FTB_SUBSCRIPTION_POLLING) {
-        client_info->event_queue = (FTBU_list_node_t *) malloc(sizeof(FTBU_list_node_t));
+        if ((client_info->event_queue = (FTBU_list_node_t *) malloc(sizeof(FTBU_list_node_t))) == NULL) {
+            FTBU_INFO("Malloc error in FTB library");
+            return (FTB_ERR_CLASS_FATAL + FTB_ERR_MALLOC);
+	}
         FTBU_list_init(client_info->event_queue);
         client_info->polling_map = FTBU_map_init(FTBCI_util_is_equal_event);
     }
@@ -1079,7 +1140,10 @@ int FTBC_Connect(FTB_client_t * cinfo, uint8_t extension, FTB_client_handle_t * 
     if (client_info->subscription_type & FTB_SUBSCRIPTION_NOTIFY) {
         /* should this point to init and compare with equal_mask */
         client_info->callback_map = FTBU_map_init(FTBCI_util_is_equal_event);
-        client_info->callback_event_queue = (FTBU_list_node_t *) malloc(sizeof(FTBU_list_node_t));
+        if ((client_info->callback_event_queue = (FTBU_list_node_t *) malloc(sizeof(FTBU_list_node_t))) == NULL) {
+            FTBU_INFO("Malloc error in FTB library");
+            return (FTB_ERR_CLASS_FATAL + FTB_ERR_MALLOC);
+	}
         FTBU_list_init(client_info->callback_event_queue);
         FTBCI_lock_client_lib();
         if (enable_callback == 0) {
@@ -1278,8 +1342,12 @@ int FTBC_Subscribe_with_polling(FTB_subscribe_handle_t * subscribe_handle,
 {
     FTBM_msg_t msg;
     FTBCI_client_info_t *client_info;
-    FTB_event_t *subscription_event = (FTB_event_t *) malloc(sizeof(FTB_event_t));
     int ret;
+    FTB_event_t *subscription_event;
+    if ((subscription_event = (FTB_event_t *) malloc(sizeof(FTB_event_t))) == NULL) {
+        FTBU_INFO("Malloc error in FTB library");
+        return (FTB_ERR_CLASS_FATAL + FTB_ERR_MALLOC);
+    }
 
     FTBU_INFO("FTBC_Subscribe_with_polling In");
     if (subscribe_handle == NULL) {
@@ -1316,7 +1384,11 @@ int FTBC_Subscribe_with_polling(FTB_subscribe_handle_t * subscribe_handle,
     subscribe_handle->valid = 1;
 
     /* Add subscription string into the polling_map. */
-    FTBCI_util_add_to_polling_map(client_info, subscription_event);
+    if ((ret = FTBCI_util_add_to_polling_map(client_info, subscription_event)) != FTB_SUCCESS) {
+	free(subscription_event);
+        FTBU_INFO("FTBC_Subscribe_with_polling Out");
+	return ret;
+    }
 
     memcpy(&msg.event, subscription_event, sizeof(FTB_event_t));
     memcpy(&msg.src, client_info->id, sizeof(FTB_id_t));
@@ -1336,8 +1408,12 @@ int FTBC_Subscribe_with_callback(FTB_subscribe_handle_t * subscribe_handle,
 {
     FTBM_msg_t msg;
     FTBCI_client_info_t *client_info;
-    FTB_event_t *subscription_event = (FTB_event_t *) malloc(sizeof(FTB_event_t));
     int ret;
+    FTB_event_t *subscription_event;
+    if ((subscription_event = (FTB_event_t *) malloc(sizeof(FTB_event_t))) == NULL) {
+        FTBU_INFO("Malloc error in FTB library");
+        return (FTB_ERR_CLASS_FATAL + FTB_ERR_MALLOC);
+    }
 
     FTBU_INFO("FTBC_Subscribe_with_callback In");
     if (subscribe_handle == NULL) {
@@ -1377,7 +1453,11 @@ int FTBC_Subscribe_with_callback(FTB_subscribe_handle_t * subscribe_handle,
     subscribe_handle->subscription_type = FTB_SUBSCRIPTION_NOTIFY;
     subscribe_handle->valid = 1;
 
-    FTBCI_util_add_to_callback_map(client_info, subscription_event, callback, arg);
+    if ((ret = FTBCI_util_add_to_callback_map(client_info, subscription_event, callback, arg)) != FTB_SUCCESS) {
+    	free(subscription_event);
+    	FTBU_INFO("FTBC_Subscribe_with_callback Out");
+	return ret;
+    }
 
     memcpy(&msg.event, subscription_event, sizeof(FTB_event_t));
     memcpy(&msg.src, client_info->id, sizeof(FTB_id_t));
@@ -1471,7 +1551,10 @@ int FTBC_Publish(FTB_client_handle_t client_handle, const char *event_name,
 
     FTBCI_Check_progress();
     FTBCI_LOOKUP_CLIENT_INFO(client_handle, client_info);
-    event_index = (FTBCI_publish_event_index_t *) malloc(sizeof(FTBCI_publish_event_index_t));
+    if ((event_index = (FTBCI_publish_event_index_t *) malloc(sizeof(FTBCI_publish_event_index_t))) == NULL) {
+        FTBU_INFO("Malloc error in FTB library");
+        return (FTB_ERR_CLASS_FATAL + FTB_ERR_MALLOC);
+    }
     strcpy(event_index->event_name, event_name);
 
     FTBCI_lock_client(client_info);
@@ -1498,7 +1581,10 @@ int FTBC_Publish(FTB_client_handle_t client_handle, const char *event_name,
     memcpy(&msg.src, client_info->id, sizeof(FTB_id_t));
 
     if (event_properties == NULL) {
-        temp_event_properties = (FTB_event_properties_t *) malloc(sizeof(FTB_event_properties_t));
+        if ((temp_event_properties = (FTB_event_properties_t *) malloc(sizeof(FTB_event_properties_t))) == NULL) {
+            FTBU_INFO("Malloc error in FTB library");
+            return (FTB_ERR_CLASS_FATAL + FTB_ERR_MALLOC);
+	}
         temp_event_properties->event_type = 1;
         event_properties = temp_event_properties;
     }
@@ -1769,7 +1855,10 @@ int FTBC_Add_dynamic_tag(FTB_client_handle_t handle, FTB_tag_t tag, const char *
 
     iter = FTBU_map_find_key(FTBCI_tag_map, FTBU_MAP_PTR_KEY(&tag));
     if (iter == FTBU_map_end(FTBCI_tag_map)) {
-        FTBCI_tag_entry_t *entry = (FTBCI_tag_entry_t *) malloc(sizeof(FTBCI_tag_entry_t));
+        if ((FTBCI_tag_entry_t *entry = (FTBCI_tag_entry_t *) malloc(sizeof(FTBCI_tag_entry_t))) == NULL) {
+            FTBU_INFO("Malloc error in FTB library");
+            return (FTB_ERR_CLASS_FATAL + FTB_ERR_MALLOC);
+	}
         FTBU_INFO("create a new tag");
         entry->tag = tag;
         entry->owner = handle;

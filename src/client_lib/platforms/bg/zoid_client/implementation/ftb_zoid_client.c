@@ -138,3 +138,13 @@ int ZOID_FTB_Compare_event_handles(const FTB_event_handle_t event_handle1 /* in:
 {
     return FTBC_Compare_event_handles(event_handle1, event_handle2);
 }
+
+
+int ZOID_Check_error_code (const int error_code /* in:obj */ ,
+                               int *error_class /* out:ptr */ ,
+                               int *error_value /* out:ptr */)
+{
+    return FTBC_Check_error_code(error_code, error_class, error_value);
+
+}
+

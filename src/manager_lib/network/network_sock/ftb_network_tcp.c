@@ -132,7 +132,7 @@ static inline void FTBNI_unlock_recv()
 } while (0)
 
 
-static inline FTBU_list_node_t *FTBNI_util_find_connection_to_location(const FTB_location_id_t *
+static FTBU_list_node_t *FTBNI_util_find_connection_to_location(const FTB_location_id_t *
                                                                        location_id)
 {
     FTBU_list_node_t *pos;
@@ -183,7 +183,11 @@ static int FTBNI_util_connect_to(const FTBN_addr_sock_t * addr, const FTBM_msg_t
     struct sockaddr_in sa;
     FTBU_list_node_t *node;
 
-    FTB_connection_entry_t *entry = (FTB_connection_entry_t *) malloc(sizeof(FTB_connection_entry_t));
+    FTB_connection_entry_t *entry ;
+    if ((entry = (FTB_connection_entry_t *) malloc(sizeof(FTB_connection_entry_t))) == NULL) {
+        FTBU_INFO("Malloc error in FTB library");
+        return (FTB_ERR_CLASS_FATAL + FTB_ERR_MALLOC);
+    }
     entry->err_flag = 0;
     entry->ref_count = 0;
 
@@ -224,7 +228,10 @@ static int FTBNI_util_connect_to(const FTBN_addr_sock_t * addr, const FTBM_msg_t
         }
     }
 #endif
-    entry->dst = (FTB_location_id_t *) malloc(sizeof(FTB_location_id_t));
+    if ((entry->dst = (FTB_location_id_t *) malloc(sizeof(FTB_location_id_t))) == NULL) {
+        FTBU_INFO("Malloc error in FTB library");
+        return (FTB_ERR_CLASS_FATAL + FTB_ERR_MALLOC);
+    }
     FTBNI_UTIL_WRITE(entry, &(FTBN_config_location.FTB_system_id), sizeof(uint32_t));
     FTBNI_UTIL_WRITE(entry, &FTBN_my_location_id, sizeof(FTB_location_id_t));
     FTBNI_UTIL_WRITE(entry, reg_msg, sizeof(FTBM_msg_t));
@@ -241,7 +248,10 @@ static int FTBNI_util_connect_to(const FTBN_addr_sock_t * addr, const FTBM_msg_t
     pthread_mutex_init(&(entry->lock), NULL);
     memcpy(id, entry->dst, sizeof(FTB_location_id_t));
 
-    node = (FTBU_list_node_t *) malloc(sizeof(FTBU_list_node_t));
+    if ((node = (FTBU_list_node_t *) malloc(sizeof(FTBU_list_node_t))) == NULL) {
+        FTBU_INFO("Malloc error in FTB library");
+        return (FTB_ERR_CLASS_FATAL + FTB_ERR_MALLOC);
+    }
     node->data = (void *) entry;
     FTBNI_lock_conn_table();
     FTBU_list_add_front(FTBNI_connection_table, node);
@@ -260,7 +270,10 @@ int FTBN_Init(const FTB_location_id_t * my_id, const FTBN_config_info_t * config
     pthread_mutex_init(&FTBNI_recv_lock, NULL);
     FTBNI_listen_fd = -1;
     FTBN_my_level = 0 - 1;
-    FTBNI_connection_table = (FTBU_list_node_t *) malloc(sizeof(FTBU_list_node_t));
+    if ((FTBNI_connection_table = (FTBU_list_node_t *) malloc(sizeof(FTBU_list_node_t))) == NULL) {
+        FTBU_INFO("Malloc error in FTB library");
+        return (FTB_ERR_CLASS_FATAL + FTB_ERR_MALLOC);
+    }
     FTBU_list_init(FTBNI_connection_table);
     memcpy(&FTBN_my_location_id, my_id, sizeof(FTB_location_id_t));
     memcpy(&FTBN_config_location, config_info, sizeof(FTBN_config_info_t));
@@ -310,7 +323,7 @@ int FTBN_Connect(const FTBM_msg_t * reg_msg, FTB_location_id_t * parent_location
     else {  /* For Agents, open listening port */
         if (FTBNI_listen_fd == -1) {
             if (FTBNI_util_listen() != FTB_SUCCESS) {
-                FTBU_ERR_ABORT("Agent cannot listen for new connection");
+                FTBU_ERR_ABORT_PRINT("Agent cannot listen for new connection");
             }
         }
     }
@@ -338,7 +351,7 @@ int FTBN_Connect(const FTBM_msg_t * reg_msg, FTB_location_id_t * parent_location
             }
             else {
                 close(FTBNI_listen_fd);
-                FTBU_ERR_ABORT("Failed to contact database server..Exiting\n");
+                FTBU_ERR_ABORT_PRINT("Failed to contact database server..Exiting\n");
             }
         }
 
@@ -615,16 +628,20 @@ int FTBN_Grab_messages(FTBM_msg_node_t ** msg_head, FTBM_msg_node_t ** msg_tail,
         if (FTBNI_listen_fd != -1 && FD_ISSET(FTBNI_listen_fd, &fds)) {
             /*New connection */
             uint32_t system_id;
-            FTB_connection_entry_t *entry =
-                (FTB_connection_entry_t *) malloc(sizeof(FTB_connection_entry_t));
+            FTB_connection_entry_t *entry;
+            FTBM_msg_t *msg;
 
+	    if ((entry = (FTB_connection_entry_t *) malloc(sizeof(FTB_connection_entry_t))) == NULL) {
+		FTBU_INFO("Malloc error in FTB library");
+                return (FTB_ERR_CLASS_FATAL + FTB_ERR_MALLOC);
+            }
             entry->err_flag = 0;
             entry->ref_count = 0;
             entry->fd = accept(FTBNI_listen_fd, NULL, NULL);
             if (entry->fd < 0) {
                 perror("accept");
                 free(entry);
-                FTBU_ERR_ABORT("accept failed");
+                FTBU_ERR_ABORT_PRINT("accept failed");
             }
 
             FTBNI_UTIL_READ(entry, &system_id, sizeof(uint32_t));
@@ -636,9 +653,14 @@ int FTBN_Grab_messages(FTBM_msg_node_t ** msg_head, FTBM_msg_node_t ** msg_tail,
             }
 
             pthread_mutex_init(&(entry->lock), NULL);
-            entry->dst = (FTB_location_id_t *) malloc(sizeof(FTB_location_id_t));
-            FTBM_msg_t *msg = (FTBM_msg_t *) malloc(sizeof(FTBM_msg_t));
-
+            if ((entry->dst = (FTB_location_id_t *) malloc(sizeof(FTB_location_id_t))) == NULL) {
+                FTBU_INFO("Malloc error in FTB library");
+                return (FTB_ERR_CLASS_FATAL + FTB_ERR_MALLOC);
+            }	
+	    if ((msg = (FTBM_msg_t *) malloc(sizeof(FTBM_msg_t))) == NULL) {
+                FTBU_INFO("Malloc error in FTB library");
+                return (FTB_ERR_CLASS_FATAL + FTB_ERR_MALLOC);
+            }
             FTBNI_UTIL_READ(entry, entry->dst, sizeof(FTB_location_id_t));
             FTBNI_UTIL_READ(entry, msg, sizeof(FTBM_msg_t));
 
@@ -649,17 +671,29 @@ int FTBN_Grab_messages(FTBM_msg_node_t ** msg_head, FTBM_msg_node_t ** msg_tail,
                 free(msg);
             }
             else {
+		FTBM_msg_node_t *msg_node;
+		FTBU_list_node_t *node;
+		
                 FTBNI_UTIL_WRITE(entry, &FTBN_my_location_id, sizeof(FTB_location_id_t));
-                FTBU_list_node_t *node = (FTBU_list_node_t *) malloc(sizeof(FTBU_list_node_t));
+                if ((node = (FTBU_list_node_t *) malloc(sizeof(FTBU_list_node_t))) == NULL) {
+                    FTBU_INFO("Malloc error in FTB library");
+                    return (FTB_ERR_CLASS_FATAL + FTB_ERR_MALLOC);
+                }
                 node->data = (void *) entry;
 
                 FTBNI_lock_conn_table();
                 FTBU_list_add_front(FTBNI_connection_table, node);
                 FTBNI_unlock_conn_table();
 
-                FTBM_msg_node_t *msg_node = (FTBM_msg_node_t *) malloc(sizeof(FTBM_msg_node_t));
+                if ((msg_node = (FTBM_msg_node_t *) malloc(sizeof(FTBM_msg_node_t))) == NULL) {
+                    FTBU_INFO("Malloc error in FTB library");
+                    return (FTB_ERR_CLASS_FATAL + FTB_ERR_MALLOC);
+                }
                 msg_node->msg = msg;
-                msg_node->incoming_src = (FTB_location_id_t *) malloc(sizeof(FTB_location_id_t));
+                if ((msg_node->incoming_src = (FTB_location_id_t *) malloc(sizeof(FTB_location_id_t))) == NULL) {
+	            FTBU_INFO("Malloc error in FTB library");
+                    return (FTB_ERR_CLASS_FATAL + FTB_ERR_MALLOC);
+                }
                 memcpy(msg_node->incoming_src, entry->dst, sizeof(FTB_location_id_t));
 
                 if (*msg_head == NULL) {
@@ -680,7 +714,11 @@ int FTBN_Grab_messages(FTBM_msg_node_t ** msg_head, FTBM_msg_node_t ** msg_tail,
             FTB_connection_entry_t *conn = (FTB_connection_entry_t *) node->data;
 
             if (FD_ISSET(conn->fd, &fds)) {
-                FTBM_msg_t *msg = (FTBM_msg_t *) malloc(sizeof(FTBM_msg_t));
+                FTBM_msg_t *msg;
+		if ((msg = (FTBM_msg_t *) malloc(sizeof(FTBM_msg_t))) == NULL) {
+                    FTBU_INFO("Malloc error in FTB library");
+                    return (FTB_ERR_CLASS_FATAL + FTB_ERR_MALLOC);
+	        }
                 FTBNI_UTIL_READ(conn, msg, sizeof(FTBM_msg_t));
                 if (conn->err_flag) {
                     memcpy(problem_location, conn->dst, sizeof(FTB_location_id_t));
@@ -694,9 +732,16 @@ int FTBN_Grab_messages(FTBM_msg_node_t ** msg_head, FTBM_msg_node_t ** msg_tail,
                     return FTB_ERR_NETWORK_GENERAL;
                 }
                 else {
-                    FTBM_msg_node_t *msg_node = (FTBM_msg_node_t *) malloc(sizeof(FTBM_msg_node_t));
+                    FTBM_msg_node_t *msg_node;
+		    if ((msg_node = (FTBM_msg_node_t *) malloc(sizeof(FTBM_msg_node_t))) == NULL) {
+                        FTBU_INFO("Malloc error in FTB library");
+                        return (FTB_ERR_CLASS_FATAL + FTB_ERR_MALLOC);
+	            }
                     msg_node->msg = msg;
-                    msg_node->incoming_src = (FTB_location_id_t *) malloc(sizeof(FTB_location_id_t));
+                    if ((msg_node->incoming_src = (FTB_location_id_t *) malloc(sizeof(FTB_location_id_t))) == NULL) {
+                        FTBU_INFO("Malloc error in FTB library");
+                        return (FTB_ERR_CLASS_FATAL + FTB_ERR_MALLOC);
+                    }
                     memcpy(msg_node->incoming_src, conn->dst, sizeof(FTB_location_id_t));
                     if (*msg_head == NULL) {
                         *msg_head = *msg_tail = msg_node;

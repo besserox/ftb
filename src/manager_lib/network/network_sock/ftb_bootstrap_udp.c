@@ -58,7 +58,7 @@ static int FTBNI_util_send_bootstrap_msg(const FTBNI_bootstrap_pkt_t * pkt_send)
 
     hp = FTBNI_gethostbyname(FTBNI_bootstrap_config.server_name);
     if (hp == NULL) {
-        FTBU_ERR_ABORT("Cannot find database server %s", FTBNI_bootstrap_config.server_name);
+        FTBU_ERR_ABORT_PRINT("Cannot find database server %s", FTBNI_bootstrap_config.server_name);
     }
 
     memset((void *) &server, 0, sizeof(server));
@@ -67,7 +67,7 @@ static int FTBNI_util_send_bootstrap_msg(const FTBNI_bootstrap_pkt_t * pkt_send)
     server.sin_port = htons(FTBNI_bootstrap_config.server_port);
 
     if ((fd = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) == -1) {
-        FTBU_ERR_ABORT("socket failed");
+        FTBU_ERR_ABORT_PRINT("socket failed");
     }
 
     FTBU_INFO("sending pkt type %d", pkt_send->bootstrap_msg_type);
@@ -75,7 +75,7 @@ static int FTBNI_util_send_bootstrap_msg(const FTBNI_bootstrap_pkt_t * pkt_send)
         (fd, pkt_send, sizeof(FTBNI_bootstrap_pkt_t), 0, (struct sockaddr *) &server,
          sizeof(struct sockaddr_in)) != sizeof(FTBNI_bootstrap_pkt_t)) {
         close(fd);
-        FTBU_ERR_ABORT("sendto failed");
+        FTBU_ERR_ABORT_PRINT("sendto failed");
     }
 
     close(fd);
@@ -94,7 +94,7 @@ static int FTBNI_util_exchange_bootstrap_msg(const FTBNI_bootstrap_pkt_t * pkt_s
 
     hp = FTBNI_gethostbyname(FTBNI_bootstrap_config.server_name);
     if (hp == NULL) {
-        FTBU_ERR_ABORT("cannot find database server %s", FTBNI_bootstrap_config.server_name);
+        FTBU_ERR_ABORT_PRINT("cannot find database server %s", FTBNI_bootstrap_config.server_name);
     }
 
     memset((void *) &server, 0, sizeof(server));
@@ -103,7 +103,7 @@ static int FTBNI_util_exchange_bootstrap_msg(const FTBNI_bootstrap_pkt_t * pkt_s
     server.sin_port = htons(FTBNI_bootstrap_config.server_port);
 
     if ((fd = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) == -1) {
-        FTBU_ERR_ABORT("socket failed");
+        FTBU_ERR_ABORT_PRINT("socket failed");
     }
 
     flag = 0;
@@ -121,21 +121,21 @@ static int FTBNI_util_exchange_bootstrap_msg(const FTBNI_bootstrap_pkt_t * pkt_s
             (fd, pkt_send, sizeof(FTBNI_bootstrap_pkt_t), 0, (struct sockaddr *) &server,
              sizeof(struct sockaddr_in)) != sizeof(FTBNI_bootstrap_pkt_t)) {
             close(fd);
-            FTBU_ERR_ABORT("sendto failed");
+            FTBU_ERR_ABORT_PRINT("sendto failed");
         }
 
         if (select(fd + 1, &fds, NULL, NULL, &timeout) < 0) {
             if (errno == EINTR || errno == EAGAIN)
                 continue;
             close(fd);
-            FTBU_ERR_ABORT("select failed");
+            FTBU_ERR_ABORT_PRINT("select failed");
         }
 
         if (FD_ISSET(fd, &fds)) {
             if (recvfrom(fd, pkt_recv, sizeof(FTBNI_bootstrap_pkt_t), 0, NULL, 0) !=
                 sizeof(FTBNI_bootstrap_pkt_t)) {
                 close(fd);
-                FTBU_ERR_ABORT("recvfrom failed");
+                FTBU_ERR_ABORT_PRINT("recvfrom failed");
             }
             flag = 1;
             break;
@@ -153,14 +153,18 @@ static int FTBNI_util_exchange_bootstrap_msg(const FTBNI_bootstrap_pkt_t * pkt_s
 
 static void FTBNI_util_get_network_addr(FTBN_addr_sock_t * my_addr)
 {
+    int ret = 0;
     /*Setup my hostname */
     my_addr->port = FTBNI_bootstrap_config.agent_port;
 #ifdef FTB_BGL_ION
-    FTBU_get_output_of_cmd("grep ^BG_IP /proc/personality.sh | cut -f2 -d=", my_addr->name,
-                           FTB_MAX_HOST_ADDR);
+    if ((ret = FTBU_get_output_of_cmd("grep ^BG_IP /proc/personality.sh | cut -f2 -d=", my_addr->name,
+                           FTB_MAX_HOST_ADDR)) != FTB_SUCCESS) {
+	return ret;
+    }
 #else
     strcpy(my_addr->name, "localhost");
 #endif
+    return FTB_SUCCESS;
 }
 
 

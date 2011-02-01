@@ -82,7 +82,7 @@ int FTNI_is_equal_addr_sock(const void *lhs_void, const void *rhs_void)
         return 0;
 }
 
-static inline FTBNI_bootstrap_entry_t *FTBNI_util_find_root_entry()
+static FTBNI_bootstrap_entry_t *FTBNI_util_find_root_entry()
 {
   FTBU_map_node_t *iter;
   FTBNI_bootstrap_entry_t *entry = NULL;
@@ -98,7 +98,7 @@ static inline FTBNI_bootstrap_entry_t *FTBNI_util_find_root_entry()
   return NULL;
 }
 
-static inline FTBNI_bootstrap_entry_t *FTBNI_util_cross_out_parent_entry(const FTBNI_bootstrap_pkt_t *pkt_req)
+static FTBNI_bootstrap_entry_t *FTBNI_util_cross_out_parent_entry(const FTBNI_bootstrap_pkt_t *pkt_req)
 {
   FTBU_map_node_t *iter;
   FTBNI_bootstrap_entry_t *entry = NULL;
@@ -113,7 +113,7 @@ static inline FTBNI_bootstrap_entry_t *FTBNI_util_cross_out_parent_entry(const F
 }
 
 
-static inline FTBNI_bootstrap_entry_t *FTBNI_util_find_parent_addr(const FTBNI_bootstrap_pkt_t * pkt_req)
+static FTBNI_bootstrap_entry_t *FTBNI_util_find_parent_addr(const FTBNI_bootstrap_pkt_t * pkt_req)
 {
     /*This is to achieve some randomness with certain requirements of the addr */
     FTBU_map_node_t *iter;
@@ -183,7 +183,7 @@ int main(int argc, char *argv[])
     FTBNI_util_setup_config_sock(&FTBNI_bootstrap_config);
 
     if ((fd = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) == -1) {
-        FTBU_ERR_ABORT("socket failed");
+        FTBU_ERR_ABORT_PRINT("socket failed");
     }
 
     /* Set the socket to listen to any incoming requests on the bootstrap port */
@@ -198,7 +198,7 @@ int main(int argc, char *argv[])
     }
     if (bind(fd, (struct sockaddr *) &server, sizeof(struct sockaddr_in)) == -1) {
         close(fd);
-        FTBU_ERR_ABORT("bind failed");
+        FTBU_ERR_ABORT_PRINT("bind failed");
     }
 
     /* Wait for user to hit ^C to terminate the bootstrap server */
@@ -274,7 +274,7 @@ int main(int argc, char *argv[])
                 (fd, &pkt_send, sizeof(FTBNI_bootstrap_pkt_t), 0, (struct sockaddr *) &client,
                  slen) != sizeof(FTBNI_bootstrap_pkt_t)) {
                 close(fd);
-                FTBU_ERR_ABORT("Sendto failed %d\n", ret);
+                FTBU_ERR_ABORT_PRINT("Sendto failed\n");
             }
         }
         else if (pkt.bootstrap_msg_type == FTBNI_BOOTSTRAP_MSG_TYPE_REG_REQ) {
@@ -311,7 +311,10 @@ int main(int argc, char *argv[])
 	    else {
 	      if ( (iter = FTBU_map_find_key(FTBNI_bootstrap_addr_map, (FTBU_map_key_t) (void *) &pkt.addr)) 
 		   == FTBU_map_end(FTBNI_bootstrap_addr_map) )  {
-		entry = (FTBNI_bootstrap_entry_t *) malloc(sizeof(FTBNI_bootstrap_entry_t));
+		if ((entry = (FTBNI_bootstrap_entry_t *) malloc(sizeof(FTBNI_bootstrap_entry_t))) == NULL) {
+    		    FTBU_INFO("Malloc error in FTB library");
+                    return (FTB_ERR_CLASS_FATAL + FTB_ERR_MALLOC);
+                }
 		memcpy(&entry->addr, &pkt.addr, sizeof(FTBN_addr_sock_t));
 		entry->level = pkt.level;
 		
@@ -339,7 +342,7 @@ int main(int argc, char *argv[])
                 (fd, &pkt_send, sizeof(FTBNI_bootstrap_pkt_t), 0, (struct sockaddr *) &client,
                  slen) != sizeof(FTBNI_bootstrap_pkt_t)) {
                 close(fd);
-                FTBU_ERR_ABORT("Sendto failed");
+                FTBU_ERR_ABORT_PRINT("Sendto failed");
             }
         }
         else if (pkt.bootstrap_msg_type == FTBNI_BOOTSTRAP_MSG_TYPE_DEREG_REQ) {
@@ -373,7 +376,7 @@ int main(int argc, char *argv[])
                 (fd, &pkt_send, sizeof(FTBNI_bootstrap_pkt_t), 0, (struct sockaddr *) &client,
                  slen) != sizeof(FTBNI_bootstrap_pkt_t)) {
                 close(fd);
-                FTBU_ERR_ABORT("Sendto failed");
+                FTBU_ERR_ABORT_PRINT("Sendto failed");
             }
         }
         else if (pkt.bootstrap_msg_type == FTBNI_BOOTSTRAP_MSG_TYPE_CONN_FAIL) {
