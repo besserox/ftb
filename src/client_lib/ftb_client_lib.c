@@ -61,15 +61,6 @@ typedef struct FTBCI_polling_entry {
     FTB_event_t *mask;
 } FTBCI_polling_entry_t;
 
-#ifdef FTB_TAG
-typedef struct FTBCI_tag_entry {
-    FTB_tag_t tag;
-    FTB_client_handle_t owner;
-    char data[FTB_MAX_DYNAMIC_DATA_SIZE];
-    FTB_tag_len_t data_len;
-} FTBCI_tag_entry_t;
-#endif
-
 typedef FTBU_map_node_t FTBCI_map_mask_2_callback_entry_t;
 typedef FTBU_map_node_t FTBCI_map_publishable_event_index_to_event_details;
 
@@ -111,14 +102,6 @@ static pthread_mutex_t FTBCI_lock = PTHREAD_MUTEX_INITIALIZER;
 static pthread_t callback_thread;
 typedef FTBU_map_node_t FTBCI_map_client_handle_2_client_info_t;
 static FTBCI_map_client_handle_2_client_info_t *FTBCI_client_info_map = NULL;
-
-#ifdef FTB_TAG
-typedef FTBU_map_node_t FTBCI_map_tag_2_tag_entry_t;
-static FTBCI_map_tag_2_tag_entry_t *FTBCI_tag_map;
-static char tag_string[FTB_MAX_DYNAMIC_DATA_SIZE];
-static int tag_size = 1;
-static uint8_t tag_count = 0;
-#endif
 
 static int enable_callback = 0;
 static int num_components = 0;
@@ -164,16 +147,6 @@ int FTBCI_util_is_equal_event(const void *lhs_void, const void *rhs_void)
     FTB_event_t *rhs = (FTB_event_t *) rhs_void;
     return FTBU_is_equal_event(lhs, rhs);
 }
-
-
-#ifdef FTB_TAG
-int FTBCI_util_is_equal_tag(const void *lhs_void, const void *rhs_void)
-{
-    FTB_tag_t *lhs = (FTB_tag_t *) lhs_void;
-    FTB_tag_t *rhs = (FTB_tag_t *) rhs_void;
-    return (*lhs == *rhs);
-}
-#endif
 
 
 int FTBCI_util_is_equal_clienthandle(const void *lhs_void, const void *rhs_void)
@@ -923,11 +896,6 @@ static void *FTBCI_callback_component(void *arg)
                 memcpy(receive_event.event_payload, entry->event_inst.event_payload,
                        FTB_MAX_PAYLOAD_DATA);
                 memcpy(&receive_event.incoming_src, &entry->src.location_id, sizeof(FTB_location_id_t));
-#ifdef FTB_TAG
-                memcpy(&receive_event.len, &entry->event_inst.len, sizeof(FTB_tag_len_t));
-                memcpy(receive_event.dynamic_data, entry->event_inst.dynamic_data,
-                       FTB_MAX_DYNAMIC_DATA_SIZE);
-#endif
                 (*callback_entry->callback) (&receive_event, callback_entry->arg);
 
                 FTBCI_lock_client(client_info);
@@ -1072,10 +1040,6 @@ int FTBC_Connect(FTB_client_t * cinfo, uint8_t extension, FTB_client_handle_t * 
     FTBCI_lock_client_lib();
     if (num_components == 0) {
         FTBCI_client_info_map = FTBU_map_init(FTBCI_util_is_equal_clienthandle);
-#ifdef FTB_TAG
-        FTBCI_tag_map = FTBU_map_init(FTBCI_util_is_equal_tag);
-        memset(tag_string, 0, FTB_MAX_DYNAMIC_DATA_SIZE);
-#endif
 	int ret1 = 0;
         if ((ret1 = FTBM_Init(1)) != FTB_SUCCESS) {
 		FTBCI_unlock_client_lib();
@@ -1573,11 +1537,6 @@ int FTBC_Publish(FTB_client_handle_t client_handle, const char *event_name,
     strcpy(msg.event.region, client_handle.client_id.region);
     strcpy(msg.event.comp_cat, client_handle.client_id.comp_cat);
     strcpy(msg.event.comp, client_handle.client_id.comp);
-#ifdef FTB_TAG
-    FTBCI_lock_client_lib();
-    memcpy(&msg.event.dynamic_data, tag_string, FTB_MAX_DYNAMIC_DATA_SIZE);
-    FTBCI_unlock_client_lib();
-#endif
     memcpy(&msg.src, client_info->id, sizeof(FTB_id_t));
 
     if (event_properties == NULL) {
@@ -1677,11 +1636,6 @@ int FTBC_Poll_event(FTB_subscribe_handle_t subscribe_handle, FTB_receive_event_t
                            FTB_MAX_PAYLOAD_DATA);
                     memcpy(&receive_event->incoming_src, &entry->src.location_id,
                            sizeof(FTB_location_id_t));
-#ifdef FTB_TAG
-                    memcpy(&receive_event->len, &entry->event_inst.len, sizeof(FTB_tag_len_t));
-                    memcpy(receive_event->dynamic_data, entry->event_inst.dynamic_data,
-                           FTB_MAX_DYNAMIC_DATA_SIZE);
-#endif
                     break;
                 }
                 else {
@@ -1802,9 +1756,6 @@ int FTBC_Disconnect(FTB_client_handle_t client_handle)
     if (num_components == 0) {
         FTBM_Finalize();
         FTBU_map_finalize(FTBCI_client_info_map);
-#ifdef FTB_TAG
-        FTBU_map_finalize(FTBCI_tag_map);
-#endif
         FTBCI_client_info_map = NULL;
     }
     FTBCI_unlock_client_lib();
@@ -1814,147 +1765,3 @@ int FTBC_Disconnect(FTB_client_handle_t client_handle)
     FTBU_INFO("FTBC_Disconnect Out");
     return FTB_SUCCESS;
 }
-
-
-#ifdef FTB_TAG
-static void FTBCI_util_update_tag_string()
-{
-    int offset = 0;
-    FTBU_map_node_t *iter;
-    /* Format: 1 byte tag count (M) + M*{tag, len(N), N byte data */
-    memcpy(tag_string, &tag_count, sizeof(tag_count));
-    offset += sizeof(tag_count);
-    iter = FTBU_map_begin(FTBCI_tag_map);
-    while (iter != FTBU_map_end(FTBCI_tag_map)) {
-        FTBCI_tag_entry_t *entry = (FTBCI_tag_entry_t *) FTBU_map_get_data(iter);
-        memcpy(tag_string + offset, &entry->tag, sizeof(FTB_tag_t));
-        offset += sizeof(FTB_tag_t);
-        memcpy(tag_string + offset, &entry->data_len, sizeof(FTB_tag_len_t));
-        offset += sizeof(FTB_tag_len_t);
-        memcpy(tag_string + offset, &entry->data, entry->data_len);
-        offset += entry->data_len;
-        iter = FTBU_map_next_node(iter);
-    }
-    tag_size = offset;
-}
-
-
-int FTBC_Add_dynamic_tag(FTB_client_handle_t handle, FTB_tag_t tag, const char *tag_data,
-                         FTB_tag_len_t data_len)
-{
-    FTBU_map_node_t *iter;
-
-    FTBU_INFO("FTBC_Add_dynamic_tag In");
-
-    FTBCI_lock_client_lib();
-    if (FTB_MAX_DYNAMIC_DATA_SIZE - tag_size < data_len + sizeof(FTB_tag_len_t) + sizeof(FTB_tag_t)) {
-        FTBU_INFO("FTBC_Add_dynamic_tag Out");
-        FTBCI_unlock_client_lib();
-        return FTB_ERR_TAG_NO_SPACE;
-    }
-
-    iter = FTBU_map_find_key(FTBCI_tag_map, FTBU_MAP_PTR_KEY(&tag));
-    if (iter == FTBU_map_end(FTBCI_tag_map)) {
-        if ((FTBCI_tag_entry_t *entry = (FTBCI_tag_entry_t *) malloc(sizeof(FTBCI_tag_entry_t))) == NULL) {
-            FTBU_INFO("Malloc error in FTB library");
-            return (FTB_ERR_CLASS_FATAL + FTB_ERR_MALLOC);
-	}
-        FTBU_INFO("create a new tag");
-        entry->tag = tag;
-        entry->owner = handle;
-        entry->data_len = data_len;
-        memcpy(entry->data, tag_data, data_len);
-        FTBU_INFO
-            ("Going to call FTBU_map_insert() to insert as key=tag_entry->tag data=tag_entry map=FTBCI_tag_map");
-
-        FTBU_map_insert(FTBCI_tag_map, FTBU_MAP_PTR_KEY(&entry->tag), (void *) entry);
-        tag_count++;
-    }
-    else {
-        FTBCI_tag_entry_t *entry = (FTBCI_tag_entry_t *) FTBU_map_get_data(iter);
-        if (entry->owner == handle) {
-            FTBU_INFO("update tag");
-            entry->data_len = data_len;
-            memcpy(entry->data, tag_data, data_len);
-        }
-        else {
-            FTBU_INFO("FTBC_Add_dynamic_tag Out");
-            FTBCI_unlock_client_lib();
-            return FTB_ERR_TAG_CONFLICT;
-        }
-    }
-
-    FTBCI_util_update_tag_string();
-    FTBCI_unlock_client_lib();
-    FTBU_INFO("FTBC_Add_dynamic_tag Out");
-    return FTB_SUCCESS;
-}
-
-
-int FTBC_Remove_dynamic_tag(FTB_client_handle_t handle, FTB_tag_t tag)
-{
-    FTBU_map_node_t *iter;
-    FTBCI_tag_entry_t *entry;
-
-    FTBU_INFO("FTBC_Remove_dynamic_tag In");
-    FTBCI_lock_client_lib();
-    iter = FTBU_map_find_key(FTBCI_tag_map, FTBU_MAP_PTR_KEY(&tag));
-    if (iter == FTBU_map_end(FTBCI_tag_map)) {
-        FTBU_INFO("FTBC_Remove_dynamic_tag Out");
-        FTBCI_unlock_client_lib();
-        return FTB_ERR_TAG_NOT_FOUND;
-    }
-
-    entry = (FTBCI_tag_entry_t *) FTBU_map_get_data(iter);
-    if (entry->owner != handle) {
-        FTBU_INFO("FTBC_Remove_dynamic_tag Out");
-        FTBCI_unlock_client_lib();
-        return FTB_ERR_TAG_CONFLICT;
-    }
-
-    FTBU_map_remove_node(iter);
-    tag_count--;
-    free(entry);
-    FTBCI_util_update_tag_string();
-    FTBCI_unlock_client_lib();
-    FTBU_INFO("FTBC_Remove_dynamic_tag Out");
-    return FTB_SUCCESS;
-}
-
-
-int FTBC_Read_dynamic_tag(const FTB_receive_event_t * event, FTB_tag_t tag, char *tag_data,
-                          FTB_tag_len_t * data_len)
-{
-    uint8_t tag_count;
-    uint8_t i;
-    int offset;
-
-    FTBU_INFO("FTBC_Read_dynamic_tag In");
-    memcpy(&tag_count, event->dynamic_data, sizeof(tag_count));
-    offset = sizeof(tag_count);
-    for (i = 0; i < tag_count; i++) {
-        FTB_tag_t temp_tag;
-        FTB_tag_len_t temp_len;
-        memcpy(&temp_tag, event->dynamic_data + offset, sizeof(FTB_tag_t));
-        offset += sizeof(FTB_tag_t);
-        memcpy(&temp_len, event->dynamic_data + offset, sizeof(FTB_tag_len_t));
-        offset += sizeof(FTB_tag_len_t);
-        if (tag == temp_tag) {
-            if (*data_len < temp_len) {
-                FTBU_INFO("FTBC_Read_dynamic_tag  Out");
-                return FTB_ERR_TAG_NO_SPACE;
-            }
-            else {
-                *data_len = temp_len;
-                memcpy(tag_data, event->dynamic_data + offset, temp_len);
-                FTBU_INFO("FTBC_Read_dynamic_tag Out");
-                return FTB_SUCCESS;
-            }
-        }
-        offset += temp_len;
-    }
-
-    FTBU_INFO("FTBC_Read_dynamic_tag Out");
-    return FTB_ERR_TAG_NOT_FOUND;
-}
-#endif

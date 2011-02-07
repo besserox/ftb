@@ -103,25 +103,3 @@ int FTB_Check_error_code(const int error_code, int *error_class, int *error_valu
        return FTBC_Check_error_code(error_code, error_class, error_value);
 
 }
-
-
-#ifdef FTB_TAG
-int FTB_Add_tag(FTB_client_handle_t client_handle, FTB_tag_t tag, const char *tag_data,
-                FTB_tag_len_t data_len)
-{
-    return FTBC_Add_dynamic_tag(client_handle, tag, tag_data, data_len);
-}
-
-
-int FTB_Remove_tag(FTB_client_handle_t client_handle, FTB_tag_t tag)
-{
-    return FTBC_Remove_dynamic_tag(client_handle, tag);
-}
-
-
-int FTB_Read_tag(const FTB_receive_event_t * event, FTB_tag_t tag, char *tag_data,
-                 FTB_tag_len_t * data_len)
-{
-    return FTBC_Read_dynamic_tag(event, tag, tag_data, data_len);
-}
-#endif

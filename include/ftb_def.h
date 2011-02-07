@@ -36,8 +36,6 @@ extern "C" {
 #endif
 /* *INDENT-ON* */
 
-/* #define FTB_TAG */
-
 #define FTB_SUCCESS                             0
 #define FTB_ERR_GENERAL                         (1)
 #define FTB_ERR_EVENTSPACE_FORMAT               (2)
@@ -60,12 +58,6 @@ extern "C" {
 #define FTB_ERR_INVALID_PARAMETER               (19)
 #define FTB_ERR_NETWORK_GENERAL                 (20)
 #define FTB_ERR_NETWORK_NO_ROUTE                (21)
-
-#ifdef FTB_TAG
-#define FTB_ERR_TAG_NO_SPACE                    (22)
-#define FTB_ERR_TAG_CONFLICT                    (23)
-#define FTB_ERR_TAG_NOT_FOUND                   (24)
-#endif
 
 #define FTB_ERR_MALLOC                         (25)
 #define FTB_ERR_FTBABORT                       (26)
@@ -104,17 +96,6 @@ extern "C" {
  */
 #define FTB_EVENT_SIZE               720
 
-#ifdef FTB_TAG
-#define FTB_MAX_DYNAMIC_DATA_SIZE   ((FTB_EVENT_SIZE)-sizeof(FTB_eventspace_t)\
-        -sizeof(FTB_event_name_t)\
-        -sizeof(FTB_severity_t)\
-        -sizeof(FTB_client_jobid_t)\
-        -sizeof(FTB_client_name_t)\
-        -sizeof(FTB_hostip_t)\
-        -sizeof(int)\
-        -sizeof(FTB_tag_len_t)\
-        -sizeof(FTB_event_properties_t))
-#endif
 
 /*
  * In case of some error, that FTB client just stop functioning,
@@ -148,10 +129,6 @@ typedef char FTB_hostip_t[FTB_MAX_HOST_ADDR];
 typedef char FTB_subscription_style_t[FTB_MAX_SUBSCRIPTION_STYLE];
 typedef char FTB_pid_starttime_t[FTB_MAX_PID_TIME];
 
-#ifdef FTB_TAG
-typedef uint8_t FTB_tag_t;
-typedef uint8_t FTB_tag_len_t;
-#endif
 
 typedef struct FTB_client {
     FTB_client_schema_ver_t client_schema_ver;
@@ -189,10 +166,6 @@ typedef struct FTB_receive_event_info {
     FTB_location_id_t incoming_src;
     uint8_t event_type;
     char event_payload[FTB_MAX_PAYLOAD_DATA];
-#ifdef FTB_TAG
-    FTB_tag_len_t len;
-    char dynamic_data[FTB_MAX_DYNAMIC_DATA_SIZE];
-#endif
 } FTB_receive_event_t;
 
 typedef struct FTB_client_handle FTB_client_handle_t;
@@ -237,10 +210,6 @@ typedef struct FTB_event {
     uint16_t seqnum;
     uint8_t event_type;
     char event_payload[FTB_MAX_PAYLOAD_DATA];
-#ifdef FTB_TAG
-    FTB_tag_len_t len;
-    char dynamic_data[FTB_MAX_DYNAMIC_DATA_SIZE];
-#endif
 } FTB_event_t;
 
 struct FTB_subscribe_handle {
