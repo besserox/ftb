@@ -47,7 +47,8 @@
 extern FILE *FTBU_log_file_fp;
 
 /* The variable FTBU_map_node_t is redefined to the following for code clarity sake */
-typedef FTBU_map_node_t FTBCI_map_mask_2_callback_entry_t;
+typedef FTBU_map_node_t FTBCI_map_subscribed_mask_to_callback_entry_t;
+typedef FTBU_map_node_t FTBCI_map_subscribed_mask_to_polling_entry_t;
 typedef FTBU_map_node_t FTBCI_map_publishable_event_index_to_event_details;
 typedef FTBU_map_node_t FTBCI_map_client_handle_to_client_info_t;
 
@@ -78,8 +79,8 @@ typedef struct FTBCI_client_info {
     FTBU_list_node_t *event_queue;  /* entry type: event_inst_list */
     FTBU_list_node_t *callback_event_queue; /* entry type: event_inst_list */
 
-    FTBCI_map_mask_2_callback_entry_t *polling_map;
-    FTBCI_map_mask_2_callback_entry_t *callback_map;
+    FTBCI_map_subscribed_mask_to_polling_entry_t *polling_map;
+    FTBCI_map_subscribed_mask_to_callback_entry_t *callback_map;
     FTBCI_map_publishable_event_index_to_event_details *declared_events_map;
     int total_publish_events;
     uint16_t seqnum;

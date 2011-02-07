@@ -41,31 +41,29 @@
 extern FILE *FTBU_log_file_fp;
 
 /* The variable FTBU_map_node_t is redefined to the following for code clarity sake */
-typedef FTBU_map_node_t FTBMI_set_event_mask_t; /*a set of event_mask */
+typedef FTBU_map_node_t FTBMI_set_comp_subscribed_mask_t; /*a set of event_mask */
 typedef FTBU_map_node_t FTBMI_map_ftb_id_to_comp_info_t; /*ftb_id as key and comp_info as data */
 typedef FTBU_map_node_t FTBMI_map_subscription_mask_to_comp_info_map_t; /*event_mask as key, a _map_ of comp_info as data */
 
 typedef struct FTBMI_comp_info {
     FTB_id_t id;
     pthread_mutex_t lock;
-    FTBMI_set_event_mask_t *catch_event_set;
+    FTBMI_set_comp_subscribed_mask_t *comp_subscribed_masks_set;
 } FTBMI_comp_info_t;
 
-
-
-typedef struct FTBM_node_info {
+typedef struct FTBMI_manager_instance_info {
     FTB_location_id_t parent;   /*NULL if root */
     FTB_id_t self;
     uint8_t err_handling;
     int leaf;
     volatile int waiting;
     FTBMI_map_ftb_id_to_comp_info_t *peers;  /*the map of peers includes parent */
-    FTBMI_map_subscription_mask_to_comp_info_map_t *catch_event_map;
-} FTBMI_node_info_t;
+    FTBMI_map_subscription_mask_to_comp_info_map_t *subscribed_masks_map; /* the map which identifies what all components have subscribed for events that match a particular subscription mask */
+} FTBMI_manager_instance_info_t;
 
 static pthread_mutex_t FTBMI_lock = PTHREAD_MUTEX_INITIALIZER;
 static pthread_mutex_t FTBN_lock = PTHREAD_MUTEX_INITIALIZER;
-static FTBMI_node_info_t FTBMI_info;
+static FTBMI_manager_instance_info_t FTBMI_info;
 static volatile int FTBMI_initialized = 0;
 
 pthread_mutex_t message_queue_mutex;
@@ -179,9 +177,9 @@ static void FTBMI_util_remove_com_from_catch_map(const FTBMI_comp_info_t * comp,
     FTB_event_t *mask_manager;
 
     FTBU_INFO("In FTBMI_util_remove_com_from_catch_map");
-    iter = FTBU_map_find_key(FTBMI_info.catch_event_map, FTBU_MAP_PTR_KEY(mask));
-    if (iter == FTBU_map_end(FTBMI_info.catch_event_map)) {
-        FTBU_WARNING("Agent cannot find subscription string/mask in its catch_event_map");
+    iter = FTBU_map_find_key(FTBMI_info.subscribed_masks_map, FTBU_MAP_PTR_KEY(mask));
+    if (iter == FTBU_map_end(FTBMI_info.subscribed_masks_map)) {
+        FTBU_WARNING("Agent cannot find subscription string/mask in its subscribed_masks_map");
         return;
     }
 
@@ -189,7 +187,7 @@ static void FTBMI_util_remove_com_from_catch_map(const FTBMI_comp_info_t * comp,
     map = (FTBMI_map_ftb_id_to_comp_info_t *) FTBU_map_get_data(iter);
     ret = FTBU_map_remove_key(map, FTBU_MAP_PTR_KEY(&comp->id));
     if (ret == FTBU_NOT_EXIST) {
-        FTBU_WARNING("Agent cannot find the component for the specified mask from its catch_event_map");
+        FTBU_WARNING("Agent cannot find the component for the specified mask from its subscribed_masks_map");
         return;
     }
 
@@ -208,16 +206,16 @@ static void FTBMI_util_clean_component(FTBMI_comp_info_t * comp)
 {
     /*assumes it has the lock of component */
     /*remove it from catch map */
-    FTBU_map_node_t *iter = FTBU_map_begin(comp->catch_event_set);
+    FTBU_map_node_t *iter = FTBU_map_begin(comp->comp_subscribed_masks_set);
 
-    for (; iter != FTBU_map_end(comp->catch_event_set); iter = FTBU_map_next_node(iter)) {
+    for (; iter != FTBU_map_end(comp->comp_subscribed_masks_set); iter = FTBU_map_next_node(iter)) {
         FTB_event_t *mask = (FTB_event_t *) FTBU_map_get_data(iter);
         FTBMI_util_remove_com_from_catch_map(comp, mask);
         free(mask);
     }
 
     /*Finalize comp's catch set */
-    FTBU_map_finalize(comp->catch_event_set);
+    FTBU_map_finalize(comp->comp_subscribed_masks_set);
 }
 
 static FTBMI_comp_info_t *FTBMI_lookup_component(const FTB_id_t * id)
@@ -291,7 +289,7 @@ static int FTBMI_util_reconnect()
         pthread_mutex_init(&comp->lock, NULL);
 
 	ret = 0;
-	ret = FTBU_map_init(FTBMI_util_is_equal_event_mask, &comp->catch_event_set);
+	ret = FTBU_map_init(FTBMI_util_is_equal_event_mask, &comp->comp_subscribed_masks_set);
         FTBU_INFO
             ("Going to call FTBU_map_insert() to insert as key=client_info->comp_info->id (parents id), data=comp_info (parents backplane) map=FTBMI_info.peers");
         if (FTBU_map_insert(FTBMI_info.peers, FTBU_MAP_PTR_KEY(&comp->id), (void *) comp) == FTBU_EXIST) {
@@ -304,8 +302,8 @@ static int FTBMI_util_reconnect()
         msg.msg_type = FTBM_MSG_TYPE_REG_SUBSCRIPTION;
         memcpy(&msg.dst, &comp->id, sizeof(FTB_id_t));
 
-        for (iter = FTBU_map_begin(FTBMI_info.catch_event_map);
-             iter != FTBU_map_end(FTBMI_info.catch_event_map); iter = FTBU_map_next_node(iter)) {
+        for (iter = FTBU_map_begin(FTBMI_info.subscribed_masks_map);
+             iter != FTBU_map_end(FTBMI_info.subscribed_masks_map); iter = FTBU_map_next_node(iter)) {
             FTB_event_t *mask = (FTB_event_t *) FTBU_map_get_key(iter).key_ptr;
             memcpy(&msg.event, mask, sizeof(FTB_event_t));
             ret = FTBN_Send_msg(&msg);
@@ -368,12 +366,12 @@ int FTBM_Get_catcher_comp_list(const FTB_event_t * event, FTB_id_t ** list, int 
     FTBU_INFO("Agent going through the list of clients that have subscribed to the event");
 
     /*
-     * Masks are stored in my catch_event_map. Go through my
-     * catch_event_map to check if (1) Event matches the mask and
+     * Masks are stored in my subscribed_masks_map. Go through my
+     * subscribed_masks_map to check if (1) Event matches the mask and
      * (2) Who all are interested in getting this event that matched the mask
      */
-    for (iter_mask = FTBU_map_begin(FTBMI_info.catch_event_map);
-         iter_mask != FTBU_map_end(FTBMI_info.catch_event_map);
+    for (iter_mask = FTBU_map_begin(FTBMI_info.subscribed_masks_map);
+         iter_mask != FTBU_map_end(FTBMI_info.subscribed_masks_map);
          iter_mask = FTBU_map_next_node(iter_mask)) {
         FTB_event_t *mask = (FTB_event_t *) FTBU_map_get_key(iter_mask).key_ptr;
 
@@ -381,7 +379,7 @@ int FTBM_Get_catcher_comp_list(const FTB_event_t * event, FTB_id_t ** list, int 
         if (FTBU_match_mask(event, mask)) {
 
             FTBU_INFO
-                ("Event matched against mask in catch_event_map. Retrieving clients who have subscribed to this mask");
+                ("Event matched against mask in subscribed_masks_map. Retrieving clients who have subscribed to this mask");
             FTBU_map_node_t *map = (FTBU_map_node_t *) FTBU_map_get_data(iter_mask);
 
             /*
@@ -488,7 +486,7 @@ int FTBM_Init(int leaf)
 	ret = 0;
 	ret = FTBU_map_init(FTBMI_util_is_equal_ftb_id, &FTBMI_info.peers);
 	ret = 0;
-	ret = FTBU_map_init(FTBMI_util_is_equal_event_mask, &FTBMI_info.catch_event_map);
+	ret = FTBU_map_init(FTBMI_util_is_equal_event_mask, &FTBMI_info.subscribed_masks_map);
         FTBMI_info.err_handling = FTB_ERR_HANDLE_RECOVER;
 
         pthread_mutex_init(&message_queue_mutex, NULL);
@@ -496,7 +494,7 @@ int FTBM_Init(int leaf)
     }
     else {
         FTBMI_info.peers = NULL;
-        FTBMI_info.catch_event_map = NULL;
+        FTBMI_info.subscribed_masks_map = NULL;
         FTBMI_info.err_handling = FTB_ERR_HANDLE_NONE;  /* May change to recover mode if one client component requires so */
     }
 
@@ -537,7 +535,7 @@ int FTBM_Init(int leaf)
         comp->id.client_id.ext = 0;
         pthread_mutex_init(&comp->lock, NULL);
 	ret = 0;
-	ret = FTBU_map_init(FTBMI_util_is_equal_event_mask, &comp->catch_event_set);
+	ret = FTBU_map_init(FTBMI_util_is_equal_event_mask, &comp->comp_subscribed_masks_set);
         FTBU_INFO
             ("Agent is going to call FTBU_map_insert() to insert as key=comp_id, data=comp(parents) map=FTBMI_info.peers");
         if (FTBU_map_insert(FTBMI_info.peers, FTBU_MAP_PTR_KEY(&comp->id), (void *) comp) == FTBU_EXIST) {
@@ -593,7 +591,7 @@ int FTBM_Finalize()
         }
 
         FTBU_map_finalize(FTBMI_info.peers);
-        FTBU_map_finalize(FTBMI_info.catch_event_map);
+        FTBU_map_finalize(FTBMI_info.subscribed_masks_map);
     }
     else {
         int ret;
@@ -631,7 +629,7 @@ int FTBM_Abort()
         }
 
         FTBU_map_finalize(FTBMI_info.peers);
-        FTBU_map_finalize(FTBMI_info.catch_event_map);
+        FTBU_map_finalize(FTBMI_info.subscribed_masks_map);
     }
 
     FTBN_Abort();
@@ -662,7 +660,7 @@ int FTBM_Client_register(const FTB_id_t * id)
     pthread_mutex_init(&comp->lock, NULL);
 
     ret = 0;
-    ret = FTBU_map_init(FTBMI_util_is_equal_event_mask, &comp->catch_event_set);
+    ret = FTBU_map_init(FTBMI_util_is_equal_event_mask, &comp->comp_subscribed_masks_set);
 
     lock_manager();
 
@@ -672,7 +670,7 @@ int FTBM_Client_register(const FTB_id_t * id)
     if (FTBU_map_insert(FTBMI_info.peers, FTBU_MAP_PTR_KEY(&comp->id), (void *) comp) == FTBU_EXIST) {
         FTBU_WARNING("Client already registered as a peer");
         unlock_manager();
-        FTBU_map_finalize(comp->catch_event_set);
+        FTBU_map_finalize(comp->comp_subscribed_masks_set);
         free(comp);
         FTBU_INFO("FTBM_Client_register Out");
         return FTB_ERR_INVALID_PARAMETER;
@@ -690,8 +688,8 @@ int FTBM_Client_register(const FTB_id_t * id)
         memcpy(&msg.dst, id, sizeof(FTB_id_t));
 
         FTBU_map_node_t *iter;
-        for (iter = FTBU_map_begin(FTBMI_info.catch_event_map);
-             iter != FTBU_map_end(FTBMI_info.catch_event_map); iter = FTBU_map_next_node(iter)) {
+        for (iter = FTBU_map_begin(FTBMI_info.subscribed_masks_map);
+             iter != FTBU_map_end(FTBMI_info.subscribed_masks_map); iter = FTBU_map_next_node(iter)) {
             FTB_event_t *mask = (FTB_event_t *) FTBU_map_get_key(iter).key_ptr;
             memcpy(&msg.event, mask, sizeof(FTB_event_t));
             ret = FTBN_Send_msg(&msg);
@@ -833,33 +831,33 @@ int FTBM_Register_subscription(const FTB_id_t * id, FTB_event_t * event)
     /*
      * Agent maintains a list of all components. For each component,
      * it keep track of the unique subscription/masks that the component
-     * has subscribed to in the catch_event_set subfield.
+     * has subscribed to in the comp_subscribed_masks_set subfield.
      */
-    FTBU_INFO("Agent inserting the new subscription/mask to the catch_event_set of the component");
-    if (FTBU_map_insert(comp->catch_event_set, FTBU_MAP_PTR_KEY(temp_mask1), (void *) temp_mask1)
+    FTBU_INFO("Agent inserting the new subscription/mask to the comp_subscribed_masks_set of the component");
+    if (FTBU_map_insert(comp->comp_subscribed_masks_set, FTBU_MAP_PTR_KEY(temp_mask1), (void *) temp_mask1)
         == FTBU_EXIST) {
         free(temp_mask1);
         FTBU_INFO("FTBM_Register_subscription Out - Mask for the component already registered");
     }
 
     /*
-     * Every mask in the catch_event_set is also present in the catch_event_map map.
-     * The catch_event_map map uses the 'mask' as the key and points to a map of 'FTB_ids'.
+     * Every mask in the comp_subscribed_masks_set is also present in the subscribed_masks_map map.
+     * The subscribed_masks_map map uses the 'mask' as the key and points to a map of 'FTB_ids'.
      * These FTB_ids is the collection of ftb-ids who are interested in receiving an event that
      * matches this mask
      *
-     * First, this new mask is checked to see if it is already present in the catch_event_map map.
+     * First, this new mask is checked to see if it is already present in the subscribed_masks_map map.
      * If it is, then the source FTB_id of this subscription request is added to the list of
      * the 'FTB_ids' map
      *
-     * If this mask is not present as a 'key' in the catch_event_map map, then add it to the
-     * catch_event_map map. Also create the intial map of FTB_ids for this mask and add the source
+     * If this mask is not present as a 'key' in the subscribed_masks_map map, then add it to the
+     * subscribed_masks_map map. Also create the intial map of FTB_ids for this mask and add the source
      * FTB-id of this request to it.
      */
 
     lock_manager();
-    iter = FTBU_map_find_key(FTBMI_info.catch_event_map, FTBU_MAP_PTR_KEY(temp_mask1));
-    if (iter == FTBU_map_end(FTBMI_info.catch_event_map)) {
+    iter = FTBU_map_find_key(FTBMI_info.subscribed_masks_map, FTBU_MAP_PTR_KEY(temp_mask1));
+    if (iter == FTBU_map_end(FTBMI_info.subscribed_masks_map)) {
         FTBMI_map_ftb_id_to_comp_info_t *new_map;
 	int ret;
 
@@ -874,13 +872,13 @@ int FTBM_Register_subscription(const FTB_id_t * id, FTB_event_t * event)
             ("Agent has received a new subscription string/mask for registration from host:%s",
              comp->id.location_id.hostname);
         FTBU_INFO
-            ("Agent inserting the new subscription (as a key) and the corresponding component information (as data) in its global catch_event_map");
+            ("Agent inserting the new subscription (as a key) and the corresponding component information (as data) in its global subscribed_masks_map");
         /*
          * The received mask becomes the key and the data portion for this key is a map containing the component information.
          * The map, in turn, is a linked list with the ftb_id of the component as the key and the rest of the component
          * information as the data.
          */
-        FTBU_map_insert(FTBMI_info.catch_event_map, FTBU_MAP_PTR_KEY(temp_mask2), (void *) new_map);
+        FTBU_map_insert(FTBMI_info.subscribed_masks_map, FTBU_MAP_PTR_KEY(temp_mask2), (void *) new_map);
         FTBU_map_insert(new_map, FTBU_MAP_PTR_KEY(&comp->id), (void *) comp);
         FTBMI_util_reg_propagation(FTBM_MSG_TYPE_REG_SUBSCRIPTION, event, &id->location_id);
 
@@ -947,8 +945,8 @@ int FTBM_Cancel_subscription(const FTB_id_t * id, FTB_event_t * event)
 
     lock_comp(comp);
     FTBU_INFO("util_reg_catch_cancel");
-    iter = FTBU_map_find_key(comp->catch_event_set, FTBU_MAP_PTR_KEY(event));
-    if (iter == FTBU_map_end(comp->catch_event_set)) {
+    iter = FTBU_map_find_key(comp->comp_subscribed_masks_set, FTBU_MAP_PTR_KEY(event));
+    if (iter == FTBU_map_end(comp->comp_subscribed_masks_set)) {
         FTBU_WARNING("Not found throw entry");
         FTBU_INFO("FTBM_Cancel_subscription Out");
         unlock_comp(comp);
