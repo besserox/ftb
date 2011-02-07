@@ -275,6 +275,14 @@ else
 	fi
 fi
 
+if test "x${MPICC}" = "x" ; then
+        AC_MSG_WARN([Ensure MPICC environment variable is set for compilation of MPI programs])
+	warnings_set+="************** WARNING: Ensure MPICC environment variable is set for compilation of MPI programs"$'\n';
+fi
+AM_CONDITIONAL([HAVE_MPI], [test "x${MPICC}" != "x"])
+
+
+
 AC_CONFIG_FILES([Makefile \
 	include/ftb.h])
 AC_OUTPUT
