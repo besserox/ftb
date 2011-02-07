@@ -40,7 +40,10 @@
 
 extern FILE *FTBU_log_file_fp;
 
+/* The variable FTBU_map_node_t is redefined to the following for code clarity sake */
 typedef FTBU_map_node_t FTBMI_set_event_mask_t; /*a set of event_mask */
+typedef FTBU_map_node_t FTBMI_map_ftb_id_to_comp_info_t; /*ftb_id as key and comp_info as data */
+typedef FTBU_map_node_t FTBMI_map_event_mask_2_comp_info_map_t; /*event_mask as key, a _map_ of comp_info as data */
 
 typedef struct FTBMI_comp_info {
     FTB_id_t id;
@@ -48,9 +51,7 @@ typedef struct FTBMI_comp_info {
     FTBMI_set_event_mask_t *catch_event_set;
 } FTBMI_comp_info_t;
 
-typedef FTBU_map_node_t FTBMI_map_ftb_id_2_comp_info_t; /*ftb_id as key and comp_info as data */
 
-typedef FTBU_map_node_t FTBMI_map_event_mask_2_comp_info_map_t; /*event_mask as key, a _map_ of comp_info as data */
 
 typedef struct FTBM_node_info {
     FTB_location_id_t parent;   /*NULL if root */
@@ -58,7 +59,7 @@ typedef struct FTBM_node_info {
     uint8_t err_handling;
     int leaf;
     volatile int waiting;
-    FTBMI_map_ftb_id_2_comp_info_t *peers;  /*the map of peers includes parent */
+    FTBMI_map_ftb_id_to_comp_info_t *peers;  /*the map of peers includes parent */
     FTBMI_map_event_mask_2_comp_info_map_t *catch_event_map;
 } FTBMI_node_info_t;
 
@@ -173,7 +174,7 @@ static void FTBMI_util_remove_com_from_catch_map(const FTBMI_comp_info_t * comp,
                                                  const FTB_event_t * mask)
 {
     int ret;
-    FTBMI_map_ftb_id_2_comp_info_t *map;
+    FTBMI_map_ftb_id_to_comp_info_t *map;
     FTBU_map_node_t *iter;
     FTB_event_t *mask_manager;
 
@@ -185,7 +186,7 @@ static void FTBMI_util_remove_com_from_catch_map(const FTBMI_comp_info_t * comp,
     }
 
     mask_manager = (FTB_event_t *) FTBU_map_get_key(iter).key_ptr;
-    map = (FTBMI_map_ftb_id_2_comp_info_t *) FTBU_map_get_data(iter);
+    map = (FTBMI_map_ftb_id_to_comp_info_t *) FTBU_map_get_data(iter);
     ret = FTBU_map_remove_key(map, FTBU_MAP_PTR_KEY(&comp->id));
     if (ret == FTBU_NOT_EXIST) {
         FTBU_WARNING("Agent cannot find the component for the specified mask from its catch_event_map");
@@ -347,7 +348,7 @@ int FTBM_Get_catcher_comp_list(const FTB_event_t * event, FTB_id_t ** list, int 
 {
     FTBU_map_node_t *iter_comp;
     FTBU_map_node_t *iter_mask;
-    FTBMI_map_ftb_id_2_comp_info_t *catcher_set;
+    FTBMI_map_ftb_id_to_comp_info_t *catcher_set;
     int temp_len = 0;
     int ret = 0;
 
@@ -859,7 +860,7 @@ int FTBM_Register_subscription(const FTB_id_t * id, FTB_event_t * event)
     lock_manager();
     iter = FTBU_map_find_key(FTBMI_info.catch_event_map, FTBU_MAP_PTR_KEY(temp_mask1));
     if (iter == FTBU_map_end(FTBMI_info.catch_event_map)) {
-        FTBMI_map_ftb_id_2_comp_info_t *new_map;
+        FTBMI_map_ftb_id_to_comp_info_t *new_map;
 	int ret;
 
         if ((temp_mask2 = (FTB_event_t *) malloc(sizeof(FTB_event_t))) == NULL) {
@@ -885,9 +886,9 @@ int FTBM_Register_subscription(const FTB_id_t * id, FTB_event_t * event)
 
     }
     else {
-        FTBMI_map_ftb_id_2_comp_info_t *existing_map;
+        FTBMI_map_ftb_id_to_comp_info_t *existing_map;
 
-        existing_map = (FTBMI_map_ftb_id_2_comp_info_t *) FTBU_map_get_data(iter);
+        existing_map = (FTBMI_map_ftb_id_to_comp_info_t *) FTBU_map_get_data(iter);
         if (FTBU_map_insert(existing_map, FTBU_MAP_PTR_KEY(&comp->id), (void *) comp) == FTBU_EXIST) {
             /* FTBU_WARNING("Agent has received duplicate registration request for subscription string/mask and client combination; host = %s", comp->id.location_id.hostname); */
         }

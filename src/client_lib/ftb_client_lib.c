@@ -46,6 +46,11 @@
 
 extern FILE *FTBU_log_file_fp;
 
+/* The variable FTBU_map_node_t is redefined to the following for code clarity sake */
+typedef FTBU_map_node_t FTBCI_map_mask_2_callback_entry_t;
+typedef FTBU_map_node_t FTBCI_map_publishable_event_index_to_event_details;
+typedef FTBU_map_node_t FTBCI_map_client_handle_2_client_info_t;
+
 typedef struct FTBCI_event_inst_list {
     FTB_event_t event_inst;
     FTB_id_t src;
@@ -61,8 +66,6 @@ typedef struct FTBCI_polling_entry {
     FTB_event_t *mask;
 } FTBCI_polling_entry_t;
 
-typedef FTBU_map_node_t FTBCI_map_mask_2_callback_entry_t;
-typedef FTBU_map_node_t FTBCI_map_publishable_event_index_to_event_details;
 
 typedef struct FTBCI_client_info {
     FTB_client_handle_t client_handle;
@@ -100,7 +103,6 @@ typedef struct FTBCI_publish_event_details {
 
 static pthread_mutex_t FTBCI_lock = PTHREAD_MUTEX_INITIALIZER;
 static pthread_t callback_thread;
-typedef FTBU_map_node_t FTBCI_map_client_handle_2_client_info_t;
 static FTBCI_map_client_handle_2_client_info_t *FTBCI_client_info_map = NULL;
 
 static int enable_callback = 0;
