@@ -43,7 +43,7 @@ extern FILE *FTBU_log_file_fp;
 /* The variable FTBU_map_node_t is redefined to the following for code clarity sake */
 typedef FTBU_map_node_t FTBMI_set_event_mask_t; /*a set of event_mask */
 typedef FTBU_map_node_t FTBMI_map_ftb_id_to_comp_info_t; /*ftb_id as key and comp_info as data */
-typedef FTBU_map_node_t FTBMI_map_event_mask_2_comp_info_map_t; /*event_mask as key, a _map_ of comp_info as data */
+typedef FTBU_map_node_t FTBMI_map_subscription_mask_to_comp_info_map_t; /*event_mask as key, a _map_ of comp_info as data */
 
 typedef struct FTBMI_comp_info {
     FTB_id_t id;
@@ -60,7 +60,7 @@ typedef struct FTBM_node_info {
     int leaf;
     volatile int waiting;
     FTBMI_map_ftb_id_to_comp_info_t *peers;  /*the map of peers includes parent */
-    FTBMI_map_event_mask_2_comp_info_map_t *catch_event_map;
+    FTBMI_map_subscription_mask_to_comp_info_map_t *catch_event_map;
 } FTBMI_node_info_t;
 
 static pthread_mutex_t FTBMI_lock = PTHREAD_MUTEX_INITIALIZER;
