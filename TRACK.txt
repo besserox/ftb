@@ -1,0 +1,3 @@
+Documentation changes
+1. Remove all references to tags from documentation
+1. database server renamed to bootstrap server 
