@@ -172,11 +172,12 @@ int main(int argc, char *argv[])
     struct sockaddr_in server, client;
     int slen;
     int optval = 1;
-
+    int ret = 0;
     /* Throw all the log file data to stderr for now */
     FTBU_log_file_fp = stderr;
 
-    FTBNI_bootstrap_addr_map = FTBU_map_init(FTNI_is_equal_addr_sock);
+    ret = 0;
+    ret = FTBU_map_init(FTNI_is_equal_addr_sock, &FTBNI_bootstrap_addr_map);
     FTBNI_addr_count = 0;
 
     /* Get the bootstrap ip address, port and agent information */

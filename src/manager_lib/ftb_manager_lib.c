@@ -275,6 +275,7 @@ static int FTBMI_util_reconnect()
     if (!FTBMI_info.leaf && FTBMI_info.parent.pid != 0) {
         FTBMI_comp_info_t *comp;
         FTBU_map_node_t *iter;
+	int ret = 0;
 
         FTBU_INFO("Adding parent to peers while reconecting");
         if ((comp = (FTBMI_comp_info_t *) malloc(sizeof(FTBMI_comp_info_t))) == NULL) {
@@ -287,8 +288,9 @@ static int FTBMI_util_reconnect()
         strcpy(comp->id.client_id.comp, "FTB_COMP_MANAGER");
         comp->id.client_id.ext = 0;
         pthread_mutex_init(&comp->lock, NULL);
-        comp->catch_event_set = (FTBMI_set_event_mask_t *) FTBU_map_init(FTBMI_util_is_equal_event_mask);
 
+	ret = 0;
+	ret = FTBU_map_init(FTBMI_util_is_equal_event_mask, &comp->catch_event_set);
         FTBU_INFO
             ("Going to call FTBU_map_insert() to insert as key=client_info->comp_info->id (parents id), data=comp_info (parents backplane) map=FTBMI_info.peers");
         if (FTBU_map_insert(FTBMI_info.peers, FTBU_MAP_PTR_KEY(&comp->id), (void *) comp) == FTBU_EXIST) {
@@ -347,6 +349,7 @@ int FTBM_Get_catcher_comp_list(const FTB_event_t * event, FTB_id_t ** list, int 
     FTBU_map_node_t *iter_mask;
     FTBMI_map_ftb_id_2_comp_info_t *catcher_set;
     int temp_len = 0;
+    int ret = 0;
 
     if (!FTBMI_initialized)
         return FTB_ERR_GENERAL;
@@ -356,7 +359,8 @@ int FTBM_Get_catcher_comp_list(const FTB_event_t * event, FTB_id_t ** list, int 
      * gotten the event and which are not, to avoid duplication
      */
     FTBU_INFO("FTBM_Get_catcher_comp_list In");
-    catcher_set = (FTBMI_map_ftb_id_2_comp_info_t *) FTBU_map_init(FTBMI_util_is_equal_ftb_id);
+    ret = 0;
+    ret = FTBU_map_init(FTBMI_util_is_equal_ftb_id, &catcher_set);
 
     lock_manager();
 
@@ -480,9 +484,10 @@ int FTBM_Init(int leaf)
 
     FTBMI_info.leaf = leaf;
     if (!leaf) {
-        FTBMI_info.peers = (FTBMI_map_ftb_id_2_comp_info_t *) FTBU_map_init(FTBMI_util_is_equal_ftb_id);
-        FTBMI_info.catch_event_map =
-            (FTBMI_map_event_mask_2_comp_info_map_t *) FTBU_map_init(FTBMI_util_is_equal_event_mask);
+	ret = 0;
+	ret = FTBU_map_init(FTBMI_util_is_equal_ftb_id, &FTBMI_info.peers);
+	ret = 0;
+	ret = FTBU_map_init(FTBMI_util_is_equal_event_mask, &FTBMI_info.catch_event_map);
         FTBMI_info.err_handling = FTB_ERR_HANDLE_RECOVER;
 
         pthread_mutex_init(&message_queue_mutex, NULL);
@@ -518,6 +523,7 @@ int FTBM_Init(int leaf)
 
     if (!leaf && FTBMI_info.parent.pid != 0) {
         FTBMI_comp_info_t *comp;
+	int ret = 0;
         FTBU_INFO("Adding parent to peers");
         if ((comp = (FTBMI_comp_info_t *) malloc(sizeof(FTBMI_comp_info_t))) == NULL) {
             FTBU_INFO("Malloc error in FTB library");
@@ -529,8 +535,8 @@ int FTBM_Init(int leaf)
         strcpy(comp->id.client_id.comp, "FTB_COMP_MANAGER");
         comp->id.client_id.ext = 0;
         pthread_mutex_init(&comp->lock, NULL);
-        comp->catch_event_set = (FTBMI_set_event_mask_t *) FTBU_map_init(FTBMI_util_is_equal_event_mask);
-
+	ret = 0;
+	ret = FTBU_map_init(FTBMI_util_is_equal_event_mask, &comp->catch_event_set);
         FTBU_INFO
             ("Agent is going to call FTBU_map_insert() to insert as key=comp_id, data=comp(parents) map=FTBMI_info.peers");
         if (FTBU_map_insert(FTBMI_info.peers, FTBU_MAP_PTR_KEY(&comp->id), (void *) comp) == FTBU_EXIST) {
@@ -653,7 +659,9 @@ int FTBM_Client_register(const FTB_id_t * id)
     }
     memcpy(&comp->id, id, sizeof(FTB_id_t));
     pthread_mutex_init(&comp->lock, NULL);
-    comp->catch_event_set = (FTBMI_set_event_mask_t *) FTBU_map_init(FTBMI_util_is_equal_event_mask);
+
+    ret = 0;
+    ret = FTBU_map_init(FTBMI_util_is_equal_event_mask, &comp->catch_event_set);
 
     lock_manager();
 
@@ -852,14 +860,15 @@ int FTBM_Register_subscription(const FTB_id_t * id, FTB_event_t * event)
     iter = FTBU_map_find_key(FTBMI_info.catch_event_map, FTBU_MAP_PTR_KEY(temp_mask1));
     if (iter == FTBU_map_end(FTBMI_info.catch_event_map)) {
         FTBMI_map_ftb_id_2_comp_info_t *new_map;
+	int ret;
 
         if ((temp_mask2 = (FTB_event_t *) malloc(sizeof(FTB_event_t))) == NULL) {
     	    FTBU_INFO("Malloc error in FTB library");
             return (FTB_ERR_CLASS_FATAL + FTB_ERR_MALLOC);
         }
         memcpy(temp_mask2, event, sizeof(FTB_event_t));
-        new_map = (FTBMI_map_ftb_id_2_comp_info_t *) FTBU_map_init(FTBMI_util_is_equal_ftb_id);
-
+	ret = 0;
+	ret = FTBU_map_init(FTBMI_util_is_equal_ftb_id, &new_map);
         FTBU_INFO
             ("Agent has received a new subscription string/mask for registration from host:%s",
              comp->id.location_id.hostname);

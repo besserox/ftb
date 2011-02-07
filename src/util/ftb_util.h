@@ -125,7 +125,7 @@ typedef struct FTBU_list_node {
     for (pos=head->next, temp=pos->next; pos!=head; pos=temp, temp=temp->next)
 
 /* Initialize a map */
-FTBU_map_node_t *FTBU_map_init(int (*is_equal) (const void *, const void *));
+int FTBU_map_init(int (*is_equal) (const void *, const void *), FTBU_map_node_t **first_node);
 
 /* Return the beginning of the map linked list */
 FTBU_map_node_t *FTBU_map_begin(const FTBU_map_node_t * head);

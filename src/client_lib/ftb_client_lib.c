@@ -1039,7 +1039,8 @@ int FTBC_Connect(FTB_client_t * cinfo, uint8_t extension, FTB_client_handle_t * 
 
     FTBCI_lock_client_lib();
     if (num_components == 0) {
-        FTBCI_client_info_map = FTBU_map_init(FTBCI_util_is_equal_clienthandle);
+	ret = 0;
+	ret = FTBU_map_init(FTBCI_util_is_equal_clienthandle, &FTBCI_client_info_map);
 	int ret1 = 0;
         if ((ret1 = FTBM_Init(1)) != FTB_SUCCESS) {
 		FTBCI_unlock_client_lib();
@@ -1092,7 +1093,8 @@ int FTBC_Connect(FTB_client_t * cinfo, uint8_t extension, FTB_client_handle_t * 
             return (FTB_ERR_CLASS_FATAL + FTB_ERR_MALLOC);
 	}
         FTBU_list_init(client_info->event_queue);
-        client_info->polling_map = FTBU_map_init(FTBCI_util_is_equal_event);
+	ret = 0;
+	ret = FTBU_map_init(FTBCI_util_is_equal_event, &client_info->polling_map);
     }
     else {
         client_info->event_queue = NULL;
@@ -1100,10 +1102,12 @@ int FTBC_Connect(FTB_client_t * cinfo, uint8_t extension, FTB_client_handle_t * 
     }
 
     pthread_mutex_init(&client_info->lock, NULL);
-    client_info->declared_events_map = FTBU_map_init(FTBCI_util_is_equal_declared_event_index);
+    ret = 0;
+    ret = FTBU_map_init(FTBCI_util_is_equal_declared_event_index, &client_info->declared_events_map);
     if (client_info->subscription_type & FTB_SUBSCRIPTION_NOTIFY) {
         /* should this point to init and compare with equal_mask */
-        client_info->callback_map = FTBU_map_init(FTBCI_util_is_equal_event);
+	int ret = 0;
+	ret = FTBU_map_init(FTBCI_util_is_equal_event, &client_info->callback_map);
         if ((client_info->callback_event_queue = (FTBU_list_node_t *) malloc(sizeof(FTBU_list_node_t))) == NULL) {
             FTBU_INFO("Malloc error in FTB library");
             return (FTB_ERR_CLASS_FATAL + FTB_ERR_MALLOC);

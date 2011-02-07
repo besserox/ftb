@@ -287,17 +287,18 @@ static int util_key_match(const FTBU_map_node_t * head, FTBU_map_key_t key1, FTB
  * function pointer' (supplied as an argument to below function call) in the first
  * node of the linked list
  */
-FTBU_map_node_t *FTBU_map_init(int (*is_equal_func_ptr) (const void *, const void *))
+int FTBU_map_init(int (*is_equal_func_ptr) (const void *, const void *), FTBU_map_node_t **first_node)
 {
     FTBU_map_node_t *node;
     if ((node = (FTBU_map_node_t *) malloc(sizeof(FTBU_map_node_t))) == NULL) {
-            FTBU_INFO("Malloc error in FTB library");
-//            return (FTB_ERR_CLASS_FATAL + FTB_ERR_MALLOC);
+	FTBU_INFO("Malloc error in FTB library");
+	return (FTB_ERR_CLASS_FATAL + FTB_ERR_MALLOC);
      }
     /* Point data of first node of the map to the function passed as argument */
     node->data = (void *) is_equal_func_ptr;
     node->next = node->prev = node;
-    return node;
+    *first_node = node;
+    return FTB_SUCCESS;
 }
 
 
