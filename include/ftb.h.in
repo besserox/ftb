@@ -24,8 +24,8 @@
 /* FTB:ftb-bsd */
 /***********************************************************************************/
 
-#ifndef HAVE_FTB_H
-#define HAVE_FTB_H
+#ifndef FTB_H_INCLUDED
+#define FTB_H_INCLUDED
 
 #include "ftb_def.h"
 
@@ -100,4 +100,4 @@ int FTB_Check_error_code(const int error_code, int *error_class, int *error_valu
 #endif
 /* *INDENT-ON* */
 
-#endif /* HAVE_FTB_H */
+#endif /* FTB_H_INCLUDED */

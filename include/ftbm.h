@@ -23,8 +23,8 @@
 /* FTB:ftb-bsd */
 /***********************************************************************************/
 
-#ifndef HAVE_FTBM_H
-#define HAVE_FTBM_H
+#ifndef FTBM_H_INCLUDED
+#define FTBM_H_INCLUDED
 
 #include "ftb_def.h"
 
@@ -106,4 +106,4 @@ void *FTBM_Fill_message_queue(void *);
 #endif
 /* *INDENT-ON* */
 
-#endif /* HAVE_FTBM_H */
+#endif /* FTBM_H_INCLUDED */
