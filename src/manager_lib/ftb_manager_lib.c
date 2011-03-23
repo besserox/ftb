@@ -758,7 +758,7 @@ int FTBM_Client_deregister(const FTB_id_t * id)
             unlock_manager();
 	    if (ret1 != FTB_SUCCESS) {
                 FTBU_WARNING("Reconnection to agent failed");
-		FTBU_INFO("FTBM_Client_deregister Out")
+		FTBU_INFO("FTBM_Client_deregister Out");
 		return ret1;
             }	
 	    
