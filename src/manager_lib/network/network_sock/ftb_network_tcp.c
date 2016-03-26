@@ -724,7 +724,7 @@ int FTBN_Get_my_network_address(char *ipaddr)
     if(getifaddrs(&netaddrhead) == 0) {
         netaddr = netaddrhead;
         do {
-            if(netaddr->ifa_addr->sa_family == AF_INET && strncmp(netaddr->ifa_name, "lo", 2) != 0) {
+            if(netaddr->ifa_addr != NULL && netaddr->ifa_addr->sa_family == AF_INET && strncmp(netaddr->ifa_name, "lo", 2) != 0) {
                 struct sockaddr_in* sockInfoIP = (struct sockaddr_in*)netaddr->ifa_addr;
                 if(sockInfoIP != NULL) {
                     strcpy(ipaddr, inet_ntoa(sockInfoIP->sin_addr));
